@@ -1,0 +1,1 @@
+#define LINUX_EXPORT __attribute__((__visibility__("default"))) 
