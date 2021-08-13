@@ -15,7 +15,7 @@ CTestTestfile.cmake
 _deps
 build
 __pycache__
-
+pytorch
 ### CMake Patch ###
 # External projects
 *-prefix/
