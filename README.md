@@ -20,32 +20,19 @@ cd pytorch
 ```
 
 ### PyTorch 빌드하기 전 Caffe2 CMakeLists.txt수정
+
+#### 수정 전
 ```
 ...
-
-      if(USE_DISTRIBUTED)
-        add_subdirectory(${TORCH_ROOT}/test/cpp/c10d ${CMAKE_BINARY_DIR}/test_cpp_c10d)
-        if(NOT WIN32)
-          add_subdirectory(${TORCH_ROOT}/test/cpp/dist_autograd ${CMAKE_BINARY_DIR}/dist_autograd)
-          add_subdirectory(${TORCH_ROOT}/test/cpp/rpc ${CMAKE_BINARY_DIR}/test_cpp_rpc)
-        endif()
-      endif()
       if(NOT NO_API)
         add_subdirectory(${TORCH_ROOT}/test/cpp/api ${CMAKE_BINARY_DIR}/test_api)
       endif()
 ...
 ```
 
+### 수정 후
 ```
 ...
-
-      if(USE_DISTRIBUTED)
-        add_subdirectory(${TORCH_ROOT}/test/cpp/c10d ${CMAKE_BINARY_DIR}/test_cpp_c10d)
-        if(NOT WIN32)
-          add_subdirectory(${TORCH_ROOT}/test/cpp/dist_autograd ${CMAKE_BINARY_DIR}/dist_autograd)
-          add_subdirectory(${TORCH_ROOT}/test/cpp/rpc ${CMAKE_BINARY_DIR}/test_cpp_rpc)
-        endif()
-      endif()
       if(NOT NO_API)
         add_subdirectory(${TORCH_ROOT}/test/cpp/api ${CMAKE_BINARY_DIR}/test_api)
         add_subdirectory(${TORCH_ROOT}/../MyTorch/cpp ${CMAKE_BINARY_DIR}/MyTorch_cpp)
