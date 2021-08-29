@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project(MyTorch_cpp)
 
-set(MYTORCH_CPP_DIR "/media/lee/ESD-ISO/study/MyTorch/cpp")
+set(MYTORCH_CPP_DIR "${CMAKE_SOURCE_DIR}")
 set(MYTORCH_CPP_SOURCES
   ${MYTORCH_CPP_DIR}/main.cpp
 )
