@@ -1,11 +1,12 @@
-# MyTorch
+# About MyTorch
 
-c++로 딥러닝 라이브러리를 직접 구현
-pytorch의 extension기능을 이용하여 python에서도 이용할 수 있게 구현
+c++로 딥러닝 라이브러리를 직접 구현한다.
+pytorch의 extension기능을 이용하여 python에서도 이용할 수 있게한다.
 
 # Purpose
 
 c++로 딥러닝 라이브러리를 구현하여 딥러닝관련 이해도와 c++기술을 향상시킨다.
+오픈소스를 참고하여, 최근 많이 이용되는 PyTorch구조를 이해한다.
 
 # Installation
 
