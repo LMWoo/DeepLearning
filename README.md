@@ -8,10 +8,11 @@
 ## 프로젝트 구조
 
 * MyTorch
-  * pytorch - PyTorch 전체 소스
-  * cpp - c++로 직접 구현된 소스
+  * pytorch
+  * cpp
+    * main.cpp
   * python 
-    * extensions - 확장 관련 소스
+    * extensions
     * example.py
 
 # Installation
