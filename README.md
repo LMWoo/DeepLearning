@@ -11,8 +11,8 @@
   * pytorch - PyTorch 전체 소스
   * cpp - c++로 직접 구현된 소스
   * python 
-   * extensions - 확장 관련 소스
-   * example.py
+    * extensions - 확장 관련 소스
+    * example.py
 
 # Installation
 
