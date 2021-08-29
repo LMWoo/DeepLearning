@@ -48,8 +48,14 @@ export CMAKE_PREFIX_PATH=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}
 python setup.py install
 ```
 
-# Example
+# 예제 실행(Mytorch폴더에서 시작)
 ## cpp
+```
+cd pytorch
+cd build
+cd bin
+./MyTorch_cpp
+```
 
 ## python
 
