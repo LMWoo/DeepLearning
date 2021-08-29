@@ -1,4 +1,4 @@
-# About MyTorch
+# MyTorch
 
 cpp, python(extension)으로 딥러닝 라이브러리를 직접 구현
 실제 라이브러리 pytorch와 비교 
@@ -47,6 +47,25 @@ git submodule update --init --recursive --jobs 0
 export CMAKE_PREFIX_PATH=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}
 python setup.py install
 ```
+
+# Example
+## cpp
+
+## python
+
+### python 확장 설치
+```
+cd python
+cd extensions
+python setup.py install
+```
+
+### example.py 실행
+```
+cd python
+python example.py
+```
+
 
 # References
 https://github.com/pytorch/pytorch
