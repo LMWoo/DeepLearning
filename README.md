@@ -85,7 +85,9 @@ python example.py
 ```
 
 # Requirements
-
+ * python >= 3.6
+ * cuda >= 11.2
+ * cudnn >= 8.1.1
 
 # References
 https://github.com/pytorch/pytorch
