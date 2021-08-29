@@ -54,7 +54,7 @@ python setup.py install
 ```
 
 # Running the example, starting from MyTorch
-## cpp
+## c++
 ```
 cd pytorch
 cd build
