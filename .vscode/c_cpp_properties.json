@@ -4,8 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/media/lee/ESD-ISO/third_party/libtorch_gpu/include/torch/csrc/api/include",
-                "/media/lee/ESD-ISO/third_party/libtorch_gpu/include/",
+                "/media/lee/ESD-ISO/study/MyTorch/pytorch/torch/include",
+                "/media/lee/ESD-ISO/study/MyTorch/pytorch/torch/include/torch/csrc/api/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
