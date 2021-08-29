@@ -24,19 +24,19 @@ cd pytorch
 #### 수정 전
 ```
 ...
-      if(NOT NO_API)
-        add_subdirectory(${TORCH_ROOT}/test/cpp/api ${CMAKE_BINARY_DIR}/test_api)
-      endif()
+1107      if(NOT NO_API)
+1108        add_subdirectory(${TORCH_ROOT}/test/cpp/api ${CMAKE_BINARY_DIR}/test_api)
+1109      endif()
 ...
 ```
 
 ### 수정 후
 ```
 ...
-      if(NOT NO_API)
-        add_subdirectory(${TORCH_ROOT}/test/cpp/api ${CMAKE_BINARY_DIR}/test_api)
-        add_subdirectory(${TORCH_ROOT}/../MyTorch/cpp ${CMAKE_BINARY_DIR}/MyTorch_cpp)
-      endif()
+1107      if(NOT NO_API)
+1108        add_subdirectory(${TORCH_ROOT}/test/cpp/api ${CMAKE_BINARY_DIR}/test_api)
+1109        add_subdirectory(${TORCH_ROOT}/../MyTorch/cpp ${CMAKE_BINARY_DIR}/MyTorch_cpp)
+1110      endif()
 ...
 ```
 
