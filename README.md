@@ -19,7 +19,7 @@ git clone --recursive https://github.com/pytorch/pytorch
 cd pytorch
 ```
 
-### PyTorch 빌드하기 전 Caffe2 CMakeLists.txt수정
+### PyTorch 빌드하기 전 Caffe2의 CMakeLists.txt파일 수정
 
 #### 수정 전
 ```
@@ -30,7 +30,7 @@ cd pytorch
 ...
 ```
 
-### 수정 후
+#### 수정 후
 ```
 ...
 1107      if(NOT NO_API)
