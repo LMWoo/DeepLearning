@@ -40,7 +40,8 @@ cd pytorch
 ...
 ```
 
-### Build PyTorch From Source
+### PyTorch 빌드
+```
 git submodule sync
 git submodule update --init --recursive --jobs 0
 export CMAKE_PREFIX_PATH=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}
