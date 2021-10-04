@@ -1,4 +1,4 @@
-# About MyTorch
+# 프로젝트 소
 
  1. c++로 딥러닝 라이브러리를 직접 구현한다.
  2. pytorch의 extension기능을 이용하여 python에서도 이용할 수 있게한다.
@@ -7,7 +7,7 @@
 
 ## 프로젝트 구조
 
-* MyTorch
+* DeepLearning
   * pytorch
   * cpp
     * main.cpp
@@ -21,8 +21,8 @@
 
 ### 소스 다운로드
 ```
-git clone MyTorch
-cd MyTorch
+git clone DeepLearning
+cd DeepLearning
 ```
 
 ### PyTorch 소스 다운로드
