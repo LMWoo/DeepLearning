@@ -1,4 +1,4 @@
-# 프로젝트 소
+# 프로젝트 소개
 
  1. c++로 딥러닝 라이브러리를 직접 구현한다.
  2. pytorch의 extension기능을 이용하여 python에서도 이용할 수 있게한다.
@@ -47,7 +47,7 @@ cd pytorch
 ...
 1107      if(NOT NO_API)
 1108        add_subdirectory(${TORCH_ROOT}/test/cpp/api ${CMAKE_BINARY_DIR}/test_api)
-1109        add_subdirectory(${TORCH_ROOT}/../MyTorch/cpp ${CMAKE_BINARY_DIR}/MyTorch_cpp)
+1109        add_subdirectory(${TORCH_ROOT}/../DeepLearning/cpp ${CMAKE_BINARY_DIR}/DeepLearning_cpp)
 1110      endif()
 ...
 ```
@@ -60,13 +60,13 @@ export CMAKE_PREFIX_PATH=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}
 python setup.py install
 ```
 
-# Running the example (starting from MyTorch folder)
+# Running the example (starting from DeepLearning folder)
 ## c++
 ```
 cd pytorch
 cd build
 cd bin
-./MyTorch_cpp
+./DeepLearning_cpp
 ```
 
 ## python
