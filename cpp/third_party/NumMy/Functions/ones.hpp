@@ -1,7 +1,7 @@
 #pragma once
 
-#include <NumMy/Core/Types.hpp>
-#include <NumMy/Functions/full.hpp>
+#include "NumMy/Core/Types.hpp"
+#include "NumMy/Functions/full.hpp"
 
 namespace nm
 {

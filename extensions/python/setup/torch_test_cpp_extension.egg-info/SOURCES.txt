@@ -1,5 +1,5 @@
-extension.cpp
 setup.py
+setupCpp.cpp
 torch_test_cpp_extension.egg-info/PKG-INFO
 torch_test_cpp_extension.egg-info/SOURCES.txt
 torch_test_cpp_extension.egg-info/dependency_links.txt

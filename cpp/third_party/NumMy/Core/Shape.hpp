@@ -1,6 +1,6 @@
 #pragma once
 
-#include <NumMy/Core/Types.hpp>
+#include "NumMy/Core/Types.hpp"
 
 #include <iostream>
 #include <string>

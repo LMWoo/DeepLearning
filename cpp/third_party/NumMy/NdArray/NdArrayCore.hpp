@@ -1,7 +1,7 @@
 #pragma once
 
-#include <NumMy/Core/Shape.hpp>
-#include <NumMy/Core/Types.hpp>
+#include "NumMy/Core/Shape.hpp"
+#include "NumMy/Core/Types.hpp"
 
 #include <memory>
 
