@@ -2,8 +2,18 @@
 #include <torch/torch.h>
 #include <iostream>
 #include <iomanip>
+#include "NumMy/NumMy.hpp"
+
+void torch_cpp_example();
 
 int main() {
+    torch_cpp_example();
+
+    return 0;
+}
+
+void torch_cpp_example()
+{
     std::cout << "Logistic Regression\n\n";
 
     // Device

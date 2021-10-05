@@ -4,8 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/media/lee/ESD-ISO/study/MyTorch/pytorch/torch/include",
-                "/media/lee/ESD-ISO/study/MyTorch/pytorch/torch/include/torch/csrc/api/include"
+                "/media/lee/ESD-ISO/study/DeepLearning/pytorch/torch/include",
+                "/media/lee/ESD-ISO/study/DeepLearning/pytorch/torch/include/torch/csrc/api/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
