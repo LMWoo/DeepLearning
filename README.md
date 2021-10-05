@@ -91,3 +91,4 @@ python example.py
 
 # References
 https://github.com/pytorch/pytorch
+https://github.com/dpilger26/NumCpp

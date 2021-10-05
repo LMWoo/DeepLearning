@@ -2,12 +2,13 @@
 #include <torch/torch.h>
 #include <iostream>
 #include <iomanip>
-#include "NumMy/NumMy.hpp"
+#include <NumMy.hpp>
 
 void torch_cpp_example();
 
 int main() {
     torch_cpp_example();
+    nm::ones<int>(3, 4);
 
     return 0;
 }

@@ -4,6 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
+                "${workspaceFolder}/cpp/third_party/",
                 "/media/lee/ESD-ISO/study/DeepLearning/pytorch/torch/include",
                 "/media/lee/ESD-ISO/study/DeepLearning/pytorch/torch/include/torch/csrc/api/include"
             ],
