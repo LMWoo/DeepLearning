@@ -5,8 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/cpp/third_party/",
-                "/media/lee/ESD-ISO/study/MyTorch/pytorch/torch/include",
-                "/media/lee/ESD-ISO/study/MyTorch/pytorch/torch/include/torch/csrc/api/include"
+                "${workspaceFolder}/pytorch/torch/include",
+                "${workspaceFolder}/pytorch/torch/include/torch/csrc/api/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
