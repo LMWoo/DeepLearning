@@ -9,7 +9,11 @@ void torch_cpp_example();
 int main() {
     torch_cpp_example();
     nc::ones<int>(3, 4);
-
+    nc::Shape shape(3, 3);
+    nc::NdArray<int> ndarray(shape);
+    ndarray = ndarray.ones();
+    ndarray.print();
+    
     return 0;
 }
 

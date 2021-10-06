@@ -18,5 +18,9 @@ namespace nc
             cols(inCols)
         {}       
 
+        uint32 size() const noexcept
+        {
+            return rows * cols;
+        }
     };
 }

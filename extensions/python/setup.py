@@ -8,7 +8,7 @@ from torch.utils.cpp_extension import CUDA_HOME, ROCM_HOME
 
 setup(
     name='third_party_cpp',
-    include_dirs='../../cpp/third_party',
+    include_dirs=['../../cpp/third_party', ],
     ext_modules=[
     CppExtension(
         'third_party_cpp', ['setup.cpp']),
