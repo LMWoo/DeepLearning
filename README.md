@@ -90,5 +90,5 @@ python example.py
  * cudnn >= 8.1.1
 
 # References
-https://github.com/pytorch/pytorch
-https://github.com/dpilger26/NumCpp
+[pytorch](https://github.com/pytorch/pytorch) \
+[numcpp](https://github.com/dpilger26/NumCpp)
