@@ -1,7 +1,7 @@
 #include <torch/extension.h>
-#include <NumMy.hpp>
+#include <NumCpp.hpp>
 
-using namespace nm;
+using namespace nc;
 
 
 // test include_dirs in setuptools.setup with relative path

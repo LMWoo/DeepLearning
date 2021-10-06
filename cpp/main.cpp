@@ -2,13 +2,13 @@
 #include <torch/torch.h>
 #include <iostream>
 #include <iomanip>
-#include <NumMy.hpp>
+#include <NumCpp.hpp>
 
 void torch_cpp_example();
 
 int main() {
     torch_cpp_example();
-    nm::ones<int>(3, 4);
+    nc::ones<int>(3, 4);
 
     return 0;
 }
@@ -29,7 +29,7 @@ void torch_cpp_example()
     const size_t num_epochs = 5;
     const double learning_rate = 0.001;
 
-    const std::string MNIST_data_path = "/media/lee/ESD-ISO/script_test/Data/mnist/";
+    const std::string MNIST_data_path = "/media/lee/ESD-ISO/study/data/mnist/";
 
     // MNIST Dataset (images and labels)
     auto train_dataset = torch::data::datasets::MNIST(MNIST_data_path)

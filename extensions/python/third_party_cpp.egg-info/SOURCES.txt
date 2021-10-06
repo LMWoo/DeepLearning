@@ -1,0 +1,6 @@
+setup.cpp
+setup.py
+third_party_cpp.egg-info/PKG-INFO
+third_party_cpp.egg-info/SOURCES.txt
+third_party_cpp.egg-info/dependency_links.txt
+third_party_cpp.egg-info/top_level.txt

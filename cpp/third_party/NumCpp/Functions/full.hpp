@@ -1,10 +1,10 @@
 #pragma once
 
-#include "NumMy/Core/Shape.hpp"
-#include "NumMy/Core/Types.hpp"
-#include "NumMy/NdArray.hpp"
+#include <NumCpp/Core/Shape.hpp>
+#include <NumCpp/Core/Types.hpp>
+#include <NumCpp/NdArray.hpp>
 
-namespace nm
+namespace nc
 {
     template<typename dtype>
     NdArray<dtype> full(uint32 inNumRows, uint32 inNumCols, dtype inFillValue)

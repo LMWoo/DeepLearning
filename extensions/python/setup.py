@@ -7,10 +7,10 @@ from torch.utils.cpp_extension import BuildExtension, CppExtension, CUDAExtensio
 from torch.utils.cpp_extension import CUDA_HOME, ROCM_HOME
 
 setup(
-    name='torch_test_cpp_extension',
-    include_dirs='/media/lee/ESD-ISO/study/DeepLearning/cpp/third_party',
+    name='third_party_cpp',
+    include_dirs='../../cpp/third_party',
     ext_modules=[
     CppExtension(
-        'torch_test_cpp_extension.cpp', ['setupCpp.cpp']),
+        'third_party_cpp', ['setup.cpp']),
     ],
     cmdclass={'build_ext': BuildExtension})

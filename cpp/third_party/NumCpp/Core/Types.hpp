@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace nm
+namespace nc
 {
     using uint32 = std::uint32_t;
 }

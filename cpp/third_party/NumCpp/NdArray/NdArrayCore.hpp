@@ -1,11 +1,11 @@
 #pragma once
 
-#include "NumMy/Core/Shape.hpp"
-#include "NumMy/Core/Types.hpp"
+#include <NumCpp/Core/Shape.hpp>
+#include <NumCpp/Core/Types.hpp>
 
 #include <memory>
 
-namespace nm
+namespace nc
 {
     template<typename dtype, class Allocator = std::allocator<dtype>>
     class NdArray

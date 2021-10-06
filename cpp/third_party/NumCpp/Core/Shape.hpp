@@ -1,11 +1,11 @@
 #pragma once
 
-#include "NumMy/Core/Types.hpp"
+#include <NumCpp/Core/Types.hpp>
 
 #include <iostream>
 #include <string>
 
-namespace nm
+namespace nc
 {
     class Shape
     {

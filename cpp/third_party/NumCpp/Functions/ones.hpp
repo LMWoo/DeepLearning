@@ -1,9 +1,9 @@
 #pragma once
 
-#include "NumMy/Core/Types.hpp"
-#include "NumMy/Functions/full.hpp"
+#include <NumCpp/Core/Types.hpp>
+#include <NumCpp/Functions/full.hpp>
 
-namespace nm
+namespace nc
 {
     template<typename dtype>
     NdArray<dtype> ones(uint32 inNumRows, uint32 inNumCols)
