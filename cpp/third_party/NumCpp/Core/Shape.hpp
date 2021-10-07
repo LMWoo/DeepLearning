@@ -23,7 +23,12 @@ namespace nc
         constexpr Shape(uint32 inRows, uint32 inCols) noexcept :
             rows(inRows),
             cols(inCols)
-        {}       
+        {}
+
+        bool operator==(const Shape& inOtherShape) const noexcept
+        {
+            return rows == inOtherShape.rows && cols == inOtherShape.cols;
+        }
 
         uint32 size() const noexcept
         {

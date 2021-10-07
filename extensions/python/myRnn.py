@@ -24,6 +24,11 @@ test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch
 def cpp_zeros_like(input):
     return ncpp.zeros_like(ncpp.toNumCpp(input)).getNumpyArray()
 
+def cpp_dot(inArray1, inArray2):
+    inArray1 = ncpp.toNumCpp(inArray1)
+    inArray2 = ncpp.toNumCpp(inArray2)
+    return ncpp.dot(inArray1, inArray2).getNumpyArray()
+
 def xavier_init(c1, c2, w=1, h=1, fc=False):
     fan_1 = c2 * w * h
     fan_2 = c1 * w * h
@@ -67,11 +72,14 @@ class My_RNN(object):
 
         for t in range(self.seq_length):
             self.X[t] = x[t].T
-            self.A[t] = self.U @ self.X[t] + self.W @ self.S[t - 1] + self.b
+            # self.A[t] = self.U @ self.X[t] + self.W @ self.S[t - 1] + self.b
+            self.A[t] = cpp_dot(self.U, self.X[t]) + cpp_dot(self.W, self.S[t - 1]) + self.b
             self.S[t] = np.tanh(self.A[t])
-            self.O[t] = self.V @ self.S[t] + self.c
+            # self.O[t] = self.V @ self.S[t] + self.c
+            self.O[t] = cpp_dot(self.V, self.S[t]) + self.c
         
-        self.FC_O = self.FC_W @ self.O[self.seq_length - 1] + self.fc_b
+        # self.FC_O = self.FC_W @ self.O[self.seq_length - 1] + self.fc_b
+        self.FC_O = cpp_dot(self.FC_W, self.O[self.seq_length - 1]) + self.fc_b
 
         return self.FC_O
 
@@ -83,20 +91,27 @@ class My_RNN(object):
         db, dc = cpp_zeros_like(self.b), cpp_zeros_like(self.c)
         dS_next = cpp_zeros_like(self.S[0])
 
-        dFC_W = dY @ self.O[self.seq_length - 1].T
+        # dFC_W = dY @ self.O[self.seq_length - 1].T
+        dFC_W = cpp_dot(dY, self.O[self.seq_length - 1].T)
         dfc_b = dY
-        dO = self.FC_W.T @ dY
+        # dO = self.FC_W.T @ dY
+        dO = cpp_dot(self.FC_W.T, dY)
 
-        dV = dO @ self.S[self.seq_length - 1].T
+        # dV = dO @ self.S[self.seq_length - 1].T
+        dV = cpp_dot(dO, self.S[self.seq_length - 1].T)
         dc = dO
 
         for t in reversed(range(self.seq_length)):
             dS = self.V.T @ dO + dS_next
+            # dS = cpp_dot(self.V.T, dO) + dS_next
             dA = (1 - self.S[t] ** 2) * dS
-            dU += dA @ self.X[t].T
-            dW += dA @ self.S[t - 1].T
+            # dU += dA @ self.X[t].T
+            dU += cpp_dot(dA, self.X[t].T)
+            # dW += dA @ self.S[t - 1].T
+            dW += cpp_dot(dA, self.S[t - 1].T)
             db += dA
             dS_next = self.W.T @ dA
+            # dS_next = cpp_dot(self.W.T, dA)
 
         return [dU, dW, dV, db, dc, dFC_W, dfc_b]
 

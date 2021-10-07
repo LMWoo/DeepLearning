@@ -35,6 +35,11 @@ namespace FunctionsInterface
         return nc2pybind(ones<dtype>(inNumRows, inNumCols));
     }
 
+    template<typename dtype1, typename dtype2>
+    pbArrayGeneric dot(const NdArray<dtype1>& inArray1, const NdArray<dtype2>& inArray2)
+    {
+        return nc2pybind(nc::dot(inArray1, inArray2));
+    }
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
@@ -56,6 +61,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("print", &NdArrayDouble::print)
         .def("getNumpyArray", &NdArrayInterface::getNumpyArray<double>);
 
+    m.def("dot", &nc::dot<double>);
     m.def("zeros_like", &zeros_like<double, double>);
 
     m.def("toNumCpp", &pybind2nc<double>);
