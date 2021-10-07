@@ -10,7 +10,7 @@ namespace nc
     NdArray<dtype> full(uint32 inNumRows, uint32 inNumCols, dtype inFillValue)
     {
         NdArray<dtype> returnArray(inNumRows, inNumCols);
-        
+        returnArray.fill(inFillValue);
         return returnArray;
     }
 }

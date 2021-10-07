@@ -1,9 +1,11 @@
 #pragma once
 
 #include <NumCpp/Core/Internal/StlAlgorithms.hpp>
+#include <NumCpp/Core/Internal/TypeTraits.hpp>
 #include <NumCpp/Core/Shape.hpp>
 #include <NumCpp/Core/Types.hpp>
 #include <NumCpp/NdArray/NdArrayIterator.hpp>
+// #include <NumCpp/PythonInterface/PybindInterface.hpp>
 #include <NumCpp/Utils/value2str.hpp>
 
 #include <memory>
@@ -14,6 +16,8 @@ namespace nc
     class NdArray
     {
     private:
+
+        static_assert(is_same_v<dtype, typename Allocator::value_type>, "value_type and Allocator::value_type must match");
 
         using AllocType = typename std::allocator_traits<Allocator>::template rebind_alloc<dtype>;
         using AllocTraits = std::allocator_traits<AllocType>;
@@ -36,6 +40,14 @@ namespace nc
             {
                 newArray();
             }
+
+        template<typename Bool, std::enable_if_t<is_same_v<Bool, bool>, int> = 0>
+        NdArray(pointer inPtr, uint32 numRows, uint32 numCols, Bool takeOwnership) noexcept:
+            shape_(numRows, numCols),
+            size_(numRows * numCols),
+            array_(inPtr),
+            ownsPtr_(takeOwnership)
+        {}
         
         explicit NdArray(const Shape& inShape) :
             shape_(inShape),
@@ -43,6 +55,11 @@ namespace nc
             {
                 newArray();
             }
+        
+        // explicit NdArray(pybindInterface::pbArray<dtype>& numpyArray)
+        // {
+        //     *this = pybind2nc(numpyArray);
+        // }
 
         void newArray()
         {
@@ -61,11 +78,6 @@ namespace nc
             return *this;
         }
 
-        NdArray<dtype>& ones() noexcept
-        {
-            fill(dtype{ 1 });
-            return *this;
-        }
 
         Shape shape() const noexcept
         {
@@ -77,15 +89,15 @@ namespace nc
             return array_;
         }
 
-        iterator begin() noexcept
-        {
-            return iterator(array_);
-        }
+        // iterator begin() noexcept
+        // {
+        //     return iterator(array_);
+        // }
 
-        iterator end() noexcept
-        {
-            return begin() += size_;
-        }
+        // iterator end() noexcept
+        // {
+        //     return begin() += size_;
+        // }
 
         const_reference operator()(int32 inRowIndex, int32 inColIndex) const noexcept
         {
@@ -135,6 +147,19 @@ namespace nc
         const_pointer data() const noexcept
         {
             return array_;
+        }
+
+
+        NdArray<dtype>& ones() noexcept
+        {
+            fill(dtype{ 1 });
+            return *this;
+        }
+
+        NdArray<dtype>& zeros() noexcept
+        {
+            fill(dtype{ 0 });
+            return *this;
         }
     private:
         Shape shape_{0, 0};

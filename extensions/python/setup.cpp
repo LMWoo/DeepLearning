@@ -19,6 +19,12 @@ namespace NdArrayInterface
         self.ones();
         return nc2pybind<dtype>(self);
     }
+
+    template<typename dtype>
+    pbArrayGeneric getNumpyArray(NdArray<dtype>& inArray)
+    {
+        return nc2pybind(inArray);
+    }
 }
 
 namespace FunctionsInterface
@@ -28,6 +34,7 @@ namespace FunctionsInterface
     {
         return nc2pybind(ones<dtype>(inNumRows, inNumCols));
     }
+
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
@@ -44,9 +51,14 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
 
     pb11::class_<NdArrayDouble>(m, "NdArray")
         .def(pb11::init<Shape>())
+        //.def(pb11::init<pbArray<double>&>())
         .def("ones", &NdArrayInterface::ones<double>)
-        .def("print", &NdArrayDouble::print);
+        .def("print", &NdArrayDouble::print)
+        .def("getNumpyArray", &NdArrayInterface::getNumpyArray<double>);
 
+    m.def("zeros_like", &zeros_like<double, double>);
+
+    m.def("toNumCpp", &pybind2nc<double>);
 
     // py::class_<NdArrayDouble>(m, "NdArray")
     //     .def(py::init<>())
