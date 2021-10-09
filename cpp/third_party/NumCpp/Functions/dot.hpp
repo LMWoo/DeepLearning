@@ -9,4 +9,10 @@ namespace nc
     {
         return inArray1.dot(inArray2);
     }
+
+    template<typename dtype>
+    NdArray<dtype> dot_debug(const NdArray<dtype>& inArray1, const NdArray<dtype>& inArray2)
+    {
+        return inArray1.dot_debug(inArray2);
+    }
 }

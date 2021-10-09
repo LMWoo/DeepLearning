@@ -1,5 +1,6 @@
 #include <torch/extension.h>
 #include <NumCpp.hpp>
+#include <NumCpp/PythonInterface/PybindInterface.hpp>
 
 using namespace nc;
 using namespace nc::pybindInterface;
@@ -23,7 +24,7 @@ namespace NdArrayInterface
     template<typename dtype>
     pbArrayGeneric getNumpyArray(NdArray<dtype>& inArray)
     {
-        return nc2pybind(inArray);
+        return nc2pybind<dtype>(inArray);
     }
 }
 
@@ -40,6 +41,12 @@ namespace FunctionsInterface
     {
         return nc2pybind(nc::dot(inArray1, inArray2));
     }
+
+    template<typename dtype>
+    void memoryFree(NdArray<dtype> inArray)
+    {
+        inArray.memoryFree();
+    }
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
@@ -55,17 +62,18 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
     using NdArrayDouble = NdArray<double>;
 
     pb11::class_<NdArrayDouble>(m, "NdArray")
+        .def(pb11::init<>())
         .def(pb11::init<Shape>())
-        //.def(pb11::init<pbArray<double>&>())
+        .def(pb11::init<pbArray<double>&>())
         .def("ones", &NdArrayInterface::ones<double>)
         .def("print", &NdArrayDouble::print)
         .def("getNumpyArray", &NdArrayInterface::getNumpyArray<double>);
 
+
     m.def("dot", &nc::dot<double>);
     m.def("zeros_like", &zeros_like<double, double>);
-
     m.def("toNumCpp", &pybind2nc<double>);
-
+    m.def("memoryFree", &FunctionsInterface::memoryFree<double>);
     // py::class_<NdArrayDouble>(m, "NdArray")
     //     .def(py::init<>())
     //     .def(py::init<Shape>())

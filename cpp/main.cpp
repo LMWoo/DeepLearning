@@ -1,19 +1,30 @@
 // Copyright 2020-present pytorch-cpp Authors
+#pragma once
+
 #include <torch/torch.h>
 #include <iostream>
 #include <iomanip>
+
 #include <NumCpp.hpp>
+#include <memory>
 
 void torch_cpp_example();
 
+void myArrayTest()
+{
+    nc::NdArray<double> X(nullptr, 0, 0);
+}
+
 int main() {
-    torch_cpp_example();
-    nc::ones<int>(3, 4);
-    nc::Shape shape(3, 3);
-    nc::NdArray<int> ndarray(shape);
-    ndarray = ndarray.ones();
-    ndarray.print();
-    
+    // torch_cpp_example();
+    // nc::ones<int>(3, 4);
+    // nc::Shape shape(3, 3);
+    // nc::NdArray<double> ndarray(shape);
+    // ndarray = ndarray.ones();
+    // ndarray.print();
+
+    myArrayTest();
+
     return 0;
 }
 

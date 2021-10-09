@@ -14,25 +14,25 @@ namespace nc
         using pbArrayGeneric = pybind11::array;
 
         template<typename dtype>
-        NdArray<dtype> pybind2nc(pbArray<dtype>& numpyArray)
+        NdArray<dtype> pybind2nc(const pbArray<dtype>& numpyArray)
         {
-            const auto dataPtr = numpyArray.mutable_data();
+            const auto dataPtr = numpyArray.data();
             switch(numpyArray.ndim())
             {
                 case 0:
                 {
-                    return NdArray<dtype>(dataPtr, 0, 0, false);
+                    return NdArray<dtype>(dataPtr, 0, 0);
                 }
                 case 1:
                 {
                     const uint32 size = static_cast<uint32>(numpyArray.size());
-                    return NdArray<dtype>(dataPtr, 1, size, false);
+                    return NdArray<dtype>(dataPtr, 1, size);
                 }
                 case 2:
                 {
                     const uint32 numRows = static_cast<uint32>(numpyArray.shape(0));
                     const uint32 numCols = static_cast<uint32>(numpyArray.shape(1));
-                    return NdArray<dtype>(dataPtr, numRows, numCols, false);
+                    return NdArray<dtype>(dataPtr, numRows, numCols);
                 }
                 default:
                 {
