@@ -8,6 +8,8 @@
 #include <NumCpp.hpp>
 #include <memory>
 
+#include "test_gpu.h"
+
 void torch_cpp_example();
 
 void myArrayTest()
@@ -16,6 +18,8 @@ void myArrayTest()
 }
 
 int main() {
+    test_gpu::test();
+    
     // torch_cpp_example();
     // nc::ones<int>(3, 4);
     // nc::Shape shape(3, 3);

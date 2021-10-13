@@ -8,4 +8,4 @@ add_executable(${PROJECT_NAME} ${DEEPLEARNING_CPP_SOURCES})
 
 set(THIRD_PARTY_INCLUDE ${PROJECT_SOURCE_DIR}/third_party)
 target_include_directories(${PROJECT_NAME} PRIVATE ${ATen_CPU_INCLUDE} ${THIRD_PARTY_INCLUDE})
-target_link_libraries(${PROJECT_NAME} PRIVATE torch)
+target_link_libraries(${PROJECT_NAME} PRIVATE torch_cuda)
