@@ -1,7 +1,7 @@
 #include <torch/extension.h>
 #include <NumCpp.hpp>
 #include <NumCpp/PythonInterface/PybindInterface.hpp>
-
+#include <test_gpu.h>
 using namespace nc;
 using namespace nc::pybindInterface;
 namespace pb11 = pybind11;
@@ -74,6 +74,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
     m.def("zeros_like", &zeros_like<double, double>);
     m.def("toNumCpp", &pybind2nc<double>);
     m.def("memoryFree", &FunctionsInterface::memoryFree<double>);
+    m.def("test_gpu", &test_gpu::test);
+    m.def("test_gpu_matrix_add", &test_gpu::test_matrix_add);
     // py::class_<NdArrayDouble>(m, "NdArray")
     //     .def(py::init<>())
     //     .def(py::init<Shape>())

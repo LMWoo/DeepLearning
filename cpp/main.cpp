@@ -19,6 +19,7 @@ void myArrayTest()
 
 int main() {
     test_gpu::test();
+    test_gpu::test_matrix_add();
     
     // torch_cpp_example();
     // nc::ones<int>(3, 4);

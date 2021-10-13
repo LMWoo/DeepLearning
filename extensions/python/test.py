@@ -29,6 +29,9 @@ xx = ncpp.NdArray(x)
 xx.print()
 ncpp.memoryFree(xx)
 
+ncpp.test_gpu()
+ncpp.test_gpu_matrix_add()
+
 # x = np.random.randn(5, 3)
 # y = np.random.randn(3, 5)
 # xx = ncpp.NdArray(x)
