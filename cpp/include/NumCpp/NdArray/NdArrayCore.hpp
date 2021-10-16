@@ -32,16 +32,25 @@
 #endif
 
 #define RNN_DEBUG
-
+bool rnn_debug_start = false;
 #if defined(RNN_DEBUG)
 #define RNN_PRINT_STR(x) do { \
-    printf("%s\n", (x)); \
+    if (rnn_debug_start) \
+    { \
+        printf("%s\n", (x)); \
+    } \
 } while(0)
 #define RNN_PRINT_INT(x) do { \
-    printf("%d\n", (x)); \
+    if (rnn_debug_start) \
+    { \
+        printf("%d\n", (x)); \
+    } \
 } while(0)
 #define RNN_PRINT_PTR(x) do { \
-    printf("%p\n", (x)); \
+    if (rnn_debug_start) \
+    { \
+        printf("%p\n", (x)); \
+    } \
 } while(0)
 #else
 #define RNN_PRINT_STR(x)

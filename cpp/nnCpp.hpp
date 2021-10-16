@@ -39,22 +39,22 @@ namespace nnCpp
             this->seq_length = seq_length;
             this->hidden_size = hidden_size;
             this->U = xavier_init<dtype>(hidden_size, input_size);
-            // this->W = xavier_init<dtype>(hidden_size, hidden_size);
-            // this->V = xavier_init<dtype>(hidden_size, hidden_size);
-            // this->b = zeros<dtype>(hidden_size, 1);
-            // this->c = zeros<dtype>(hidden_size, 1);
+            this->W = xavier_init<dtype>(hidden_size, hidden_size);
+            this->V = xavier_init<dtype>(hidden_size, hidden_size);
+            this->b = zeros<dtype>(hidden_size, 1);
+            this->c = zeros<dtype>(hidden_size, 1);
 
-            // this->FC_W = xavier_init<dtype>(num_classes, hidden_size);
-            // this->fc_b = zeros<dtype>(num_classes, 1);
+            this->FC_W = xavier_init<dtype>(num_classes, hidden_size);
+            this->fc_b = zeros<dtype>(num_classes, 1);
             
-            // this->mU = zeros_like<dtype, dtype>(this->U);
-            // this->mW = zeros_like<dtype, dtype>(this->W);
-            // this->mV = zeros_like<dtype, dtype>(this->V);
-            // this->mb = zeros_like<dtype, dtype>(this->b);
-            // this->mc = zeros_like<dtype, dtype>(this->c);
+            this->mU = zeros_like<dtype, dtype>(this->U);
+            this->mW = zeros_like<dtype, dtype>(this->W);
+            this->mV = zeros_like<dtype, dtype>(this->V);
+            this->mb = zeros_like<dtype, dtype>(this->b);
+            this->mc = zeros_like<dtype, dtype>(this->c);
 
-            // this->mFC_W = zeros_like<dtype, dtype>(this->FC_W);
-            // this->mfc_b = zeros_like<dtype, dtype>(this->fc_b);
+            this->mFC_W = zeros_like<dtype, dtype>(this->FC_W);
+            this->mfc_b = zeros_like<dtype, dtype>(this->fc_b);
 #else
             this->lr = lr;
             this->seq_length = seq_length;
@@ -81,8 +81,11 @@ namespace nnCpp
         
         NdArray<dtype> forward(pbArray x, pbArray hprev)
         {
+            rnn_debug_start = true;
 #ifdef RNN_DEBUG
-            return NdArray<dtype>(1, 1);
+            NdArray<dtype> returnArray(1, 1);
+            returnArray.autoMemoryFreeOff();
+            return returnArray;
 #else
             std::vector<NdArray<dtype>> returnVec;
             NdArray<dtype> returnHprev = NdArray<dtype>(hprev);
@@ -299,28 +302,28 @@ namespace nnCpp
 
 #ifdef RNN_DEBUG
         NdArray<dtype> U{NdArray<dtype>(1, 1)};
-        // NdArray<dtype> W{NdArray<dtype>(1, 1)};
-        // NdArray<dtype> V{NdArray<dtype>(1, 1)};
-        // NdArray<dtype> b{NdArray<dtype>(1, 1)};
-        // NdArray<dtype> c{NdArray<dtype>(1, 1)};
+        NdArray<dtype> W{NdArray<dtype>(1, 1)};
+        NdArray<dtype> V{NdArray<dtype>(1, 1)};
+        NdArray<dtype> b{NdArray<dtype>(1, 1)};
+        NdArray<dtype> c{NdArray<dtype>(1, 1)};
 
-        // NdArray<dtype> FC_W{NdArray<dtype>(1, 1)};
-        // NdArray<dtype> fc_b{NdArray<dtype>(1, 1)};
+        NdArray<dtype> FC_W{NdArray<dtype>(1, 1)};
+        NdArray<dtype> fc_b{NdArray<dtype>(1, 1)};
 
-        // NdArray<dtype> mU{NdArray<dtype>(1, 1)};
-        // NdArray<dtype> mW{NdArray<dtype>(1, 1)};
-        // NdArray<dtype> mV{NdArray<dtype>(1, 1)};
-        // NdArray<dtype> mb{NdArray<dtype>(1, 1)};
-        // NdArray<dtype> mc{NdArray<dtype>(1, 1)};
+        NdArray<dtype> mU{NdArray<dtype>(1, 1)};
+        NdArray<dtype> mW{NdArray<dtype>(1, 1)};
+        NdArray<dtype> mV{NdArray<dtype>(1, 1)};
+        NdArray<dtype> mb{NdArray<dtype>(1, 1)};
+        NdArray<dtype> mc{NdArray<dtype>(1, 1)};
 
-        // NdArray<dtype> mFC_W{NdArray<dtype>(1, 1)};
-        // NdArray<dtype> mfc_b{NdArray<dtype>(1, 1)};
+        NdArray<dtype> mFC_W{NdArray<dtype>(1, 1)};
+        NdArray<dtype> mfc_b{NdArray<dtype>(1, 1)};
 
-        // array_list X;
-        // array_list A;
-        // array_list S;
-        // array_list O;
-        // NdArray<dtype> FC_O{NdArray<dtype>(1, 1)};
+        array_list X;
+        array_list A;
+        array_list S;
+        array_list O;
+        NdArray<dtype> FC_O{NdArray<dtype>(1, 1)};
 #else
         NdArray<dtype> U;
         NdArray<dtype> W;

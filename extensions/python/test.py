@@ -24,7 +24,7 @@ def printResult(x, y):
     print('numcpp')
     print(cpp.dot(x, y).getNumpyArray())
 
-garbageCollector = list()
+# garbageCollector = list()
 
 def dot_test():
     x = np.random.randn(5, 3)
@@ -55,14 +55,12 @@ def dot_test():
 
 for i in range(1):
     r = cpp.rnn(0.01, 28, 28, 128, 10)
-    cpp.memoryFree()
-
-    # images = np.random.randn(28, 1, 28)
-    # hprev = np.random.randn(128, 1)
+    images = np.random.randn(28, 1, 28)
+    hprev = np.random.randn(128, 1)
     # labels = np.array([[2],])
     # labels = cpp.NdArray(labels)
 
-    # addGarbage(r.forward(images, hprev))
+    r.forward(images, hprev)
 
 # xx.print()
 
