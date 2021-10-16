@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-import third_party_cpp as ncpp
+import cpp as cpp
 
 # x = torch.randn(4)
 # y = torch.randn(4)
@@ -19,32 +19,75 @@ def printResult(x, y):
     print('numpy')
     print(x @ y)
 
-    x = ncpp.NdArray(x)
-    y = ncpp.NdArray(y)
+    x = cpp.NdArray(x)
+    y = cpp.NdArray(y)
     print('numcpp')
-    print(ncpp.dot(x, y).getNumpyArray())
+    print(cpp.dot(x, y).getNumpyArray())
 
-x = np.random.randn(5, 3)
-xx = ncpp.NdArray(x)
-xx.print()
-ncpp.memoryFree(xx)
+garbageCollector = list()
 
-ncpp.test_gpu()
-ncpp.test_gpu_matrix_add()
+def dot_test():
+    x = np.random.randn(5, 3)
+    x = cpp.NdArray(x)
+    y = np.random.randn(3, 5)
+    y = cpp.NdArray(y)  
 
-# x = np.random.randn(5, 3)
-# y = np.random.randn(3, 5)
-# xx = ncpp.NdArray(x)
-# yy = ncpp.NdArray(y)
-# result = ncpp.dot(xx, yy)
-# result.print()
+    result = cpp.dot(x, y)
+    return result
 
-# x = np.random.randn(1, 1)
-# y = np.random.randn(1, 1)
+# def addGarbage(x):
+#     garbageCollector.append(x)
+#     return x
 
-# printResult(x, y)
+# def garbageClean():
+#     for i in range(len(garbageCollector)):
+#         garbageCollector[i].memoryFree()
 
-# x = np.random.randn(1, 5)
-# y = np.random.randn(5, 3)
 
-# printResult(x, y)
+# for i in range(1):
+#     x = np.random.randn(5, 3)
+#     y = np.random.randn(3, 5)
+#     x = cpp.NdArray(x)
+#     y = cpp.NdArray(y)
+#     addGarbage(cpp.dot(x, y))
+#     garbageClean()
+#     print('==============================')
+
+for i in range(1):
+    r = cpp.rnn(0.01, 28, 28, 128, 10)
+    cpp.memoryFree()
+
+    # images = np.random.randn(28, 1, 28)
+    # hprev = np.random.randn(128, 1)
+    # labels = np.array([[2],])
+    # labels = cpp.NdArray(labels)
+
+    # addGarbage(r.forward(images, hprev))
+
+# xx.print()
+
+# cpp.test_gpu()
+# cpp.test_gpu_matrix_add()
+
+# print(np.random.random((3, 4)))
+
+# r = cpp.rnn(0.01, 28, 28, 128, 10)
+# images = np.random.randn(28, 1, 28)
+# hprev = np.random.randn(128, 1)
+# labels = np.array([[2],])
+# labels = cpp.NdArray(labels)
+
+# print("one")
+# outputs = r.forward(images, hprev)
+# print("two")
+# outputs = r.forward(images, hprev)
+
+# outputs = r.forward(images, hprev)
+# Y, loss = r.cross_entropy_loss(outputs, labels)
+# gradients = r.backward(r.deriv_softmax(Y, labels))
+# r.optimizer(gradients)
+
+# test = cpp.bindTest()
+# x = test.return_test()
+# test.memoryFree()
+# x.memoryFree()

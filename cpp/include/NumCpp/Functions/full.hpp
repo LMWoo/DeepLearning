@@ -9,6 +9,7 @@ namespace nc
     template<typename dtype>
     NdArray<dtype> full(uint32 inNumRows, uint32 inNumCols, dtype inFillValue)
     {
+        PRINT_STR("Alloc Memory Call by NdArray<dtype> full(uint32 inNumRows, uint32 inNumCols, dtype inFillValue)");
         NdArray<dtype> returnArray(inNumRows, inNumCols);
         returnArray.fill(inFillValue);
         return returnArray;

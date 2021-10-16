@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/cpp/third_party/",
+                "${workspaceFolder}/cpp/include/",
                 "${workspaceFolder}/pytorch/torch/include",
                 "${workspaceFolder}/pytorch/torch/include/torch/csrc/api/include"
             ],

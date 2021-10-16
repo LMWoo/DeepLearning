@@ -24,4 +24,5 @@ namespace test_gpu
 {
     void test();
     void test_matrix_add();
+    void test_matrix_mul();
 }

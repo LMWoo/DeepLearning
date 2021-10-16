@@ -9,18 +9,64 @@
 #include <memory>
 
 #include "test_gpu.h"
+#include <chrono>
+#include "nnCpp.hpp"
 
 void torch_cpp_example();
-
-void myArrayTest()
-{
-    nc::NdArray<double> X(nullptr, 0, 0);
-}
+void gpu_example();
 
 int main() {
-    test_gpu::test();
-    test_gpu::test_matrix_add();
     
+    // gpu_example();
+
+    nc::NdArray<double> lhs = nc::random::rand(0.0, 1.0, nc::Shape(3, 4));
+    nc::NdArray<double> rhs = nc::random::rand(1.0, 2.0, nc::Shape(3, 4));
+    
+    auto result = nc::dot(lhs, rhs);
+
+    // printf("lhs\n");
+    // lhs.print();
+    // printf("rhs\n");
+    // rhs.print();
+
+    // printf("+\n");
+    // (lhs + rhs).print();
+
+    // printf("-\n");
+    // (lhs - rhs).print();
+
+    // printf("*\n");
+    // (lhs * 3.0).print();
+
+    nc::NdArray<double> sum_test = nc::random::rand(0.0, 1.0, nc::Shape(3, 1));
+    sum_test.print();
+    
+    nc::NdArray<double> sum_result = nc::sum<double>(sum_test);
+    printf("%lf\n", *sum_result.begin());
+
+
+    nnCpp::rnn<double> model(0.01, 28, 28, 128, 10);
+    model.softmax(sum_test).print();
+
+    // nc::NdArray<double> hprev = nc::zeros<double>(128, 1);
+    // nc::NdArray<double> images[28];
+
+    // for (int i = 0; i < 28; ++i)
+    // {
+    //     images[i] = nc::zeros<double>(1, 28);
+    // }
+
+    // nc::NdArray<double> output = model.forward(images, hprev);   
+    // nc::NdArray<double>** gradients = model.backward(output);
+    // model.optimizer(gradients);
+
+    // int a = 1;
+    // int b = 2;
+
+    // int* c[2] = {&a, &b};
+    // *c[0] = 10;
+    // printf("%d\n", a);
+
     // torch_cpp_example();
     // nc::ones<int>(3, 4);
     // nc::Shape shape(3, 3);
@@ -28,9 +74,39 @@ int main() {
     // ndarray = ndarray.ones();
     // ndarray.print();
 
-    myArrayTest();
-
     return 0;
+}
+
+void gpu_example()
+{
+    test_gpu::test();
+    test_gpu::test_matrix_add();
+    
+    nc::NdArray<double> X(512, 512);
+    nc::NdArray<double> Y(512, 512);
+
+    std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+    test_gpu::test_matrix_mul();
+    std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
+    std::chrono::nanoseconds elapsedNS = end-start;
+    std::chrono::seconds elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(elapsedNS);
+    std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+    
+    std::cout << "finished computation at " << std::ctime(&end_time)
+              << "elapsed time NS: " << elapsedNS.count() << "ns\n"
+              << "elapsed time S: " << elapsedSeconds.count() << "s\n";
+
+    start = std::chrono::system_clock::now();
+    for (int i = 0; i < 128; ++i)
+        X.dot(Y);
+    end = std::chrono::system_clock::now();
+    elapsedNS = end-start;
+    elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(elapsedNS);
+    end_time = std::chrono::system_clock::to_time_t(end);
+    
+    std::cout << "finished computation at " << std::ctime(&end_time)
+              << "elapsed time NS: " << elapsedNS.count() << "ns\n"
+              << "elapsed time S: " << elapsedSeconds.count() << "s\n";
 }
 
 void torch_cpp_example()

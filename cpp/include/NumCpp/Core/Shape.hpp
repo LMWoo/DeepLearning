@@ -30,6 +30,28 @@ namespace nc
             return rows == inOtherShape.rows && cols == inOtherShape.cols;
         }
 
+        bool operator!=(const Shape& inOtherShape) const noexcept
+        {
+            return !(*this == inOtherShape);
+        }
+
+        std::string str() const
+        {
+            std::string out;
+            out += "[ shape : rows ";
+            out += std::to_string(rows);
+            out += " cols ";
+            out += std::to_string(cols);
+            out += " ]\n";
+
+            return out;
+        }
+
+        void print() const
+        {
+            std::cout << str();
+        }
+
         uint32 size() const noexcept
         {
             return rows * cols;

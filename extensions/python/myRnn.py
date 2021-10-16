@@ -4,7 +4,7 @@ import torchvision
 import torchvision.transforms as transforms
 import sys
 import numpy as np
-import third_party_cpp as ncpp
+import cpp as cpp
 
 np.set_printoptions(threshold=sys.maxsize) 
 
@@ -221,15 +221,17 @@ if __name__ == "__main__":
             labels = labels.detach().numpy()
 
             hprev = np.zeros((hidden_size, 1))
-            # outputs = model.forward(images, hprev)
-            outputs = model.forward_cpp(images, hprev)
+            outputs = model.forward(images, hprev)
+            # outputs = model.forward_cpp(images, hprev)
+            print(labels.shape)
 
             Y, loss = model.cross_entropy_loss(outputs, labels)
-            # gradients = model.backward(model.deriv_softmax(Y, labels))
-            gradients = model.backward_cpp(model.deriv_softmax(Y, labels))
+            gradients = model.backward(model.deriv_softmax(Y, labels))
+            # gradients = model.backward_cpp(model.deriv_softmax(Y, labels))
             model.optimizer_step(gradients)
             iter_loss += np.sum(loss)
             if (i + 1) % interval == 0:
                 print("epoch {}/{} iter {}/{} loss {:.4f}".format(epoch + 1, num_epochs, i + 1, total_step, iter_loss / interval))
                 iter_loss = 0
- 
+            break
+        break

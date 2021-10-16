@@ -2,6 +2,8 @@
 #include <NumCpp.hpp>
 #include <NumCpp/PythonInterface/PybindInterface.hpp>
 #include <test_gpu.h>
+#include <nnCpp.hpp>
+
 using namespace nc;
 using namespace nc::pybindInterface;
 namespace pb11 = pybind11;
@@ -28,6 +30,11 @@ namespace NdArrayInterface
     }
 }
 
+namespace NNCppInterface
+{
+    
+}
+
 namespace FunctionsInterface
 {
     template<typename dtype>
@@ -49,6 +56,62 @@ namespace FunctionsInterface
     }
 }
 
+template<typename dtype>
+class bindTest
+{
+private:
+    int count{0};
+    dtype test{0.0};
+    dtype* p{nullptr};
+
+    bool autoMemoryFree{true};
+public:
+    bindTest()
+    {
+        p = (dtype*)malloc(sizeof(dtype));
+        printf("%d\n", p);
+        printf("bindTest()\n");
+    }
+    bindTest(bool autoMemoryFree) 
+    {
+        this->autoMemoryFree = autoMemoryFree;
+        p = (dtype*)malloc(sizeof(dtype));
+        printf("%d\n", p);
+        printf("bindTest()\n");
+    }
+
+    void memoryFree()
+    {
+        if (!autoMemoryFree && p)
+        {
+            free(p);
+            printf("%d\n", p);
+            printf("memoryFree()\n");
+            p = nullptr;
+        }
+    }
+    ~bindTest()
+    {
+        if (autoMemoryFree && p)
+        {
+            free(p);
+            printf("%d\n", p);
+            printf("~bindTest()\n");
+            p = nullptr;
+        }
+    }
+
+    void print()
+    {
+        printf("%lf\n", test);
+    }
+
+    bindTest<dtype> return_test()
+    {
+        return bindTest<dtype>(false);
+    }
+};
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
 {
     m.def("sigmoid_add", &sigmoid_add, "sigmoid(x) + sigmoid(y)");
@@ -67,18 +130,33 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def(pb11::init<pbArray<double>&>())
         .def("ones", &NdArrayInterface::ones<double>)
         .def("print", &NdArrayDouble::print)
-        .def("getNumpyArray", &NdArrayInterface::getNumpyArray<double>);
-
+        .def("getNumpyArray", &NdArrayInterface::getNumpyArray<double>)
+        .def("memoryFree", &NdArrayDouble::memoryFree)
+        .def("dot", &NdArrayDouble::dot);
 
     m.def("dot", &nc::dot<double>);
     m.def("zeros_like", &zeros_like<double, double>);
     m.def("toNumCpp", &pybind2nc<double>);
-    m.def("memoryFree", &FunctionsInterface::memoryFree<double>);
+    m.def("memoryFree", &memory::memoryFree);
+    
     m.def("test_gpu", &test_gpu::test);
     m.def("test_gpu_matrix_add", &test_gpu::test_matrix_add);
-    // py::class_<NdArrayDouble>(m, "NdArray")
-    //     .def(py::init<>())
-    //     .def(py::init<Shape>())
-    //     .def("ones", &NdArrayInterface::ones<double>)
-    // m.def("onesRowCol", &FunctionsInterface::onesRowCol<double>, "onesRowCol");
+
+    using RNNDouble = nnCpp::rnn<double>;
+    
+    pb11::class_<RNNDouble>(m, "rnn")
+        .def(pb11::init<double, uint32, uint32, uint32, uint32>())
+        .def("test", &RNNDouble::test)
+        .def("forward", &RNNDouble::forward)
+        .def("cross_entropy_loss", &RNNDouble::cross_entropy_loss)
+        .def("backward", &RNNDouble::backward)
+        .def("softmax", &RNNDouble::softmax)
+        .def("deriv_softmax", &RNNDouble::deriv_softmax)
+        .def("optimizer", &RNNDouble::optimizer);
+    
+    pb11::class_<bindTest<double>>(m, "bindTest")
+        .def(pb11::init<>())
+        .def("print", &bindTest<double>::print)
+        .def("return_test", &bindTest<double>::return_test)
+        .def("memoryFree", &bindTest<double>::memoryFree);
 }
