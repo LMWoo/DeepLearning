@@ -75,11 +75,15 @@ for i in range(1):
     x.print()
 
 for i in range(1):
+    print('python print start')
     r = cpp.rnn(0.01, 28, 28, 128, 10)
     images = np.random.randn(28, 1, 28)
     hprev = np.random.randn(128, 1)
     labels = np.array([[2],])
     labels = cpp.NdArray(labels)
 
-    # outputs = r.forward(images, hprev)
+    outputs = r.forward(images, hprev)
+    outputs.useArray()
+    print('python print end')
+
     # Y, loss = r.cross_entropy_loss(outputs, labels)

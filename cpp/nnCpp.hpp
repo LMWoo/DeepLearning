@@ -54,6 +54,10 @@ namespace nnCpp
 
             this->mFC_W = zeros_like<dtype, dtype>(this->FC_W);
             this->mfc_b = zeros_like<dtype, dtype>(this->fc_b);
+
+            this->U.shape().print();
+            this->W.shape().print();
+            printf("finish rnn init\n");
         }
         
         NdArray<dtype> forward(pbArray x, pbArray hprev)
@@ -70,25 +74,42 @@ namespace nnCpp
             {
                 returnVec[i] = NdArray<dtype>(numRows, numCols);
                 std::copy(dataPtr + image_size * i, dataPtr + image_size * (i + 1), returnVec[i].begin());
+                returnVec[i].clone();
             }
 
-            return forward_(returnVec, returnHprev);
+            return forward_(returnVec, returnHprev.clone());
         }
 
         NdArray<dtype> forward_(std::vector<NdArray<dtype>> x, NdArray<dtype> hprev)
         {
-            S[-1] = NdArray<dtype>(hprev);
+            hprev.useArray();
+            S[-1] = hprev;
 
-            for (int t = 0; t < (int)seq_length; ++t)
+            for (int t = 0; t < (int)1; ++t)
             {
+                x[t].useArray();
                 X[t] = x[t].transpose();
-                A[t] = dot<dtype>(U, X[t]) + dot<dtype>(W, S[t - 1]) + b;
-                S[t] = tanh<dtype>(A[t]);
-                O[t] = dot<dtype>(V, S[t]) + c;
+
+                NdArray<dtype> UX_t = dot<dtype>(U, X[t]);
+                NdArray<dtype> WS_t_1 = dot<dtype>(W, S[-1]);
+                UX_t.useArray();
+                WS_t_1.useArray();
+                NdArray<dtype> UX_t_plus_WS_t_1 = (UX_t + WS_t_1);
+                UX_t_plus_WS_t_1.useArray();
+
+                A[t] = UX_t_plus_WS_t_1;
+                // A[t].print();
+                // A[t] = dot<dtype>(U, X[t]) + dot<dtype>(W, S[t - 1]) + b;
+            //     // S[t] = tanh<dtype>(A[t]);
+            //     // O[t] = dot<dtype>(V, S[t]) + c;
             }
             
-            FC_O = dot<dtype>(FC_W, O[(int)seq_length - 1]) + fc_b;
-            return FC_O;
+            // FC_O = dot<dtype>(FC_W, O[(int)seq_length - 1]) + fc_b;
+            // FC_O = x[0];
+
+            FC_O = NdArray<dtype>(1, 1);
+
+            return FC_O.clone();
         }
 
         auto backward(const NdArray<dtype>& dY)

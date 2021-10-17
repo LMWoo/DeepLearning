@@ -168,6 +168,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def(pb11::init<pbArray<double>&>())
         .def("ones", &NdArrayInterface::ones<double>)
         .def("print", &NdArrayDouble::print)
+        .def("useArray", &NdArrayDouble::useArray)
         .def("getNumpyArray", &NdArrayInterface::getNumpyArray<double>)
         .def("dot", &NdArrayDouble::dot);
 

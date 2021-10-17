@@ -153,11 +153,32 @@ namespace nc
 
         pointer data() noexcept
         {
+            // if (array_)
+            // {
+            //     return array_;
+            // }
+            // else
+            // {
+            //     return backup_array_;
+            // }
             return array_;
+        }
+
+        pointer backup_data() noexcept
+        {
+            return backup_array_;
         }
 
         const_pointer data() const noexcept
         {
+            // if (array_)
+            // {
+            //     return array_;
+            // }
+            // else
+            // {
+            //     return backup_array_;
+            // }
             return array_;
         }
 
@@ -175,6 +196,14 @@ namespace nc
 
         pointer begin() noexcept
         {
+            // if (array_)
+            // {
+            //     return array_;
+            // }
+            // else
+            // {
+            //     return backup_array_;
+            // }
             return array_;
         }
 
@@ -185,6 +214,14 @@ namespace nc
 
         pointer cbegin() const noexcept
         {
+            // if (array_)
+            // {
+            //     return array_;
+            // }
+            // else
+            // {
+            //     return backup_array_;
+            // }
             return array_;
         }
 
@@ -233,7 +270,11 @@ namespace nc
                         returnArray(i, j) = std::inner_product(otherArrayT.cbegin(j), otherArrayT.cend(j), cbegin(i), dtype{0});
                     }
                 }
-                return returnArray;
+                // printf("dot start\n");
+                // printf("array : %p\n", returnArray.array_);
+                // printf("backup_array : %p\n", returnArray.backup_array_);
+                // printf("dot end\n");
+                return returnArray.clone();
             }
 
             NdArray<dtype> returnArray(1, 1);
@@ -289,6 +330,11 @@ namespace nc
                 inColIndex += shape_.cols;
             }
             return array_[inRowIndex * shape_.cols + inColIndex];
+            // if (array_)
+            // {
+            //     return array_[inRowIndex * shape_.cols + inColIndex];
+            // }
+            // return backup_array_[inRowIndex * shape_.cols + inColIndex];
         }
 
         const_reference operator()(int32 inRowIndex, int32 inColIndex) const noexcept
@@ -301,6 +347,11 @@ namespace nc
             {
                 inColIndex += shape_.cols;
             }
+            // if (array_)
+            // {
+            //     return array_[inRowIndex * shape_.cols + inColIndex];
+            // }
+            // return backup_array_[inRowIndex * shape_.cols + inColIndex];
             return array_[inRowIndex * shape_.cols + inColIndex];
         }
         
@@ -342,7 +393,6 @@ namespace nc
         size_type size_{0};
         pointer array_{nullptr};
         pointer backup_array_{nullptr};
-        bool autoDelete{true};
 
         void deleteArray() noexcept
         {
