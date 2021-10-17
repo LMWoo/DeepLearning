@@ -61,54 +61,92 @@ class bindTest
 {
 private:
     int count{0};
-    dtype test{0.0};
     dtype* p{nullptr};
+    dtype* back_p{nullptr};
+    size_t size_{0};
 
-    bool autoMemoryFree{true};
 public:
-    bindTest()
+    bindTest(size_t size) :
+        size_(size)
     {
-        p = (dtype*)malloc(sizeof(dtype));
-        printf("%d\n", p);
-        printf("bindTest()\n");
-    }
-    bindTest(bool autoMemoryFree) 
-    {
-        this->autoMemoryFree = autoMemoryFree;
-        p = (dtype*)malloc(sizeof(dtype));
-        printf("%d\n", p);
-        printf("bindTest()\n");
+        initialize();
+        
     }
 
-    void memoryFree()
-    {
-        if (!autoMemoryFree && p)
-        {
-            free(p);
-            printf("%d\n", p);
-            printf("memoryFree()\n");
-            p = nullptr;
-        }
-    }
     ~bindTest()
     {
-        if (autoMemoryFree && p)
+        if (p)
         {
             free(p);
-            printf("%d\n", p);
-            printf("~bindTest()\n");
+            printf("print start ~bindTest\n");
+            printf("this : %p\n", this);
+            printf("p : %d\n", p);
+            printf("print end ~bindTest()\n");
             p = nullptr;
         }
+    }
+
+    void initialize()
+    {
+        if (!p)
+        {
+            p = (dtype*)malloc(sizeof(dtype) * size_);
+        }
+        printf("print start initialize\n");
+        printf("this : %p\n", this);
+        printf("p : %d\n", p);
+
+        for (size_t i = 0; i < size_; ++i)
+        {
+            p[i] = size_ * 10;
+        }
+
+        this->print();
+
+        printf("print end initialize\n");
+    }
+
+    bindTest<dtype> clone()
+    {
+        back_p = p;
+        p = nullptr;
+        return *this;
     }
 
     void print()
     {
-        printf("%lf\n", test);
+        for (size_t i = 0; i < size_; ++i)
+        {
+            std::cout << p[i] << " ";
+        }
+        std::cout << "\n";
     }
 
-    bindTest<dtype> return_test()
+    void useArray()
     {
-        return bindTest<dtype>(false);
+        p = back_p;
+        back_p = nullptr;
+    }
+
+    bindTest<dtype> forward()
+    {
+        bindTest<dtype> returnArray(20);
+        return return_test(returnArray.clone());
+    }
+
+    bindTest<dtype> return_test(bindTest<dtype> input_)
+    {
+        input_.useArray();
+
+        printf("print start return_test\n");
+        // printf("this : %p\n", input_);
+        printf("p : %d\n", input_.p);
+
+        input_.print();
+
+        printf("print end return_test\n");
+
+        return input_.clone();
     }
 };
 
@@ -128,19 +166,20 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def(pb11::init<>())
         .def(pb11::init<Shape>())
         .def(pb11::init<pbArray<double>&>())
+        .def("initialize", &NdArrayDouble::initialize)
         .def("ones", &NdArrayInterface::ones<double>)
         .def("print", &NdArrayDouble::print)
         .def("getNumpyArray", &NdArrayInterface::getNumpyArray<double>)
-        .def("memoryFree", &NdArrayDouble::memoryFree)
         .def("dot", &NdArrayDouble::dot);
 
     m.def("dot", &nc::dot<double>);
     m.def("zeros_like", &zeros_like<double, double>);
     m.def("toNumCpp", &pybind2nc<double>);
-    m.def("memoryFree", &memory::memoryFree);
     
     m.def("test_gpu", &test_gpu::test);
     m.def("test_gpu_matrix_add", &test_gpu::test_matrix_add);
+
+    m.def("memoryClean", &memory::memoryClean);
 
     using RNNDouble = nnCpp::rnn<double>;
     
@@ -155,8 +194,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("optimizer", &RNNDouble::optimizer);
     
     pb11::class_<bindTest<double>>(m, "bindTest")
-        .def(pb11::init<>())
+        .def(pb11::init<size_t>())
+        .def("initialize", &bindTest<double>::initialize)
+        .def("useArray", &bindTest<double>::useArray)
+        .def("forward", &bindTest<double>::forward)
         .def("print", &bindTest<double>::print)
-        .def("return_test", &bindTest<double>::return_test)
-        .def("memoryFree", &bindTest<double>::memoryFree);
+        .def("return_test", &bindTest<double>::return_test);
 }

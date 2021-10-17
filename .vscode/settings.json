@@ -74,6 +74,7 @@
         "typeinfo": "cpp",
         "valarray": "cpp",
         "variant": "cpp",
-        "alignedvector3": "cpp"
+        "alignedvector3": "cpp",
+        "*.inc": "cpp"
     }
 }

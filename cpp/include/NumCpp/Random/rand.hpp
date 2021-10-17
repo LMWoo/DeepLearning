@@ -14,7 +14,6 @@ namespace nc
         template<typename dtype>
         NdArray<dtype> rand(dtype inLow, dtype inHigh, const Shape& inShape)
         {
-            PRINT_STR("Alloc Memory Call by NdArray<dtype> rand(dtype inLow, dtype inHigh, const Shape& inShape)");
             NdArray<dtype> returnArray(inShape);
 
             std::uniform_real_distribution<dtype> dist(inLow, inHigh - DtypeInfo<dtype>::epsilon());
@@ -23,6 +22,8 @@ namespace nc
             {
                 value = dist(generator_);
             });
+
+            returnArray.autoMemoryOff();
 
             return returnArray;
         }

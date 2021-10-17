@@ -5,7 +5,6 @@
 #include <NumCpp/Core/Internal/TypeTraits.hpp>
 #include <NumCpp/Core/Shape.hpp>
 #include <NumCpp/Core/Types.hpp>
-#include <NumCpp/NdArray/NdArrayMemoryManager.hpp>
 #include <NumCpp/Utils/value2str.hpp>
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -13,7 +12,7 @@
 #include <vector>
 #include <memory>
 
-// #define NDARRAY_DEBUG
+#define NDARRAY_DEBUG
 
 #if defined(NDARRAY_DEBUG)
 #define PRINT_STR(x) do { \
@@ -31,43 +30,50 @@
 #define PRINT_PTR(x)
 #endif
 
-#define RNN_DEBUG
-bool rnn_debug_start = false;
-#if defined(RNN_DEBUG)
-#define RNN_PRINT_STR(x) do { \
-    if (rnn_debug_start) \
-    { \
-        printf("%s\n", (x)); \
-    } \
-} while(0)
-#define RNN_PRINT_INT(x) do { \
-    if (rnn_debug_start) \
-    { \
-        printf("%d\n", (x)); \
-    } \
-} while(0)
-#define RNN_PRINT_PTR(x) do { \
-    if (rnn_debug_start) \
-    { \
-        printf("%p\n", (x)); \
-    } \
-} while(0)
-#else
-#define RNN_PRINT_STR(x)
-#define RNN_PRINT_INT(x)
-#define RNN_PRINT_PTR(x)
-#endif
-
 namespace nc
 {
-    template<typename dtype> class NdArray;
-
+    bool rnn_debug_start=false;
     namespace memory
     {
-        void push(NdArray<double>* array);
-        void push(NdArray<int>* array);
-        void memoryFree();
+        std::vector<double*> memoryDouble;
+        std::vector<int*> memoryInt;
+        
+        void push(double* array)
+        {
+            memoryDouble.push_back(array);
+        }
+
+        void push(int* array)
+        {
+            memoryInt.push_back(array);
+        }
+
+        void memoryClean()
+        {
+            for (size_t i = 0; i < memoryDouble.size(); ++i)
+            {
+                if (memoryDouble[i] != nullptr)
+                {
+                    free(memoryDouble[i]);
+                    memoryDouble[i] = nullptr;
+                }
+            }
+
+            memoryDouble.clear();
+
+            for (size_t i = 0; i < memoryInt.size(); ++i)
+            {
+                if (memoryInt[i] != nullptr)
+                {
+                    free(memoryInt[i]);
+                    memoryInt[i] = nullptr;
+                }
+            }
+
+            memoryInt.clear();
+        }
     }
+    
         
     template<typename dtype>
     class NdArray
@@ -83,28 +89,23 @@ namespace nc
         using pbArray = pybind11::array_t<dtype, pybind11::array::c_style>;
         using pbArrayGeneric = pybind11::array;
 
+
         NdArray() = default;
 
         NdArray(size_type inNumRows, size_type inNumCols) :
             shape_(inNumRows, inNumCols),
             size_(inNumRows * inNumCols)
         {
+            autoDelete = true;
             newArray();
-            PRINT_STR("Alloc Memory Call by NdArray(size_type inNumRows, size_type inNumCols)");
-            PRINT_PTR(array_);
-            RNN_PRINT_STR("Alloc Memory Call by NdArray(size_type inNumRows, size_type inNumCols)");
-            RNN_PRINT_PTR(array_);
         }
 
         NdArray(const std::initializer_list<dtype>& inList) :
             shape_(1, static_cast<uint32>(inList.size())),
             size_(shape_.size())
         {
+            autoDelete = true;
             newArray();
-            PRINT_STR("Alloc Memory Call by NdArray(const std::initializer_list<dtype>& inList)");
-            PRINT_PTR(array_);
-            RNN_PRINT_STR("Alloc Memory Call by NdArray(const std::initializer_list<dtype>& inList)");
-            RNN_PRINT_PTR(array_);
             if (size_ > 0)
             {
                 stl_algorithms::copy(inList.begin(), inList.end(), begin());
@@ -115,11 +116,8 @@ namespace nc
             shape_(numRows, numCols),
             size_(numRows * numCols)
         {
+            autoDelete = true;
             newArray();
-            PRINT_STR("Alloc Memory Call by NdArray(const_pointer inPtr, uint32 numRows, uint32 numCols)");
-            PRINT_PTR(array_);
-            RNN_PRINT_STR("Alloc Memory Call by NdArray(const_pointer inPtr, uint32 numRows, uint32 numCols)");
-            RNN_PRINT_PTR(array_);
             std::copy(inPtr, inPtr + size_, array_);
         }
 
@@ -127,42 +125,31 @@ namespace nc
             shape_(inShape),
             size_(shape_.size())
         {
+            autoDelete = true;
             newArray();
-            PRINT_STR("Alloc Memory Call by explicit NdArray(const Shape& inShape)");
-            PRINT_PTR(array_);
-            RNN_PRINT_STR("Alloc Memory Call by explicit NdArray(const Shape& inShape)");
-            RNN_PRINT_PTR(array_);
         }
 
         explicit NdArray(pbArray& numpyArray)
         {
+            autoDelete = true;
             pybind2nc(numpyArray);
-            PRINT_STR("Alloc Memory Call by explicit NdArray(pbArray& numpyArray)");
-            PRINT_PTR(array_);
-            RNN_PRINT_STR("Alloc Memory Call by explicit NdArray(pbArray& numpyArray)");
-            RNN_PRINT_PTR(array_);
         }
 
-        void memoryFree()
+        void autoMemoryOff()
         {
-            if (!autoMemoryFree_ && array_ != nullptr)
-            {
-                PRINT_STR("Dealloc Memory Call by memoryFree");
-                PRINT_PTR(array_);
-                RNN_PRINT_STR("Dealloc Memory Call by memoryFree");
-                RNN_PRINT_PTR(array_);
-                deleteArray();
-            }
+            autoDelete = false;
+            memory::push(this->array_);
         }
 
         ~NdArray()
         {
-            if (autoMemoryFree_)
+            if (autoDelete && array_ != nullptr)
             {
-                PRINT_STR("Dealloc Memory Call by ~NdArray()");
-                PRINT_PTR(array_);
-                RNN_PRINT_STR("Dealloc Memory Call by ~NdArray()");
-                RNN_PRINT_PTR(array_);
+                if (rnn_debug_start)
+                {
+                    PRINT_STR("~NdArray()");
+                    PRINT_PTR(array_);
+                }
                 deleteArray();
             }
         }
@@ -267,6 +254,7 @@ namespace nc
                 case Axis::NONE:
                 {
                     NdArray<dtype> returnArray = {std::accumulate(cbegin(), cend(), dtype{0})};
+                    returnArray.autoMemoryOff();
                     return returnArray;
                 }
                 default:
@@ -290,12 +278,12 @@ namespace nc
                         returnArray(i, j) = std::inner_product(otherArrayT.cbegin(j), otherArrayT.cend(j), cbegin(i), dtype{0});
                     }
                 }
-                returnArray.autoMemoryFreeOff();
+                returnArray.autoMemoryOff();
                 return returnArray;
             }
 
-            NdArray<dtype> returnArray(10, 10);
-            returnArray.autoMemoryFreeOff();
+            NdArray<dtype> returnArray(1, 1);
+            returnArray.autoMemoryOff();
             return returnArray;
         }
         
@@ -315,7 +303,7 @@ namespace nc
                     transArray(col, row) = operator()(row, col);
                 }
             }
-
+            transArray.autoMemoryOff();
             return transArray;
         }
 
@@ -323,18 +311,8 @@ namespace nc
         {
             if (rhs.size_ > 0)
             {
-                PRINT_STR("Dealloc Memory Call by NdArray<dtype>& operator=(const NdArray<dtype>& rhs)");
-                PRINT_PTR(array_);
-                RNN_PRINT_STR("Dealloc Memory Call by NdArray<dtype>& operator=(const NdArray<dtype>& rhs)");
-                RNN_PRINT_PTR(array_);
-
                 newArray(rhs.shape_);
                 std::copy(rhs.cbegin(), rhs.cend(), begin());
-                
-                PRINT_STR("Alloc Memory Call by NdArray<dtype>& operator=(const NdArray<dtype>& rhs)");
-                PRINT_PTR(array_);
-                RNN_PRINT_STR("Alloc Memory Call by NdArray<dtype>& operator=(const NdArray<dtype>& rhs)");
-                RNN_PRINT_PTR(array_);
             }
             return *this;
         }
@@ -406,17 +384,16 @@ namespace nc
         {
             std::cout << str();
         }
-        
-        void autoMemoryFreeOff()
+
+        void initialize()
         {
-            memory::push(this);
-            autoMemoryFree_=false;
+            newArray();
         }
     private:
         Shape shape_{0, 0};
         size_type size_{0};
         pointer array_{nullptr};
-        bool autoMemoryFree_{true};
+        bool autoDelete{true};
 
         void deleteArray() noexcept
         {
@@ -446,36 +423,6 @@ namespace nc
             size_ = inShape.size();
             newArray();
         }
+
     };
-
-    namespace memory
-    {
-        std::vector<NdArray<double>*> MMDouble;
-        std::vector<NdArray<int>*> MMInt;
-
-        void push(NdArray<double>* array)
-        {
-            MMDouble.push_back(array);
-        }
-        void  push(NdArray<int>* array)
-        {
-            MMInt.push_back(array);
-        }
-
-        void memoryFree()
-        {
-            for (size_t i = 0; i < MMDouble.size(); ++i)
-            {
-                MMDouble[i]->memoryFree();
-            }
-
-            for (size_t i = 0; i < MMInt.size(); ++i)
-            {
-                MMInt[i]->memoryFree();
-            }
-
-            MMDouble.clear();
-            MMInt.clear();
-        }
-    }
 }

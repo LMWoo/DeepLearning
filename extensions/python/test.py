@@ -24,8 +24,6 @@ def printResult(x, y):
     print('numcpp')
     print(cpp.dot(x, y).getNumpyArray())
 
-# garbageCollector = list()
-
 def dot_test():
     x = np.random.randn(5, 3)
     x = cpp.NdArray(x)
@@ -35,32 +33,29 @@ def dot_test():
     result = cpp.dot(x, y)
     return result
 
-# def addGarbage(x):
-#     garbageCollector.append(x)
-#     return x
-
-# def garbageClean():
-#     for i in range(len(garbageCollector)):
-#         garbageCollector[i].memoryFree()
-
-
 # for i in range(1):
 #     x = np.random.randn(5, 3)
 #     y = np.random.randn(3, 5)
 #     x = cpp.NdArray(x)
 #     y = cpp.NdArray(y)
-#     addGarbage(cpp.dot(x, y))
-#     garbageClean()
 #     print('==============================')
 
-for i in range(1):
-    r = cpp.rnn(0.01, 28, 28, 128, 10)
-    images = np.random.randn(28, 1, 28)
-    hprev = np.random.randn(128, 1)
-    # labels = np.array([[2],])
-    # labels = cpp.NdArray(labels)
+# for i in range(1):
+#     r = cpp.rnn(0.01, 28, 28, 128, 10)
+#     images = np.random.randn(28, 1, 28)
+#     hprev = np.random.randn(128, 1)
+#     # labels = np.array([[2],])
+#     # labels = cpp.NdArray(labels)
 
-    r.forward(images, hprev)
+#     # outputs = r.forward(images, hprev)
+#     # Y, loss = r.cross_entropy_loss(outputs, labels)
+
+
+#     cpp.memoryClean()
+
+
+# print("================================")
+
 
 # xx.print()
 
@@ -85,7 +80,9 @@ for i in range(1):
 # gradients = r.backward(r.deriv_softmax(Y, labels))
 # r.optimizer(gradients)
 
-# test = cpp.bindTest()
-# x = test.return_test()
-# test.memoryFree()
-# x.memoryFree()
+for i in range(1000000000000000000):
+    test = cpp.bindTest(1)
+    x = test.forward()
+    x.useArray()
+
+    x.print()

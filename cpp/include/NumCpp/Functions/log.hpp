@@ -23,7 +23,7 @@ namespace nc
             { 
                 return log(inValue);
             });
-
+        returnArray.autoMemoryOff();
         return returnArray;
     }
 }

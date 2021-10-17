@@ -19,7 +19,9 @@ namespace nnCpp
         double fan_1 = c2 * w * h;
         double fan_2 = c1 * w * h;
         double ratio = std::sqrt(6.0 / (fan_1 + fan_2));
-        NdArray<dtype> params = ratio * (2.0 * random::rand<dtype>(0.0, 1.0, Shape(c1, c2)) - 1.0);
+        // NdArray<dtype> params = ratio * (2.0 * random::rand<dtype>(0.0, 1.0, Shape(c1, c2)) - 1.0);
+        NdArray<dtype> params = ratio * NdArray<dtype>(1, 1);
+        params.autoMemoryOff();
         return params;
     }
 
@@ -34,130 +36,68 @@ namespace nnCpp
     public:
         rnn(double lr, uint32 seq_length, uint32 input_size, uint32 hidden_size, uint32 num_classes)
         {
-#ifdef RNN_DEBUG
             this->lr = lr;
             this->seq_length = seq_length;
             this->hidden_size = hidden_size;
             this->U = xavier_init<dtype>(hidden_size, input_size);
-            this->W = xavier_init<dtype>(hidden_size, hidden_size);
-            this->V = xavier_init<dtype>(hidden_size, hidden_size);
-            this->b = zeros<dtype>(hidden_size, 1);
-            this->c = zeros<dtype>(hidden_size, 1);
+            // this->W = xavier_init<dtype>(hidden_size, hidden_size);
+            // this->V = xavier_init<dtype>(hidden_size, hidden_size);
+            // this->b = zeros<dtype>(hidden_size, 1);
+            // this->c = zeros<dtype>(hidden_size, 1);
 
-            this->FC_W = xavier_init<dtype>(num_classes, hidden_size);
-            this->fc_b = zeros<dtype>(num_classes, 1);
+            // this->FC_W = xavier_init<dtype>(num_classes, hidden_size);
+            // this->fc_b = zeros<dtype>(num_classes, 1);
             
-            this->mU = zeros_like<dtype, dtype>(this->U);
-            this->mW = zeros_like<dtype, dtype>(this->W);
-            this->mV = zeros_like<dtype, dtype>(this->V);
-            this->mb = zeros_like<dtype, dtype>(this->b);
-            this->mc = zeros_like<dtype, dtype>(this->c);
+            // this->mU = zeros_like<dtype, dtype>(this->U);
+            // this->mW = zeros_like<dtype, dtype>(this->W);
+            // this->mV = zeros_like<dtype, dtype>(this->V);
+            // this->mb = zeros_like<dtype, dtype>(this->b);
+            // this->mc = zeros_like<dtype, dtype>(this->c);
 
-            this->mFC_W = zeros_like<dtype, dtype>(this->FC_W);
-            this->mfc_b = zeros_like<dtype, dtype>(this->fc_b);
-#else
-            this->lr = lr;
-            this->seq_length = seq_length;
-            this->hidden_size = hidden_size;
-            this->U = xavier_init<dtype>(hidden_size, input_size);
-            this->W = xavier_init<dtype>(hidden_size, hidden_size);
-            this->V = xavier_init<dtype>(hidden_size, hidden_size);
-            this->b = zeros<dtype>(hidden_size, 1);
-            this->c = zeros<dtype>(hidden_size, 1);
-
-            this->FC_W = xavier_init<dtype>(num_classes, hidden_size);
-            this->fc_b = zeros<dtype>(num_classes, 1);
-            
-            this->mU = zeros_like<dtype, dtype>(this->U);
-            this->mW = zeros_like<dtype, dtype>(this->W);
-            this->mV = zeros_like<dtype, dtype>(this->V);
-            this->mb = zeros_like<dtype, dtype>(this->b);
-            this->mc = zeros_like<dtype, dtype>(this->c);
-
-            this->mFC_W = zeros_like<dtype, dtype>(this->FC_W);
-            this->mfc_b = zeros_like<dtype, dtype>(this->fc_b);
-#endif
+            // this->mFC_W = zeros_like<dtype, dtype>(this->FC_W);
+            // this->mfc_b = zeros_like<dtype, dtype>(this->fc_b);
         }
         
         NdArray<dtype> forward(pbArray x, pbArray hprev)
         {
-            rnn_debug_start = true;
-#ifdef RNN_DEBUG
-            NdArray<dtype> returnArray(1, 1);
-            returnArray.autoMemoryFreeOff();
-            return returnArray;
-#else
-            std::vector<NdArray<dtype>> returnVec;
-            NdArray<dtype> returnHprev = NdArray<dtype>(hprev);
-            
             auto dataPtr = x.data();  
             const uint32 numRows = static_cast<uint32>(x.shape(1));
             const uint32 numCols = static_cast<uint32>(x.shape(2));
             const uint32 image_size = numRows * numCols;
 
+            std::vector<NdArray<dtype>> returnVec(x.shape(0));
+            NdArray<dtype> returnHprev = NdArray<dtype>(hprev);
+
             for (int i = 0; i < x.shape(0); ++i)
             {
-                NdArray<dtype> newArray(numRows, numCols);
-                newArray.autoMemoryFreeOff();
-                std::copy(dataPtr + image_size * i, dataPtr + image_size * (i + 1), newArray.begin());
-
-                returnVec.push_back(newArray);
+                returnVec[i] = NdArray<dtype>(numRows, numCols);
+                std::copy(dataPtr + image_size * i, dataPtr + image_size * (i + 1), returnVec[i].begin());
+                returnVec[i].autoMemoryOff();
             }
 
-            returnHprev.autoMemoryFreeOff();
+            returnHprev.autoMemoryOff();
             return forward_(returnVec, returnHprev);
-#endif
         }
 
         NdArray<dtype> forward_(std::vector<NdArray<dtype>> x, NdArray<dtype> hprev)
         {
-#ifdef RNN_DEBUG
-            return NdArray<dtype>(1, 1);
-#else
             S[-1] = NdArray<dtype>(hprev);
 
             for (int t = 0; t < (int)seq_length; ++t)
             {
                 X[t] = x[t].transpose();
-                
-                // printf("--------------shape print -----------\n");
-                // U.shape().print();
-                // X[t].shape().print();
-                // W.shape().print();
-                // S[t - 1].shape().print();
-                // b.shape().print();
-                // printf("-------------------------------------\n");
-
                 A[t] = dot<dtype>(U, X[t]) + dot<dtype>(W, S[t - 1]) + b;
                 S[t] = tanh<dtype>(A[t]);
                 O[t] = dot<dtype>(V, S[t]) + c;
             }
-
-            O[(int)seq_length - 1].shape().print();
+            
             FC_O = dot<dtype>(FC_W, O[(int)seq_length - 1]) + fc_b;
-            FC_O.autoMemoryFreeOff();
-
-            for (int i = 0; i < x.size(); ++i)
-            {
-                x[i].memoryFree();
-            }
-            hprev.memoryFree();
+            FC_O.autoMemoryOff();
             return FC_O;
-#endif
         }
 
         auto backward(const NdArray<dtype>& dY)
         {
-#ifdef RNN_DEBUG
-            return std::make_tuple(
-                NdArray<dtype>(1, 1), 
-                NdArray<dtype>(1, 1), 
-                NdArray<dtype>(1, 1), 
-                NdArray<dtype>(1, 1), 
-                NdArray<dtype>(1, 1), 
-                NdArray<dtype>(1, 1), 
-                NdArray<dtype>(1, 1));
-#else
             NdArray<dtype> dFC_W = zeros_like<dtype, dtype>(FC_W);
             NdArray<dtype> dfc_b = zeros_like<dtype, dtype>(fc_b);
 
@@ -188,15 +128,17 @@ namespace nnCpp
             }
 
             return std::make_tuple(dU, dW, dV, db, dc, dFC_W, dfc_b);
-#endif
         }
 
-        void optimizer(std::tuple<NdArray<dtype>, NdArray<dtype>, NdArray<dtype>, NdArray<dtype>, NdArray<dtype>, NdArray<dtype>, NdArray<dtype>> gradients)
+        void optimizer(std::tuple<
+                NdArray<dtype>, 
+                NdArray<dtype>,
+                NdArray<dtype>, 
+                NdArray<dtype>, 
+                NdArray<dtype>, 
+                NdArray<dtype>, 
+                NdArray<dtype>> gradients)
         {
-
-#ifdef RNN_DEBUG
-
-#else
             // auto param = std::make_tuple(U, W, V, b, c, FC_W, fc_b);
             // auto mem = std::make_tuple(mU, mW, mV, mb, mc, mFC_W, mfc_b);
 
@@ -249,8 +191,6 @@ namespace nnCpp
 
             mfc_b = mfc_b + dfc_b * dfc_b;
             fc_b = fc_b + (-lr) * fc_b / sqrt<dtype>(mfc_b + 1e-8);
-
-#endif
         }
 
         auto cross_entropy_loss(NdArray<dtype> outputs, NdArray<dtype> labels)
@@ -300,31 +240,6 @@ namespace nnCpp
 
     private:
 
-#ifdef RNN_DEBUG
-        NdArray<dtype> U{NdArray<dtype>(1, 1)};
-        NdArray<dtype> W{NdArray<dtype>(1, 1)};
-        NdArray<dtype> V{NdArray<dtype>(1, 1)};
-        NdArray<dtype> b{NdArray<dtype>(1, 1)};
-        NdArray<dtype> c{NdArray<dtype>(1, 1)};
-
-        NdArray<dtype> FC_W{NdArray<dtype>(1, 1)};
-        NdArray<dtype> fc_b{NdArray<dtype>(1, 1)};
-
-        NdArray<dtype> mU{NdArray<dtype>(1, 1)};
-        NdArray<dtype> mW{NdArray<dtype>(1, 1)};
-        NdArray<dtype> mV{NdArray<dtype>(1, 1)};
-        NdArray<dtype> mb{NdArray<dtype>(1, 1)};
-        NdArray<dtype> mc{NdArray<dtype>(1, 1)};
-
-        NdArray<dtype> mFC_W{NdArray<dtype>(1, 1)};
-        NdArray<dtype> mfc_b{NdArray<dtype>(1, 1)};
-
-        array_list X;
-        array_list A;
-        array_list S;
-        array_list O;
-        NdArray<dtype> FC_O{NdArray<dtype>(1, 1)};
-#else
         NdArray<dtype> U;
         NdArray<dtype> W;
         NdArray<dtype> V;
@@ -348,6 +263,5 @@ namespace nnCpp
         array_list S;
         array_list O;
         NdArray<dtype> FC_O;
-#endif
     };
 }

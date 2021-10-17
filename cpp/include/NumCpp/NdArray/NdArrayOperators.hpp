@@ -13,7 +13,6 @@ namespace nc
             printf("Array dimensions do not match.\n");
         }
 
-        PRINT_STR("Alloc Memory Call by NdArray<dtype> operator/(const NdArray<dtype>& lhs, const NdArray<dtype>& rhs)");
         NdArray<dtype> returnArray(lhs.shape());
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), rhs.cbegin(), returnArray.begin(), std::divides<dtype>());
 
@@ -28,7 +27,6 @@ namespace nc
             return value / rhs;
         };
 
-        PRINT_STR("Alloc Memory Call by NdArray<dtype> operator/(const NdArray<dtype>& lhs, dtype rhs)");
         NdArray<dtype> returnArray(lhs.shape());
 
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), returnArray.begin(), function);
@@ -44,7 +42,6 @@ namespace nc
             return lhs / value;
         };
 
-        PRINT_STR("Alloc Memory Call by NdArray<dtype> operator/(dtype lhs, const NdArray<dtype>& rhs)");
         NdArray<dtype> returnArray(rhs.shape());
 
         stl_algorithms::transform(rhs.cbegin(), rhs.cend(), returnArray.begin(), function);
@@ -60,10 +57,10 @@ namespace nc
             printf("Array dimensions do not match.\n");
         }
 
-        PRINT_STR("Alloc Memory Call by NdArray<dtype> operator*(const NdArray<dtype>& lhs, const NdArray<dtype>& rhs)");
         NdArray<dtype> returnArray(lhs.shape());
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), rhs.cbegin(), returnArray.begin(), std::multiplies<dtype>());
-
+        
+        returnArray.autoMemoryOff();
         return returnArray;
     }
 
@@ -75,18 +72,20 @@ namespace nc
             return value * rhs;
         };
 
-        PRINT_STR("Alloc Memory Call by NdArray<dtype> operator*(const NdArray<dtype>& lhs, dtype rhs)");
         NdArray<dtype> returnArray(lhs.shape());
 
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), returnArray.begin(), function);
 
+        returnArray.autoMemoryOff();
         return returnArray;
     }
 
     template<typename dtype>
     NdArray<dtype> operator*(dtype lhs, const NdArray<dtype>& rhs)
     {
-        return rhs * lhs;
+        NdArray<dtype> returnArray = rhs * lhs;
+        returnArray.autoMemoryOff();
+        return returnArray;
     }
 
     template<typename dtype>
@@ -97,10 +96,9 @@ namespace nc
             printf("Array dimensions do not match.\n");
         }
 
-        PRINT_STR("Alloc Memory Call by NdArray<dtype> operator-(const NdArray<dtype>& lhs, const NdArray<dtype>& rhs)");
         NdArray<dtype> returnArray(lhs.shape());
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), rhs.cbegin(), returnArray.begin(), std::minus<dtype>());
-
+        returnArray.autoMemoryOff();
         return returnArray;
     }
 
@@ -112,11 +110,11 @@ namespace nc
             return value - rhs;
         };
 
-        PRINT_STR("Alloc Memory Call by NdArray<dtype> operator-(const NdArray<dtype>& lhs, dtype rhs)");
         NdArray<dtype> returnArray(lhs.shape());
 
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), returnArray.begin(), function);
 
+        returnArray.autoMemoryOff();
         return returnArray;
     }
 
@@ -128,11 +126,11 @@ namespace nc
             return lhs - value;
         };
 
-        PRINT_STR("Alloc Memory Call by NdArray<dtype> operator-(dtype lhs, const NdArray<dtype>& rhs)");
         NdArray<dtype> returnArray(rhs.shape());
 
         stl_algorithms::transform(rhs.cbegin(), rhs.cend(), returnArray.begin(), function);
 
+        returnArray.autoMemoryOff();
         return returnArray;
     }
 
@@ -144,9 +142,10 @@ namespace nc
             return -value;
         };
 
-        PRINT_STR("Alloc Memory Call by NdArray<dtype> operator-(const NdArray<dtype>& inArray)");
         auto returnArray = NdArray<dtype>(inArray.shape());
         stl_algorithms::transform(inArray.cbegin(), inArray.cend(), returnArray.begin(), function);
+
+        returnArray.autoMemoryOff();
         return returnArray;
     }
 
@@ -158,9 +157,9 @@ namespace nc
             printf("Array dimensions do not match.\n");
         }
 
-        PRINT_STR("Alloc Memory Call by NdArray<dtype> operator+(const NdArray<dtype>& lhs, const NdArray<dtype>& rhs)");
         NdArray<dtype> returnArray(lhs.shape());
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), rhs.cbegin(), returnArray.begin(), std::plus<dtype>());
+        returnArray.autoMemoryOff();
 
         return returnArray;
     }
@@ -173,18 +172,21 @@ namespace nc
             return value + rhs;
         };
 
-        PRINT_STR("Alloc Memory Call by NdArray<dtype> operator+(const NdArray<dtype>& lhs, dtype rhs)");
         NdArray<dtype> returnArray(lhs.shape());
 
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), returnArray.begin(), function);
 
+        returnArray.autoMemoryOff();
         return returnArray;
     }
 
     template<typename dtype>
     NdArray<dtype> operator+(dtype lhs, const NdArray<dtype>& rhs)
     {
-        return rhs + lhs;
+        NdArray<dtype> returnArray = rhs + lhs;
+
+        returnArray.autoMemoryOff();
+        return returnArray;
     }
 
     template<typename dtype>

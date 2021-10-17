@@ -10,7 +10,8 @@ namespace nc
     template<typename dtype>
     NdArray<dtype> zeros(uint32 inNumRows, uint32 inNumCols)
     {
-        PRINT_STR("Alloc Memory Call by NdArray<dtype> zeros(uint32 inNumRows, uint32 inNumCols)");
-        return full(inNumRows, inNumCols, dtype{0});
+        NdArray<dtype> returnArray = full(inNumRows, inNumCols, dtype{0});
+        returnArray.autoMemoryOff();
+        return returnArray;
     }
 }

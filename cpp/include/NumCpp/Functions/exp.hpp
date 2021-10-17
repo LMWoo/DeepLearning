@@ -24,7 +24,7 @@ namespace nc
             {
                 return exp(inValue);
             });
-
+        returnArray.autoMemoryOff();
         return returnArray;
     }
 }
