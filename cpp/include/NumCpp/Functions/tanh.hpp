@@ -23,7 +23,6 @@ namespace nc
             {
                 return tanh(inValue);
             });
-        returnArray.autoMemoryOff();
         return returnArray;
     }
 }

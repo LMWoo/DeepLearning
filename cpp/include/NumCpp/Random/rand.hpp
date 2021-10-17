@@ -23,8 +23,6 @@ namespace nc
                 value = dist(generator_);
             });
 
-            returnArray.autoMemoryOff();
-
             return returnArray;
         }
     }

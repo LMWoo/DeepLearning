@@ -40,19 +40,6 @@ def dot_test():
 #     y = cpp.NdArray(y)
 #     print('==============================')
 
-# for i in range(1):
-#     r = cpp.rnn(0.01, 28, 28, 128, 10)
-#     images = np.random.randn(28, 1, 28)
-#     hprev = np.random.randn(128, 1)
-#     # labels = np.array([[2],])
-#     # labels = cpp.NdArray(labels)
-
-#     # outputs = r.forward(images, hprev)
-#     # Y, loss = r.cross_entropy_loss(outputs, labels)
-
-
-#     cpp.memoryClean()
-
 
 # print("================================")
 
@@ -80,9 +67,19 @@ def dot_test():
 # gradients = r.backward(r.deriv_softmax(Y, labels))
 # r.optimizer(gradients)
 
-for i in range(1000000000000000000):
+for i in range(1):
     test = cpp.bindTest(1)
     x = test.forward()
     x.useArray()
 
     x.print()
+
+for i in range(1):
+    r = cpp.rnn(0.01, 28, 28, 128, 10)
+    images = np.random.randn(28, 1, 28)
+    hprev = np.random.randn(128, 1)
+    labels = np.array([[2],])
+    labels = cpp.NdArray(labels)
+
+    # outputs = r.forward(images, hprev)
+    # Y, loss = r.cross_entropy_loss(outputs, labels)

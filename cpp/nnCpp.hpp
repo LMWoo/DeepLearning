@@ -19,9 +19,7 @@ namespace nnCpp
         double fan_1 = c2 * w * h;
         double fan_2 = c1 * w * h;
         double ratio = std::sqrt(6.0 / (fan_1 + fan_2));
-        // NdArray<dtype> params = ratio * (2.0 * random::rand<dtype>(0.0, 1.0, Shape(c1, c2)) - 1.0);
-        NdArray<dtype> params = ratio * NdArray<dtype>(1, 1);
-        params.autoMemoryOff();
+        NdArray<dtype> params = ratio * (2.0 * random::rand<dtype>(0.0, 1.0, Shape(c1, c2)) - 1.0);
         return params;
     }
 
@@ -40,22 +38,22 @@ namespace nnCpp
             this->seq_length = seq_length;
             this->hidden_size = hidden_size;
             this->U = xavier_init<dtype>(hidden_size, input_size);
-            // this->W = xavier_init<dtype>(hidden_size, hidden_size);
-            // this->V = xavier_init<dtype>(hidden_size, hidden_size);
-            // this->b = zeros<dtype>(hidden_size, 1);
-            // this->c = zeros<dtype>(hidden_size, 1);
+            this->W = xavier_init<dtype>(hidden_size, hidden_size);
+            this->V = xavier_init<dtype>(hidden_size, hidden_size);
+            this->b = zeros<dtype>(hidden_size, 1);
+            this->c = zeros<dtype>(hidden_size, 1);
 
-            // this->FC_W = xavier_init<dtype>(num_classes, hidden_size);
-            // this->fc_b = zeros<dtype>(num_classes, 1);
+            this->FC_W = xavier_init<dtype>(num_classes, hidden_size);
+            this->fc_b = zeros<dtype>(num_classes, 1);
             
-            // this->mU = zeros_like<dtype, dtype>(this->U);
-            // this->mW = zeros_like<dtype, dtype>(this->W);
-            // this->mV = zeros_like<dtype, dtype>(this->V);
-            // this->mb = zeros_like<dtype, dtype>(this->b);
-            // this->mc = zeros_like<dtype, dtype>(this->c);
+            this->mU = zeros_like<dtype, dtype>(this->U);
+            this->mW = zeros_like<dtype, dtype>(this->W);
+            this->mV = zeros_like<dtype, dtype>(this->V);
+            this->mb = zeros_like<dtype, dtype>(this->b);
+            this->mc = zeros_like<dtype, dtype>(this->c);
 
-            // this->mFC_W = zeros_like<dtype, dtype>(this->FC_W);
-            // this->mfc_b = zeros_like<dtype, dtype>(this->fc_b);
+            this->mFC_W = zeros_like<dtype, dtype>(this->FC_W);
+            this->mfc_b = zeros_like<dtype, dtype>(this->fc_b);
         }
         
         NdArray<dtype> forward(pbArray x, pbArray hprev)
@@ -72,10 +70,8 @@ namespace nnCpp
             {
                 returnVec[i] = NdArray<dtype>(numRows, numCols);
                 std::copy(dataPtr + image_size * i, dataPtr + image_size * (i + 1), returnVec[i].begin());
-                returnVec[i].autoMemoryOff();
             }
 
-            returnHprev.autoMemoryOff();
             return forward_(returnVec, returnHprev);
         }
 
@@ -92,7 +88,6 @@ namespace nnCpp
             }
             
             FC_O = dot<dtype>(FC_W, O[(int)seq_length - 1]) + fc_b;
-            FC_O.autoMemoryOff();
             return FC_O;
         }
 

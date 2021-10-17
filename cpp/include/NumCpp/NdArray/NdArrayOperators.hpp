@@ -60,7 +60,6 @@ namespace nc
         NdArray<dtype> returnArray(lhs.shape());
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), rhs.cbegin(), returnArray.begin(), std::multiplies<dtype>());
         
-        returnArray.autoMemoryOff();
         return returnArray;
     }
 
@@ -76,7 +75,6 @@ namespace nc
 
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), returnArray.begin(), function);
 
-        returnArray.autoMemoryOff();
         return returnArray;
     }
 
@@ -84,7 +82,6 @@ namespace nc
     NdArray<dtype> operator*(dtype lhs, const NdArray<dtype>& rhs)
     {
         NdArray<dtype> returnArray = rhs * lhs;
-        returnArray.autoMemoryOff();
         return returnArray;
     }
 
@@ -98,7 +95,6 @@ namespace nc
 
         NdArray<dtype> returnArray(lhs.shape());
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), rhs.cbegin(), returnArray.begin(), std::minus<dtype>());
-        returnArray.autoMemoryOff();
         return returnArray;
     }
 
@@ -114,7 +110,6 @@ namespace nc
 
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), returnArray.begin(), function);
 
-        returnArray.autoMemoryOff();
         return returnArray;
     }
 
@@ -130,7 +125,6 @@ namespace nc
 
         stl_algorithms::transform(rhs.cbegin(), rhs.cend(), returnArray.begin(), function);
 
-        returnArray.autoMemoryOff();
         return returnArray;
     }
 
@@ -145,7 +139,6 @@ namespace nc
         auto returnArray = NdArray<dtype>(inArray.shape());
         stl_algorithms::transform(inArray.cbegin(), inArray.cend(), returnArray.begin(), function);
 
-        returnArray.autoMemoryOff();
         return returnArray;
     }
 
@@ -159,7 +152,6 @@ namespace nc
 
         NdArray<dtype> returnArray(lhs.shape());
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), rhs.cbegin(), returnArray.begin(), std::plus<dtype>());
-        returnArray.autoMemoryOff();
 
         return returnArray;
     }
@@ -176,7 +168,6 @@ namespace nc
 
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), returnArray.begin(), function);
 
-        returnArray.autoMemoryOff();
         return returnArray;
     }
 
@@ -185,7 +176,6 @@ namespace nc
     {
         NdArray<dtype> returnArray = rhs + lhs;
 
-        returnArray.autoMemoryOff();
         return returnArray;
     }
 

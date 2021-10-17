@@ -33,48 +33,7 @@
 namespace nc
 {
     bool rnn_debug_start=false;
-    namespace memory
-    {
-        std::vector<double*> memoryDouble;
-        std::vector<int*> memoryInt;
-        
-        void push(double* array)
-        {
-            memoryDouble.push_back(array);
-        }
 
-        void push(int* array)
-        {
-            memoryInt.push_back(array);
-        }
-
-        void memoryClean()
-        {
-            for (size_t i = 0; i < memoryDouble.size(); ++i)
-            {
-                if (memoryDouble[i] != nullptr)
-                {
-                    free(memoryDouble[i]);
-                    memoryDouble[i] = nullptr;
-                }
-            }
-
-            memoryDouble.clear();
-
-            for (size_t i = 0; i < memoryInt.size(); ++i)
-            {
-                if (memoryInt[i] != nullptr)
-                {
-                    free(memoryInt[i]);
-                    memoryInt[i] = nullptr;
-                }
-            }
-
-            memoryInt.clear();
-        }
-    }
-    
-        
     template<typename dtype>
     class NdArray
     {
@@ -96,7 +55,6 @@ namespace nc
             shape_(inNumRows, inNumCols),
             size_(inNumRows * inNumCols)
         {
-            autoDelete = true;
             newArray();
         }
 
@@ -104,7 +62,6 @@ namespace nc
             shape_(1, static_cast<uint32>(inList.size())),
             size_(shape_.size())
         {
-            autoDelete = true;
             newArray();
             if (size_ > 0)
             {
@@ -116,7 +73,6 @@ namespace nc
             shape_(numRows, numCols),
             size_(numRows * numCols)
         {
-            autoDelete = true;
             newArray();
             std::copy(inPtr, inPtr + size_, array_);
         }
@@ -125,33 +81,33 @@ namespace nc
             shape_(inShape),
             size_(shape_.size())
         {
-            autoDelete = true;
             newArray();
         }
 
         explicit NdArray(pbArray& numpyArray)
         {
-            autoDelete = true;
             pybind2nc(numpyArray);
-        }
-
-        void autoMemoryOff()
-        {
-            autoDelete = false;
-            memory::push(this->array_);
         }
 
         ~NdArray()
         {
-            if (autoDelete && array_ != nullptr)
+            if (array_ != nullptr)
             {
-                if (rnn_debug_start)
-                {
-                    PRINT_STR("~NdArray()");
-                    PRINT_PTR(array_);
-                }
                 deleteArray();
             }
+        }
+
+        NdArray<dtype> clone()
+        {
+            backup_array_ = array_;
+            array_ = nullptr;
+            return *this;
+        }
+
+        void useArray()
+        {
+            array_ = backup_array_;
+            backup_array_ = nullptr;
         }
 
         void pybind2nc(const pbArray& numpyArray)
@@ -254,7 +210,6 @@ namespace nc
                 case Axis::NONE:
                 {
                     NdArray<dtype> returnArray = {std::accumulate(cbegin(), cend(), dtype{0})};
-                    returnArray.autoMemoryOff();
                     return returnArray;
                 }
                 default:
@@ -278,12 +233,10 @@ namespace nc
                         returnArray(i, j) = std::inner_product(otherArrayT.cbegin(j), otherArrayT.cend(j), cbegin(i), dtype{0});
                     }
                 }
-                returnArray.autoMemoryOff();
                 return returnArray;
             }
 
             NdArray<dtype> returnArray(1, 1);
-            returnArray.autoMemoryOff();
             return returnArray;
         }
         
@@ -303,7 +256,6 @@ namespace nc
                     transArray(col, row) = operator()(row, col);
                 }
             }
-            transArray.autoMemoryOff();
             return transArray;
         }
 
@@ -385,14 +337,11 @@ namespace nc
             std::cout << str();
         }
 
-        void initialize()
-        {
-            newArray();
-        }
     private:
         Shape shape_{0, 0};
         size_type size_{0};
         pointer array_{nullptr};
+        pointer backup_array_{nullptr};
         bool autoDelete{true};
 
         void deleteArray() noexcept

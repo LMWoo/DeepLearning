@@ -166,7 +166,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def(pb11::init<>())
         .def(pb11::init<Shape>())
         .def(pb11::init<pbArray<double>&>())
-        .def("initialize", &NdArrayDouble::initialize)
         .def("ones", &NdArrayInterface::ones<double>)
         .def("print", &NdArrayDouble::print)
         .def("getNumpyArray", &NdArrayInterface::getNumpyArray<double>)
@@ -178,8 +177,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
     
     m.def("test_gpu", &test_gpu::test);
     m.def("test_gpu_matrix_add", &test_gpu::test_matrix_add);
-
-    m.def("memoryClean", &memory::memoryClean);
 
     using RNNDouble = nnCpp::rnn<double>;
     

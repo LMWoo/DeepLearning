@@ -11,7 +11,6 @@ namespace nc
     NdArray<dtype> zeros(uint32 inNumRows, uint32 inNumCols)
     {
         NdArray<dtype> returnArray = full(inNumRows, inNumCols, dtype{0});
-        returnArray.autoMemoryOff();
         return returnArray;
     }
 }

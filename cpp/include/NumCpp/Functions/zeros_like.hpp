@@ -9,7 +9,6 @@ namespace nc
     {
         NdArray<dtypeOut> returnArray(inArray.shape());
         returnArray.zeros();
-        returnArray.autoMemoryOff();
         return returnArray;
     }
 }

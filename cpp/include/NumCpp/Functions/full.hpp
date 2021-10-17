@@ -11,7 +11,6 @@ namespace nc
     {
         NdArray<dtype> returnArray(inNumRows, inNumCols);
         returnArray.fill(inFillValue);
-        returnArray.autoMemoryOff();
         return returnArray;
     }
 }
