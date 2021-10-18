@@ -35,22 +35,17 @@ namespace nt_gpu
         dev_out[i] = sum;
     }
 
-    double* get_gpu_data_double(size_t size, double* data)
+    void copy_cpu_to_gpu(size_t size, double* dev_data, const double* data)
     {
-        double* dev_data=nullptr;
-        CUDA_CHECK(cudaMalloc((void**)&dev_data, size * sizeof(double)));
-        CUDA_CHECK(cudaMemcpy(dev_data, data, size * sizeof(double), cudaMemcpyHostToDevice));
-        return dev_data;
+        CUDA_CHECK(cudaMemcpy(dev_data, data, size, cudaMemcpyHostToDevice));
     }
 
-    double* get_cpu_data_double(size_t size, double* dev_data)
+    void copy_gpu_to_cpu(size_t size, double* data, const double* dev_data)
     {
-        double* data = (double*)malloc(size * sizeof(double));
-        CUDA_CHECK(cudaMemcpy(data, dev_data, size * sizeof(double), cudaMemcpyDeviceToHost));
-        return data;
+        CUDA_CHECK(cudaMemcpy(data, dev_data, size, cudaMemcpyDeviceToHost));
     }
 
-    double* get_gpu_matrix_mul_double(double* dev_out, const double* dev_lhs, const double* dev_rhs, 
+    double* gpu_matrix_mul_double(double* dev_out, const double* dev_lhs, const double* dev_rhs, 
         const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols)
     {
         if (dev_out == nullptr)
@@ -65,11 +60,31 @@ namespace nt_gpu
         return dev_out;
     }
 
-    void cudaFree_double(double* dev_data)
+    double* gpu_malloc(size_t size)
+    {
+        double* dev_data=nullptr;
+        CUDA_CHECK(cudaMalloc((void**)&dev_data, size));
+        return dev_data;
+    }
+
+    void* cpu_malloc(size_t size)
+    {
+        return malloc(size);
+    }
+
+    void gpu_free(double* dev_data)
     {
         if (dev_data)
         {
             CUDA_CHECK(cudaFree(dev_data));
+        }
+    }
+
+    void cpu_free(void* data)
+    {
+        if (data)
+        {
+            free(data);
         }
     }
     

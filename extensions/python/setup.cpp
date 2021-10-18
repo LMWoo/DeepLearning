@@ -80,7 +80,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("getNumpyArray", &NdArrayInterface::getNumpyArray<double>)
         .def("dot", &NdArrayDouble::dot);
 
-    m.def("dot_gpu", &numTest_Functions::dot_gpu<double>);
     m.def("dot", &nc::dot<double>);
     m.def("zeros_like", &zeros_like<double, double>);
     m.def("toNumCpp", &pybind2nc<double>);
@@ -108,10 +107,12 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def(pb11::init<numpyArrayDouble>())
         .def("cuda", &numTestDouble::cuda)
         .def("cpu", &numTestDouble::cpu)
-        .def("dot", &numTestDouble::dot)
-        .def("gpu_mul", &numTestDouble::gpu_mul)
-        .def("transpose", &numTestDouble::transpose)
         .def("numpy", &numTestDouble::numpy)
 
         .def("print", &numTestDouble::print);
+
+    m.def("transpose", &numTest_Functions::transpose<double>);    
+    m.def("dot_cpu", &numTest_Functions::dot_cpu<double>);
+    m.def("dot_gpu", &numTest_Functions::dot_gpu<double>);
+
 }
