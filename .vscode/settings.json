@@ -75,6 +75,8 @@
         "valarray": "cpp",
         "variant": "cpp",
         "alignedvector3": "cpp",
-        "*.inc": "cpp"
+        "*.inc": "cpp",
+        "*.expression": "cpp",
+        "fft": "cpp"
     }
 }

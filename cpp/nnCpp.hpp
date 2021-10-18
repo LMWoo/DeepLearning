@@ -90,6 +90,7 @@ namespace nnCpp
                 x[t].useArray();
                 X[t] = x[t].transpose();
 
+                // A[t] = dot<dtype>(U, X[t]) + dot<dtype>(W, S[t - 1]) + b;
                 NdArray<dtype> UX_t = dot<dtype>(U, X[t]);
                 NdArray<dtype> WS_t_1 = dot<dtype>(W, S[-1]);
                 UX_t.useArray();
@@ -98,10 +99,25 @@ namespace nnCpp
                 UX_t_plus_WS_t_1.useArray();
 
                 A[t] = UX_t_plus_WS_t_1;
-                // A[t].print();
-                // A[t] = dot<dtype>(U, X[t]) + dot<dtype>(W, S[t - 1]) + b;
-            //     // S[t] = tanh<dtype>(A[t]);
-            //     // O[t] = dot<dtype>(V, S[t]) + c;
+                
+                // S[t] = tanh<dtype>(A[t]);
+
+                printf("A[t] pointer print start\n");
+                printf("%p\n", A[t].data());
+                printf("%p\n", A[t].backup_data());
+                printf("A[t] pointer print end\n");
+                S[t] = tanh<dtype>(A[t]);
+                S[t].useArray();
+                A[t].print();
+                
+                // O[t] = dot<dtype>(V, S[t]) + c;
+                // NdArray<dtype> VS_t = dot<dtype>(V, S[t]);
+                // VS_t.useArray();
+                
+                // NdArray<dtype> VS_t_plus_c = (VS_t + c);
+                // VS_t_plus_c.useArray();
+
+                // O[t] = VS_t_plus_c;
             }
             
             // FC_O = dot<dtype>(FC_W, O[(int)seq_length - 1]) + fc_b;

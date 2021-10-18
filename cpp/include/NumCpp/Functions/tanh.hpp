@@ -23,6 +23,6 @@ namespace nc
             {
                 return tanh(inValue);
             });
-        return returnArray;
+        return returnArray.clone();
     }
 }

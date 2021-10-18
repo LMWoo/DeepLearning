@@ -67,23 +67,64 @@ def dot_test():
 # gradients = r.backward(r.deriv_softmax(Y, labels))
 # r.optimizer(gradients)
 
-for i in range(1):
-    test = cpp.bindTest(1)
-    x = test.forward()
-    x.useArray()
+for i in range(10):
+    x = np.random.randn(4, 3)
+    y = np.random.randn(3, 5)
+    print("start")
+    print(x @ y)
+    x = cpp.numTest(x)
+    y = cpp.numTest(y)
 
-    x.print()
+    result = x.dot(y)
+    result.cuda()
+    result.cpu()
 
-for i in range(1):
-    print('python print start')
-    r = cpp.rnn(0.01, 28, 28, 128, 10)
-    images = np.random.randn(28, 1, 28)
-    hprev = np.random.randn(128, 1)
-    labels = np.array([[2],])
-    labels = cpp.NdArray(labels)
+    result.print()
+    
+    x.cuda()
+    y.cuda()
+    gpu_result = np.random.randn(4, 5)
+    gpu_result = cpp.numTest(gpu_result)
+    gpu_result.cuda()
+    cpp.dot_gpu(gpu_result, x, y)
 
-    outputs = r.forward(images, hprev)
-    outputs.useArray()
-    print('python print end')
+    gpu_result.cpu()
+    gpu_result.print()
+    
+    
+    print("end")
+
+    
+    # print("start")
+    # x.print()
+    # print('-----------')
+    # x_t.print()
+    # print("end")
+    
+    # y = np.random.randn(3, 5)
+
+    # # print('start')
+    # # print(x @ y)
+
+    # # x = cpp.numTest(x)
+    # # y = cpp.numTest(y)
+
+    # # x.gpu_mul()
+    # # result = x.dot(y)
+
+    # # result.print()
+    # # print('end')
+
+# for i in range(1):
+#     print('python print start')
+#     r = cpp.rnn(0.01, 28, 28, 128, 10)
+#     images = np.random.randn(28, 1, 28)
+#     hprev = np.random.randn(128, 1)
+#     labels = np.array([[2],])
+#     labels = cpp.NdArray(labels)
+
+#     outputs = r.forward(images, hprev)
+#     outputs.useArray()
+#     print('python print end')
 
     # Y, loss = r.cross_entropy_loss(outputs, labels)

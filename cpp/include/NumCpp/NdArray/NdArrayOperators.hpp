@@ -153,7 +153,7 @@ namespace nc
         NdArray<dtype> returnArray(lhs.shape());
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), rhs.cbegin(), returnArray.begin(), std::plus<dtype>());
 
-        return returnArray.clone();
+        return returnArray;
     }
 
     template<typename dtype>
@@ -168,7 +168,7 @@ namespace nc
 
         stl_algorithms::transform(lhs.cbegin(), lhs.cend(), returnArray.begin(), function);
 
-        return returnArray.clone();
+        return returnArray;
     }
 
     template<typename dtype>
@@ -176,7 +176,7 @@ namespace nc
     {
         NdArray<dtype> returnArray = rhs + lhs;
 
-        return returnArray.clone();
+        return returnArray;
     }
 
     template<typename dtype>
