@@ -67,32 +67,62 @@ def dot_test():
 # gradients = r.backward(r.deriv_softmax(Y, labels))
 # r.optimizer(gradients)
 
+################# rnn test #######################
+seq_length = 28
+input_size = 28
+hidden_size = 128
+num_layers = 1
+num_classes = 10
+batch_size = 1
+num_epochs = 2
+learning_rate = 0.01
+
+def xavier_init(c1, c2, w=1, h=1, fc=False):
+    fan_1 = c2 * w * h
+    fan_2 = c1 * w * h
+    ratio = np.sqrt(6.0 / (fan_1 + fan_2))
+    params = ratio * (2 * np.random.random((c1, c2, w, h)) - 1)
+    if fc:
+        params = params.reshape(c1, c2)
+    return params
+
+U = cpp.numTest(xavier_init(hidden_size, input_size, fc=True))
+W = cpp.numTest(xavier_init(hidden_size, hidden_size, fc=True))
+V = cpp.numTest(xavier_init(hidden_size, hidden_size, fc=True))
+FC_W = cpp.numTest(xavier_init(num_classes, hidden_size, fc=True))
+
+for i in range(1):
+    model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
+       
+##################################################
 
 ################# gpu test #######################
-for i in range(10):
-    x = np.random.randn(4, 3)
-    y = np.random.randn(3, 5)
-    print("start")
-    print(x @ y)
-    x = cpp.numTest(x)
-    y = cpp.numTest(y)
+# for i in range(10):
+#     x = np.random.randn(4, 3)
+#     y = np.random.randn(3, 5)
+#     print("start")
+#     print(x @ y)
+#     x = cpp.numTest(x)
+#     x.print_pointer()
+#     y = cpp.numTest(y)
+#     y.print_pointer()
 
-    result = cpp.numTest(np.random.randn(4, 5))
-    cpp.dot_cpu(result, x, y)
-    result.cuda()
-    result.cpu()
+#     result = cpp.numTest(np.random.randn(4, 5))
+#     cpp.dot_cpu(result, x, y)
+#     result.cuda()
+#     result.cpu()
 
-    result.print()
+#     result.print()
     
-    x.cuda()
-    y.cuda()
-    gpu_result = np.random.randn(4, 5)
-    gpu_result = cpp.numTest(gpu_result)
-    gpu_result.cuda()
-    cpp.dot_gpu(gpu_result, x, y)
+#     x.cuda()
+#     y.cuda()
+#     gpu_result = np.random.randn(4, 5)
+#     gpu_result = cpp.numTest(gpu_result)
+#     gpu_result.cuda()
+#     cpp.dot_gpu(gpu_result, x, y)
 
-    gpu_result.cpu()
-    gpu_result.print()
+#     gpu_result.cpu()
+#     gpu_result.print()
 ####################################################    
 # for i in range(10):
 #     x = np.random.randn(3, 5)

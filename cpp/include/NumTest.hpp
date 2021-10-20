@@ -8,13 +8,23 @@
 #include <cuda.h>
 #include "NumTest_gpu.hpp"
 
-template<typename dtype>
-using numpyArray = pybind11::array_t<dtype, pybind11::array::c_style>;
-using numpyArrayGeneric = pybind11::array;
+#define NUMTEST_DEBUG
+
+#if defined(NUMTEST_DEBUG)
+#define PRINT_DEBUG(str, ...) do { \
+    printf((str), ##__VA_ARGS__); \
+} while(0)
+#else
+#define PRINT_DEBUG(str, ...)
+#endif
 
 template<typename dtype>
 class numTest
 {
+public:
+    using numpyArray = pybind11::array_t<dtype, pybind11::array::c_style>;
+    using numpyArrayGeneric = pybind11::array;
+
 private:
     class shape
     {
@@ -46,6 +56,8 @@ private:
         deleteArray();
         data_ = (dtype*)malloc(sizeof(dtype) * shape_.size());
         fill(dtype{0});
+
+        PRINT_DEBUG("call by newArray() this : %p data_ : %p\n", this, data_);
     }
 
     void newArray(size_t rows, size_t cols)
@@ -56,6 +68,7 @@ private:
 
     void deleteArray()
     {
+        PRINT_DEBUG("call by  deleteArray() this : %p data_ : %p\n", this, data_);
         nt_gpu::cpu_free(data_);
         data_=nullptr;
         nt_gpu::gpu_free(dev_data_);
@@ -76,7 +89,7 @@ public:
         newArray();
     }
 
-    numTest(const numpyArray<dtype>& numpyInput)
+    numTest(const numpyArray& numpyInput)
     {
         const auto dataPtr = numpyInput.data();
 
@@ -151,16 +164,6 @@ public:
         return data_[row * shape_.cols + col];
     }
 
-    numTest<dtype>& operator=(const numTest<dtype>& rhs) noexcept
-    {
-        if (rhs.size_ > 0)
-        {
-            newArray(shape_.rows, shape_.cols);
-            std::copy(rhs.begin(), rhs.end(), begin());
-        }
-        return *this;
-    }
-
     numpyArrayGeneric numpy()
     {
         const std::vector<pybind11::ssize_t> numpy_shape{static_cast<pybind11::ssize_t>(shape_.rows), 
@@ -192,6 +195,11 @@ public:
         }
         out += "]\n";
         return out;
+    }
+
+    void print_pointer()
+    {
+        printf("call by print_pointer() this %p data %p\n", this, data_);
     }
 
     void print() const
@@ -284,4 +292,10 @@ namespace numTest_Functions
                 lhs.shape_.rows, lhs.shape_.cols, rhs.shape_.rows, rhs.shape_.cols);
         }
     }
+
+    // template<typename dtype>
+    // void add_cpu(numTest<dtype>& returnArray, const numTest<dtype>& lhs, const numTest<dtype>& rhs)
+    // {
+    //     if (lhs)
+    // }
 }

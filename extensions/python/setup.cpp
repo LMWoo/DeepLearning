@@ -4,6 +4,7 @@
 #include <test_gpu.h>
 #include <nnCpp.hpp>
 #include <NumTest.hpp>
+#include <cppRnn.hpp>
 
 using namespace nc;
 using namespace nc::pybindInterface;
@@ -100,19 +101,23 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("optimizer", &RNNDouble::optimizer);
 
     using numTestDouble = numTest<double>;
-    using numpyArrayDouble = numpyArray<double>;
     pb11::class_<numTestDouble>(m, "numTest")
         .def(pb11::init<>())
         .def(pb11::init<size_t, size_t>())
-        .def(pb11::init<numpyArrayDouble>())
+        .def(pb11::init<numTestDouble::numpyArray>())
         .def("cuda", &numTestDouble::cuda)
         .def("cpu", &numTestDouble::cpu)
         .def("numpy", &numTestDouble::numpy)
-
+        .def("print_pointer", &numTestDouble::print_pointer)
         .def("print", &numTestDouble::print);
 
     m.def("transpose", &numTest_Functions::transpose<double>);    
     m.def("dot_cpu", &numTest_Functions::dot_cpu<double>);
     m.def("dot_gpu", &numTest_Functions::dot_gpu<double>);
 
+    using CPPRNNDouble = cppRnn<double>;
+    pb11::class_<CPPRNNDouble>(m, "cppRnn")
+        .def(pb11::init<double, const CPPRNNDouble::numTestType&, const CPPRNNDouble::numTestType&, const CPPRNNDouble::numTestType&, const CPPRNNDouble::numTestType&, 
+            size_t, size_t, size_t, size_t>())
+        .def("test", &CPPRNNDouble::test);
 }
