@@ -42,7 +42,7 @@ public:
             this->X[i] = new numTest<dtype>(input_size, 1);
         }
 
-        for (int i = 0; i < seq_length; ++i)
+        for (int i = 0; i < seq_length + 2; ++i)
         {
             this->A[i] = new numTest<dtype>(hidden_size, 1);
         }
@@ -246,6 +246,28 @@ private:
         for (int t = 0; t < seq_length; ++t)
         {
             numTest_Functions::transpose_gpu(X[t], x[t]);
+            numTest_Functions::dot_gpu(A[t], *U, *X[t]);
+
+
+#ifdef NUMTEST_DEBUG
+            // A[t]->cpu();
+            
+            // printf("gpu start\n");
+            // A[t]->print();
+            // printf("gpu end\n");
+            
+            // U->cpu();
+            // X[t]->cpu();
+
+            // numTest_Functions::dot_cpu(A[t], *U, *X[t]);
+
+            // printf("cpu start\n");
+            // A[t]->print();
+            // printf("cpu end\n");
+            // A[t]->cuda();
+            // U->cuda();
+            // X[t]->cuda();
+#endif
         }
         
         for (int t = 0; t < seq_length; ++t)
@@ -273,15 +295,23 @@ private:
         for (int t = 0; t < seq_length; ++t)
         {
             numTest_Functions::transpose_cpu(X[t], x[t]);
+            numTest_Functions::dot_cpu(A[t], *U, *X[t]);
+            // A[seq_length]->print();
         }
 
         for (int t = 0; t < seq_length; ++t)
         {
-            printf("prev transpose\n");
-            x[t].print();
+            printf("U start\n");
+            U->print();
+            printf("U end\n");
 
-            printf("after transpose\n");
+            printf("X[t] start\n");
             X[t]->print();
+            printf("X[t] end\n");
+
+            printf("A[t] start\n");
+            A[t]->print();
+            printf("A[t] end\n");
         }
 
         PRINT_DEBUG("call by forward_cpu() end\n");

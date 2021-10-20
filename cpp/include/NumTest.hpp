@@ -280,9 +280,9 @@ namespace numTest_Functions
     }
 
     template<typename dtype>
-    void dot_cpu(numTest<dtype>& returnArray, const numTest<dtype>& lhs, const numTest<dtype>& rhs)
+    void dot_cpu(numTest<dtype>* returnArray, const numTest<dtype>& lhs, const numTest<dtype>& rhs)
     {
-        if (!returnArray.data_)
+        if (!returnArray->data_)
         {
             printf("void dot_cpu(numTest<dtype>& returnArray, const numTest<dtype>& lhs, const numTest<dtype>& rhs) exception\n");   
             printf("returnArray data == nullptr\n");
@@ -307,18 +307,18 @@ namespace numTest_Functions
                     sum += lhs(i, k) * rhs(k, j);
                 }
 
-                returnArray(i, j) = sum;
+                (*returnArray)(i, j) = sum;
             }
         }
     }
 
     template<typename dtype> 
-    void dot_gpu(numTest<dtype>& returnArray, const numTest<dtype>& lhs, const numTest<dtype>& rhs)
+    void dot_gpu(numTest<dtype>* returnArray, const numTest<dtype>& lhs, const numTest<dtype>& rhs)
     {
-        if (returnArray.dev_data_)
+        if (returnArray->dev_data_)
         {
             printf("lhs rows %d cols %d, rhs rows %d cols %d\n", lhs.shape_.rows, lhs.shape_.cols, rhs.shape_.rows, rhs.shape_.cols);
-            nt_gpu::gpu_matrix_mul_double(returnArray.dev_data_, lhs.dev_data_, rhs.dev_data_,
+            nt_gpu::gpu_matrix_mul_double(returnArray->dev_data_, lhs.dev_data_, rhs.dev_data_,
                 lhs.shape_.rows, lhs.shape_.cols, rhs.shape_.rows, rhs.shape_.cols);
         }
     }
