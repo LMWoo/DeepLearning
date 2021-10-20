@@ -279,6 +279,7 @@ namespace numTest_Functions
     {
         if (returnArray.dev_data_)
         {
+            printf("lhs rows %d cols %d, rhs rows %d cols %d\n", lhs.shape_.rows, lhs.shape_.cols, rhs.shape_.rows, rhs.shape_.cols);
             nt_gpu::gpu_matrix_mul_double(returnArray.dev_data_, lhs.dev_data_, rhs.dev_data_,
                 lhs.shape_.rows, lhs.shape_.cols, rhs.shape_.rows, rhs.shape_.cols);
         }

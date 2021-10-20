@@ -54,7 +54,7 @@ namespace nt_gpu
         }
 
         dim3 dimGrid(1, 1, 1);
-        dim3 dimBlock(lhs_rows, rhs_cols, 1);
+        dim3 dimBlock(rhs_cols, lhs_rows, 1);
 
         mulKernel<<<dimGrid, dimBlock>>>(dev_out, dev_lhs, dev_rhs, lhs_rows, lhs_cols, rhs_rows, rhs_cols);
         return dev_out;

@@ -69,47 +69,48 @@ def dot_test():
 
 
 ################# gpu test #######################
-# for i in range(10):
-#     x = np.random.randn(4, 3)
-#     y = np.random.randn(3, 5)
-#     print("start")
-#     print(x @ y)
-#     x = cpp.numTest(x)
-#     y = cpp.numTest(y)
-
-#     result = x.dot(y)
-#     result.cuda()
-#     result.cpu()
-
-#     result.print()
-    
-#     x.cuda()
-#     y.cuda()
-#     gpu_result = np.random.randn(4, 5)
-#     gpu_result = cpp.numTest(gpu_result)
-#     gpu_result.cuda()
-#     cpp.dot_gpu(gpu_result, x, y)
-
-#     gpu_result.cpu()
-#     gpu_result.print()
-####################################################    
 for i in range(10):
-    x = np.random.randn(3, 5)
-    y = np.random.randn(5, 4)
+    x = np.random.randn(4, 3)
+    y = np.random.randn(3, 5)
     print("start")
     print(x @ y)
-
     x = cpp.numTest(x)
     y = cpp.numTest(y)
-    result = cpp.numTest(np.random.randn(3, 4))
+
+    result = cpp.numTest(np.random.randn(4, 5))
     cpp.dot_cpu(result, x, y)
-    print('000000000000000000000')
-    result.print()
     result.cuda()
     result.cpu()
-    print('000000000000000000000')
+
     result.print()
-    print("end")
+    
+    x.cuda()
+    y.cuda()
+    gpu_result = np.random.randn(4, 5)
+    gpu_result = cpp.numTest(gpu_result)
+    gpu_result.cuda()
+    cpp.dot_gpu(gpu_result, x, y)
+
+    gpu_result.cpu()
+    gpu_result.print()
+####################################################    
+# for i in range(10):
+#     x = np.random.randn(3, 5)
+#     y = np.random.randn(5, 4)
+#     print("start")
+#     print(x @ y)
+
+#     x = cpp.numTest(x)
+#     y = cpp.numTest(y)
+#     result = cpp.numTest(np.random.randn(3, 4))
+#     cpp.dot_cpu(result, x, y)
+#     print('000000000000000000000')
+#     result.print()
+#     result.cuda()
+#     result.cpu()
+#     print('000000000000000000000')
+#     result.print()
+#     print("end")
 
     
     # print("start")
