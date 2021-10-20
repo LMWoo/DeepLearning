@@ -94,7 +94,7 @@ FC_W = cpp.numTest(xavier_init(num_classes, hidden_size, fc=True))
 model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
 model.cuda()
 
-for i in range(200000000000000000000000000000000000000):
+for i in range(2000000000000000000000000000000000000000):
     print("images start")
     images = [cpp.numTest(np.random.randn(1, input_size)) for j in range(seq_length)]
     [images[j].cuda() for j in range(seq_length)]

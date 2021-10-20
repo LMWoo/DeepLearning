@@ -42,11 +42,10 @@ public:
             this->X[i] = new numTest<dtype>(input_size, 1);
         }
 
-        // for (int i = 0; i < seq_length; ++i)
-        // {
-        //     this->A[i] = new numTest<dtype>(hidden_size, 1);
-        // }
-
+        for (int i = 0; i < seq_length; ++i)
+        {
+            this->A[i] = new numTest<dtype>(hidden_size, 1);
+        }
     }
 
     ~cppRnn()
@@ -91,6 +90,15 @@ public:
                 mapIter->second=nullptr;
             }
         }
+
+        for (mapIter = this->A.begin(); mapIter != this->A.end(); ++mapIter)
+        {
+            if (mapIter->second)
+            {
+                delete mapIter->second;
+                mapIter->second=nullptr;
+            }
+        }
     }
 
     void cuda()
@@ -120,6 +128,14 @@ public:
             }
         }
 
+        for (mapIter = this->A.begin(); mapIter != this->A.end(); ++mapIter)
+        {
+            if (mapIter->second)
+            {
+                mapIter->second->cuda();
+            }
+        }
+
     }
 
     void cpu()
@@ -142,6 +158,14 @@ public:
         }
 
         for (mapIter = this->X.begin(); mapIter != this->X.end(); ++mapIter)
+        {
+            if (mapIter->second)
+            {
+                mapIter->second->cpu();
+            }
+        }
+
+        for (mapIter = this->A.begin(); mapIter != this->A.end(); ++mapIter)
         {
             if (mapIter->second)
             {
@@ -278,6 +302,6 @@ private:
     numTestType* FC_W;
 
     numTestTypeMap X;
-    // numTestTypeMap A;
+    numTestTypeMap A;
     numTestTypeMap S;
 };
