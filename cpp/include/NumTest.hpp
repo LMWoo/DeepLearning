@@ -8,7 +8,7 @@
 #include <cuda.h>
 #include "NumTest_gpu.hpp"
 
-#define NUMTEST_DEBUG
+// #define NUMTEST_DEBUG
 
 #if defined(NUMTEST_DEBUG)
 #define PRINT_DEBUG(str, ...) do { \
@@ -49,6 +49,7 @@ public:
     dtype* data_{nullptr};
     dtype* dev_data_{nullptr};
     shape shape_;
+    bool is_cuda_{false};
 
 private:
     void newArray()
@@ -57,7 +58,7 @@ private:
         data_ = (dtype*)malloc(sizeof(dtype) * shape_.size());
         fill(dtype{0});
 
-        PRINT_DEBUG("call by newArray() this : %p data_ : %p\n", this, data_);
+        print_pointer("newArray()");
     }
 
     void newArray(size_t rows, size_t cols)
@@ -68,7 +69,8 @@ private:
 
     void deleteArray()
     {
-        PRINT_DEBUG("call by  deleteArray() this : %p data_ : %p\n", this, data_);
+        print_pointer("deleteArray()");
+
         nt_gpu::cpu_free(data_);
         data_=nullptr;
         nt_gpu::gpu_free(dev_data_);
@@ -197,9 +199,10 @@ public:
         return out;
     }
 
-    void print_pointer()
+    void print_pointer(std::string str)
     {
-        printf("call by print_pointer() this %p data %p\n", this, data_);
+        PRINT_DEBUG("call by %s this %p data %p\n", str.c_str(), this, data_);
+        PRINT_DEBUG("call by %s this %p dev_data %p\n", str.c_str(), this, dev_data_);
     }
 
     void print() const
@@ -214,7 +217,11 @@ public:
             dev_data_ = nt_gpu::gpu_malloc(shape_.size() * sizeof(double));
             nt_gpu::copy_cpu_to_gpu(shape_.size() * sizeof(double), dev_data_, data_);
             nt_gpu::cpu_free(data_);
+
+            print_pointer("cuda()");
+            
             data_=nullptr;
+            is_cuda_ = true;
         }
     }
 
@@ -226,6 +233,7 @@ public:
             nt_gpu::copy_gpu_to_cpu(shape_.size() * sizeof(double), data_, dev_data_);
             nt_gpu::gpu_free(dev_data_);
             dev_data_ = nullptr;
+            is_cuda_ = false;
         }
     }
 

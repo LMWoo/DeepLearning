@@ -119,5 +119,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
     pb11::class_<CPPRNNDouble>(m, "cppRnn")
         .def(pb11::init<double, const CPPRNNDouble::numTestType&, const CPPRNNDouble::numTestType&, const CPPRNNDouble::numTestType&, const CPPRNNDouble::numTestType&, 
             size_t, size_t, size_t, size_t>())
+        .def("cuda", &CPPRNNDouble::cuda)
+        .def("cpu", &CPPRNNDouble::cpu)
+        .def("forward", &CPPRNNDouble::forward)
         .def("test", &CPPRNNDouble::test);
 }
