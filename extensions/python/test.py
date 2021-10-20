@@ -68,9 +68,9 @@ def dot_test():
 # r.optimizer(gradients)
 
 ################# rnn test #######################
-seq_length = 28
+seq_length = 5
 input_size = 28
-hidden_size = 128
+hidden_size = 10
 num_layers = 1
 num_classes = 10
 batch_size = 1
@@ -94,14 +94,15 @@ FC_W = cpp.numTest(xavier_init(num_classes, hidden_size, fc=True))
 model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
 model.cuda()
 
-for i in range(20000000000000000000000000000000000):
+for i in range(2):
     print("images start")
-    images = [cpp.numTest(np.random.randn(1, 5)) for j in range(3)]
-    [images[j].cuda() for j in range(3)]
+    images = [cpp.numTest(np.random.randn(1, 5)) for j in range(seq_length)]
+    [images[j].cuda() for j in range(seq_length)]
     print("images end")
 
     print("hprev start")
-    hprev = cpp.numTest(np.random.randn(128, 1))
+    hprev = cpp.numTest(np.random.randn(hidden_size, 1))
+    hprev.print()
     hprev.cuda()
     print("hprev end")
 
@@ -109,7 +110,7 @@ for i in range(20000000000000000000000000000000000):
     result = cpp.numTest(np.zeros((10, 1)))
     result.cuda()
     print("result end")
-
+    
     print("forward start")
     model.forward(result, images, hprev)
     print("forward end")

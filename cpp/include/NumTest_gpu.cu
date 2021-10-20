@@ -35,6 +35,11 @@ namespace nt_gpu
         dev_out[i] = sum;
     }
 
+    void copy_gpu_to_gpu(size_t size, double* out_dev_data, const double* in_dev_data)
+    {
+        CUDA_CHECK(cudaMemcpy(out_dev_data, in_dev_data, size, cudaMemcpyDeviceToDevice));
+    }
+
     void copy_cpu_to_gpu(size_t size, double* dev_data, const double* data)
     {
         CUDA_CHECK(cudaMemcpy(dev_data, data, size, cudaMemcpyHostToDevice));

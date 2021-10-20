@@ -111,14 +111,14 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("print_pointer", &numTestDouble::print_pointer)
         .def("print", &numTestDouble::print);
 
-    m.def("transpose", &numTest_Functions::transpose<double>);    
+    m.def("transpose_cpu", &numTest_Functions::transpose_cpu<double>);    
     m.def("dot_cpu", &numTest_Functions::dot_cpu<double>);
     m.def("dot_gpu", &numTest_Functions::dot_gpu<double>);
 
     using CPPRNNDouble = cppRnn<double>;
     pb11::class_<CPPRNNDouble>(m, "cppRnn")
         .def(pb11::init<double, const CPPRNNDouble::numTestType&, const CPPRNNDouble::numTestType&, const CPPRNNDouble::numTestType&, const CPPRNNDouble::numTestType&, 
-            size_t, size_t, size_t, size_t>())
+            int, int, int, int>())
         .def("cuda", &CPPRNNDouble::cuda)
         .def("cpu", &CPPRNNDouble::cpu)
         .def("forward", &CPPRNNDouble::forward)

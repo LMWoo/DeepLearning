@@ -11,12 +11,12 @@ public:
     using numpyArray = pybind11::array_t<dtype, pybind11::array::c_style>;
     using numpyArrayGeneric = pybind11::array;
     using numTestType = numTest<dtype>;
-    using numTestTypeMap = std::unordered_map<int, numTest<dtype>>;
-    using numTestTypeMapDoubleIter = std::unordered_map<int, numTest<double>>::iterator;
+    using numTestTypeMap = std::unordered_map<int, numTest<dtype>*>;
+    using numTestTypeMapDoubleIter = std::unordered_map<int, numTest<double>*>::iterator;
 
 public:
     cppRnn(double lr, const numTestType& U, const numTestType& W, const numTestType& V, const numTestType& FC_W,
-        size_t seq_length, size_t input_size, size_t hidden_size, size_t num_classes)
+        int seq_length, int input_size, int hidden_size, int num_classes)
     {
         this->lr = lr;
         this->seq_length = seq_length;
@@ -27,6 +27,18 @@ public:
         this->V = V;
 
         this->FC_W = FC_W;
+        
+        for (int i = -1; i < seq_length; ++i)
+        {
+            this->S[i] = new numTest<dtype>(hidden_size, 1);
+            this->S[i]->print_pointer("cppRnn(...)");
+        }
+
+        // std::vector<numTest<dtype>*> X_input(5, new numTest<dtype>(1, 5));
+        // for (size_t i = 0; i < seq_length; ++i)
+        // {
+        //     this->X[i] = X_input[i];
+        // }
     }
 
     ~cppRnn()
@@ -45,21 +57,58 @@ public:
         this->FC_W.dev_data_=nullptr;
 
         numTestTypeMapDoubleIter mapIter;
+        // for (mapIter = this->X.begin(); mapIter != this->X.end(); ++mapIter)
+        // {
+        //     mapIter->second->data_=nullptr;
+        //     mapIter->second->dev_data_=nullptr;
+        // }
+
         for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
         {
-            mapIter->second.data_=nullptr;
-            mapIter->second.dev_data_=nullptr;
+            if (mapIter->second)
+            {
+                delete mapIter->second;
+                mapIter->second=nullptr;
+            }
         }
+
     }
 
     void cuda()
     {
         is_cuda_=true;
+
+        numTestTypeMapDoubleIter mapIter;
+        for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
+        {
+            if (mapIter->second)
+            {
+                mapIter->second->cuda();
+            }
+        }
+        // for (size_t i = 0; i < seq_length; ++i)
+        // {
+        //     this->X[i]->cuda();
+        // }
     }
 
     void cpu()
     {
         is_cuda_=false;
+
+        numTestTypeMapDoubleIter mapIter;
+        for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
+        {
+            if (mapIter->second)
+            {
+                mapIter->second->cpu();
+            }
+        }
+
+        // for (size_t i = 0; i < seq_length; ++i)
+        // {
+        //     this->X[i]->cpu();
+        // }
     }
 
     void test()
@@ -125,14 +174,31 @@ private:
     void forward_gpu(numTest<dtype>& result, const std::vector<numTest<dtype>>& x, const numTest<dtype>& hprev)
     {
         PRINT_DEBUG("call by forward_gpu() start\n");
-        S[-1] = hprev;
+        numTest_Functions::copy_gpu(S[-1], hprev);
+        
+        S[-1]->cpu();
+        S[-1]->print();
+        S[-1]->cuda();
+
         PRINT_DEBUG("call by forward_gpu() end\n");
     }
 
     void forward_cpu(numTest<dtype>& result, const std::vector<numTest<dtype>>& x, const numTest<dtype>& hprev)
     {
         PRINT_DEBUG("call by forward_cpu() start\n");
-        S[-1] = hprev;
+        numTest_Functions::copy_cpu(S[-1], hprev);
+        S[-1]->print();
+        // for (size_t t = 0; t < seq_length; ++t)
+        // {
+        //     numTest_Functions::transpose_cpu(*X[t], x[t]);
+        // }
+
+        // for (size_t t = 0; t < seq_length; ++t)
+        // {
+        //     x[t].print();
+        //     (*X[t]).print();
+        // }
+
         PRINT_DEBUG("call by forward_cpu() end\n");
     }
 
@@ -150,5 +216,6 @@ private:
 
     numTestType FC_W;
 
+    // numTestTypeMap X;
     numTestTypeMap S;
 };

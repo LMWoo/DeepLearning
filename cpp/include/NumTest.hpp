@@ -32,11 +32,15 @@ private:
         size_t rows{0};
         size_t cols{0};
         
-        size_t size()
+        size_t size() const
         {
             return rows * cols;
         }
 
+        void print()
+        {
+            printf("shape rows %d cols %d\n", rows, cols);
+        }
         shape() = default;
 
         shape(size_t rows, size_t cols)
@@ -246,8 +250,21 @@ public:
 namespace numTest_Functions
 {
     template<typename dtype>
-    void transpose(numTest<dtype>& returnArray, const numTest<dtype>& otherArray)
+    void copy_gpu(numTest<dtype>* returnArray, const numTest<dtype>& otherArray)
     {
+        nt_gpu::copy_gpu_to_gpu(otherArray.shape_.size() * sizeof(dtype), returnArray->dev_data_, otherArray.dev_data_);
+    }
+
+    template<typename dtype>
+    void copy_cpu(numTest<dtype>* returnArray, const numTest<dtype>& otherArray)
+    {
+        std::copy(otherArray.data_, otherArray.data_ + otherArray.shape_.size(), returnArray->data_);
+    }
+
+    template<typename dtype>
+    void transpose_cpu(numTest<dtype>& returnArray, const numTest<dtype>& otherArray)
+    {
+        printf("start transpose_cpu\n");
         for (size_t row = 0; row < otherArray.shape_.rows; ++row)
         {
             for (size_t col = 0; col < otherArray.shape_.cols; ++col)
@@ -255,6 +272,12 @@ namespace numTest_Functions
                 returnArray(col, row) = otherArray(row, col);
             }
         }
+
+#ifdef NUMTEST_DEBUG
+        otherArray.print();
+        returnArray.print();
+#endif
+        printf("end transpose_cpu\n");
     }
 
     template<typename dtype>
