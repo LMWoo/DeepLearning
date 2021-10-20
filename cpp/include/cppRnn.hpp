@@ -21,46 +21,56 @@ public:
         this->lr = lr;
         this->seq_length = seq_length;
         this->hidden_size = hidden_size;
+        
+        this->U = new numTest<dtype>(hidden_size, input_size);
+        this->W = new numTest<dtype>(hidden_size, hidden_size);
+        this->V = new numTest<dtype>(hidden_size, hidden_size);
+        numTest_Functions::copy_cpu(this->U, U);
+        numTest_Functions::copy_cpu(this->W, W);
+        numTest_Functions::copy_cpu(this->V, V);
 
-        this->U = U;
-        this->W = W;
-        this->V = V;
-
-        this->FC_W = FC_W;
+        this->FC_W = new numTest<dtype>(num_classes, hidden_size);
+        numTest_Functions::copy_cpu(this->FC_W, FC_W);
         
         for (int i = -1; i < seq_length; ++i)
         {
             this->S[i] = new numTest<dtype>(hidden_size, 1);
-            this->S[i]->print_pointer("cppRnn(...)");
         }
 
         for (int i = 0; i < seq_length; ++i)
         {
-            this->X[i] = new numTest<dtype>(5, 3);
-            this->X[i]->print_pointer("cppRnn(...)");
+            this->X[i] = new numTest<dtype>(input_size, 1);
         }
 
-        // std::vector<numTest<dtype>*> X_input(5, new numTest<dtype>(1, 5));
-        // for (size_t i = 0; i < seq_length; ++i)
+        // for (int i = 0; i < seq_length; ++i)
         // {
-        //     this->X[i] = X_input[i];
+        //     this->A[i] = new numTest<dtype>(hidden_size, 1);
         // }
+
     }
 
     ~cppRnn()
     {
-        // PRINT_DEBUG("call by ~cppRnn() this %p data %p\n", &this->U, this->U.data_);
-        // PRINT_DEBUG("call by ~cppRnn() this %p data %p\n", &this->W, this->W.data_);
-        // PRINT_DEBUG("call by ~cppRnn() this %p data %p\n", &this->V, this->V.data_);
-        // PRINT_DEBUG("call by ~cppRnn() this %p data %p\n", &this->FC_W, this->FC_W.data_);
-        this->U.data_ = nullptr;
-        this->U.dev_data_=nullptr;
-        this->W.data_ = nullptr;
-        this->W.dev_data_=nullptr;
-        this->V.data_ = nullptr;
-        this->V.dev_data_=nullptr;
-        this->FC_W.data_ = nullptr;
-        this->FC_W.dev_data_=nullptr;
+        if (U)
+        {
+            delete U;
+            U = nullptr;
+        }
+        if (W)
+        {
+            delete W;
+            W = nullptr;
+        }
+        if (V)
+        {
+            delete V;
+            V = nullptr;
+        }
+        if (FC_W)
+        {
+            delete FC_W;
+            FC_W = nullptr;
+        }
 
         numTestTypeMapDoubleIter mapIter;
 
@@ -87,6 +97,12 @@ public:
     {
         is_cuda_=true;
 
+        U->cuda();
+        W->cuda();
+        V->cuda();
+        
+        FC_W->cuda();
+
         numTestTypeMapDoubleIter mapIter;
         for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
         {
@@ -109,6 +125,12 @@ public:
     void cpu()
     {
         is_cuda_=false;
+
+        U->cpu();
+        W->cpu();
+        V->cpu();
+        
+        FC_W->cpu();
 
         numTestTypeMapDoubleIter mapIter;
         for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
@@ -249,12 +271,13 @@ private:
     size_t seq_length{0};
     size_t hidden_size{0};
 
-    numTestType U;
-    numTestType W;
-    numTestType V;
+    numTestType* U;
+    numTestType* W;
+    numTestType* V;
 
-    numTestType FC_W;
+    numTestType* FC_W;
 
     numTestTypeMap X;
+    // numTestTypeMap A;
     numTestTypeMap S;
 };
