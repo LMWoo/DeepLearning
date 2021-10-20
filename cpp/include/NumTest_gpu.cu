@@ -35,6 +35,14 @@ namespace nt_gpu
         dev_out[i] = sum;
     }
 
+    __global__ void transpose(double* out_dev_data, const double* in_dev_data, const size_t in_rows, const size_t in_cols)
+    {
+        size_t x = threadIdx.x;
+        size_t y = threadIdx.y;
+
+        out_dev_data[x * in_rows + y] = in_dev_data[y * in_cols + x];
+    }
+
     void copy_gpu_to_gpu(size_t size, double* out_dev_data, const double* in_dev_data)
     {
         CUDA_CHECK(cudaMemcpy(out_dev_data, in_dev_data, size, cudaMemcpyDeviceToDevice));
@@ -91,6 +99,19 @@ namespace nt_gpu
         {
             free(data);
         }
+    }
+
+    void transpose_gpu(double* out_dev_data, const double* in_dev_data, const size_t in_rows, const size_t in_cols)
+    {
+        if (out_dev_data == nullptr && in_dev_data == nullptr)
+        {
+            printf("not (out_dev_data == nullptr && in_dev_data == nullptr) call by transpose_gpu(...)\n");
+        }
+
+        dim3 dimGrid(1, 1, 1);
+        dim3 dimBlocks(in_cols, in_rows, 1);
+
+        transpose<<<dimGrid, dimBlocks>>>(out_dev_data, in_dev_data, in_rows, in_cols);
     }
     
     void test_matrix_mul()

@@ -262,6 +262,12 @@ namespace numTest_Functions
     }
 
     template<typename dtype>
+    void transpose_gpu(numTest<dtype>* returnArray, const numTest<dtype>& otherArray)
+    {
+        nt_gpu::transpose_gpu(returnArray->dev_data_, otherArray.dev_data_, otherArray.shape_.rows, otherArray.shape_.cols);  
+    }
+
+    template<typename dtype>
     void transpose_cpu(numTest<dtype>* returnArray, const numTest<dtype>& otherArray)
     {
         for (size_t row = 0; row < otherArray.shape_.rows; ++row)

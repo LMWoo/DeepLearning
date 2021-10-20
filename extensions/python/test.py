@@ -92,22 +92,22 @@ V = cpp.numTest(xavier_init(hidden_size, hidden_size, fc=True))
 FC_W = cpp.numTest(xavier_init(num_classes, hidden_size, fc=True))
 
 model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
-# model.cuda()
+model.cuda()
 
-for i in range(200000000000000000000000000000000):
+for i in range(200000000000000000000000000000000000000000000000):
     print("images start")
-    images = [cpp.numTest(np.random.randn(1, 5)) for j in range(seq_length)]
-    # [images[j].cuda() for j in range(seq_length)]
+    images = [cpp.numTest(np.random.randn(3, 5)) for j in range(seq_length)]
+    [images[j].cuda() for j in range(seq_length)]
     print("images end")
 
     print("hprev start")
     hprev = cpp.numTest(np.random.randn(hidden_size, 1))
-    # hprev.cuda()
+    hprev.cuda()
     print("hprev end")
 
     print("result start")
     result = cpp.numTest(np.zeros((10, 1)))
-    # result.cuda()
+    result.cuda()
     print("result end")
     
     print("forward start")

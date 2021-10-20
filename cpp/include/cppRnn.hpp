@@ -36,7 +36,7 @@ public:
 
         for (int i = 0; i < seq_length; ++i)
         {
-            this->X[i] = new numTest<dtype>(5, 1);
+            this->X[i] = new numTest<dtype>(5, 3);
             this->X[i]->print_pointer("cppRnn(...)");
         }
 
@@ -196,6 +196,25 @@ private:
         // S[-1]->cpu();
         // S[-1]->print();
         // S[-1]->cuda();
+
+        for (int t = 0; t < seq_length; ++t)
+        {
+            numTest_Functions::transpose_gpu(X[t], x[t]);
+        }
+        
+        for (int t = 0; t < seq_length; ++t)
+        {
+            printf("prev transpose\n");
+            // x[t].cpu<dtype>();
+            // x[t].print<dtype>();
+            // x[t].cuda<dtype>();
+
+            printf("after transpose\n");
+            // X[t]->cpu();
+            // X[t]->print();
+            // X[t]->cuda();
+        }
+
 
         PRINT_DEBUG("call by forward_gpu() end\n");
     }

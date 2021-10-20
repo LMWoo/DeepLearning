@@ -34,4 +34,7 @@ namespace nt_gpu
     void* cpu_malloc(size_t size);
     void gpu_free(double* dev_data);
     void cpu_free(void* data);
+
+    void transpose_gpu(double* out_dev_data, const double* in_dev_data, const size_t in_rows, const size_t in_cols);
+
 }
