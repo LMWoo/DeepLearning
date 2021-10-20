@@ -34,6 +34,12 @@ public:
             this->S[i]->print_pointer("cppRnn(...)");
         }
 
+        for (int i = 0; i < seq_length; ++i)
+        {
+            this->X[i] = new numTest<dtype>(5, 1);
+            this->X[i]->print_pointer("cppRnn(...)");
+        }
+
         // std::vector<numTest<dtype>*> X_input(5, new numTest<dtype>(1, 5));
         // for (size_t i = 0; i < seq_length; ++i)
         // {
@@ -57,11 +63,6 @@ public:
         this->FC_W.dev_data_=nullptr;
 
         numTestTypeMapDoubleIter mapIter;
-        // for (mapIter = this->X.begin(); mapIter != this->X.end(); ++mapIter)
-        // {
-        //     mapIter->second->data_=nullptr;
-        //     mapIter->second->dev_data_=nullptr;
-        // }
 
         for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
         {
@@ -72,6 +73,14 @@ public:
             }
         }
 
+        for (mapIter = this->X.begin(); mapIter != this->X.end(); ++mapIter)
+        {
+            if (mapIter->second)
+            {
+                delete mapIter->second;
+                mapIter->second=nullptr;
+            }
+        }
     }
 
     void cuda()
@@ -86,10 +95,15 @@ public:
                 mapIter->second->cuda();
             }
         }
-        // for (size_t i = 0; i < seq_length; ++i)
-        // {
-        //     this->X[i]->cuda();
-        // }
+
+        for (mapIter = this->X.begin(); mapIter != this->X.end(); ++mapIter)
+        {
+            if (mapIter->second)
+            {
+                mapIter->second->cuda();
+            }
+        }
+
     }
 
     void cpu()
@@ -105,10 +119,13 @@ public:
             }
         }
 
-        // for (size_t i = 0; i < seq_length; ++i)
-        // {
-        //     this->X[i]->cpu();
-        // }
+        for (mapIter = this->X.begin(); mapIter != this->X.end(); ++mapIter)
+        {
+            if (mapIter->second)
+            {
+                mapIter->second->cpu();
+            }
+        }
     }
 
     void test()
@@ -176,9 +193,9 @@ private:
         PRINT_DEBUG("call by forward_gpu() start\n");
         numTest_Functions::copy_gpu(S[-1], hprev);
         
-        S[-1]->cpu();
-        S[-1]->print();
-        S[-1]->cuda();
+        // S[-1]->cpu();
+        // S[-1]->print();
+        // S[-1]->cuda();
 
         PRINT_DEBUG("call by forward_gpu() end\n");
     }
@@ -187,17 +204,20 @@ private:
     {
         PRINT_DEBUG("call by forward_cpu() start\n");
         numTest_Functions::copy_cpu(S[-1], hprev);
-        S[-1]->print();
-        // for (size_t t = 0; t < seq_length; ++t)
-        // {
-        //     numTest_Functions::transpose_cpu(*X[t], x[t]);
-        // }
+        
+        for (int t = 0; t < seq_length; ++t)
+        {
+            numTest_Functions::transpose_cpu(X[t], x[t]);
+        }
 
-        // for (size_t t = 0; t < seq_length; ++t)
-        // {
-        //     x[t].print();
-        //     (*X[t]).print();
-        // }
+        for (int t = 0; t < seq_length; ++t)
+        {
+            printf("prev transpose\n");
+            x[t].print();
+
+            printf("after transpose\n");
+            X[t]->print();
+        }
 
         PRINT_DEBUG("call by forward_cpu() end\n");
     }
@@ -216,6 +236,6 @@ private:
 
     numTestType FC_W;
 
-    // numTestTypeMap X;
+    numTestTypeMap X;
     numTestTypeMap S;
 };

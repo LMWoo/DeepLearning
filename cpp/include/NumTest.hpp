@@ -262,22 +262,15 @@ namespace numTest_Functions
     }
 
     template<typename dtype>
-    void transpose_cpu(numTest<dtype>& returnArray, const numTest<dtype>& otherArray)
+    void transpose_cpu(numTest<dtype>* returnArray, const numTest<dtype>& otherArray)
     {
-        printf("start transpose_cpu\n");
         for (size_t row = 0; row < otherArray.shape_.rows; ++row)
         {
             for (size_t col = 0; col < otherArray.shape_.cols; ++col)
             {
-                returnArray(col, row) = otherArray(row, col);
+                (*returnArray)(col, row) = otherArray(row, col);
             }
         }
-
-#ifdef NUMTEST_DEBUG
-        otherArray.print();
-        returnArray.print();
-#endif
-        printf("end transpose_cpu\n");
     }
 
     template<typename dtype>
