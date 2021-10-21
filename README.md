@@ -1,11 +1,11 @@
-# project purpose
+# Project Purpose
 
  1. c++로 딥러닝 라이브러리를 구현하여 딥러닝관련 이해도와 c++기술을 향상시킨다.
  2. cuda로 딥러닝 라이브러리를 구현하여 병렬처리 프로그래밍과 gpu아키텍쳐를 이해한다.
  2. pytorch의 extension기능을 이용하여 python에서도 이용할 수 있게한다.
  3. 최근 많이 이용되는 PyTorch를 참고하여, PyTorch의 동작원리를 이해한다.
 
-## Project Architecture
+## Project Structure
 
 * DeepLearning
   * pytorch
@@ -21,7 +21,7 @@
 
 ### 소스 다운로드
 ```
-git clone DeepLearning
+git clone https://github.com/LMWoo/DeepLearning.git
 cd DeepLearning
 ```
 
@@ -52,7 +52,7 @@ cd pytorch
 ...
 ```
 
-### PyTorch 빌드
+### PyTorch Build
 ```
 git submodule sync
 git submodule update --init --recursive --jobs 0
@@ -71,7 +71,7 @@ cd bin
 
 ## python
 
-### python 확장 설치
+### python extensions install
 ```
 cd python
 cd extensions
