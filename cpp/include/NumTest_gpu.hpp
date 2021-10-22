@@ -41,5 +41,8 @@ namespace NumTest_gpu
     void tanh_gpu(double* out_dev_data, const double* in_dev_data, const size_t& rows, const size_t& cols);
     void exp_gpu(double* out_dev_data, const double* in_dev_data, const size_t& rows, const size_t& cols);
     void sum_div_gpu(double* dev_data, const size_t& size);
+    void minus_gpu(double* dev_data, const size_t& size);
+    void log_gpu(double* dev_data, const size_t& size);
+    void deriv_softmax_gpu(size_t size, double* out_dY_data, double* out_loss_data, const double* in_Y_data, double* labels);
     //void div_gpu(double* dev_data, const double& div, const size_t& size);
 }

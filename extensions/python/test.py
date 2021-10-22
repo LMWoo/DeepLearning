@@ -68,9 +68,26 @@ def dot_test():
 # r.optimizer(gradients)
 
 ################# rnn test #######################
-def softmax(x):
+def np_one_hot_vector(Y, labels):
+    out = np.zeros_like(Y)
+    for i in range(len(labels)):
+        out[int(labels[i])][i] = 1
+    return out
+
+def np_cross_entropy_loss(outputs, labels):
+    Y = np_softmax(outputs)
+    loss = -np.log(Y) * np_one_hot_vector(Y, labels)
+    return Y, loss
+
+def np_softmax(x):
     e = np.exp(x)
     return e / np.sum(e)
+
+def np_deriv_softmax(Y, labels):
+    dY = np.copy(Y)
+    for i in range(len(labels)):
+        dY[int(labels[i])][i] -= 1
+    return dY
 
 seq_length = 3
 input_size = 4
@@ -104,13 +121,22 @@ for i in range(2):
     outputs = cpp.numTest(np.zeros((num_classes, 1)))
     labels = cpp.numTest(np.random.randint(0, num_classes, (1, )))
     Y = cpp.numTest(np.zeros((num_classes, 1)))
+    dY = cpp.numTest(np.zeros((num_classes, 1)))
     loss = cpp.numTest(np.zeros((num_classes, 1)))
 
     model.cpu()
     
     model.forward(outputs, images, hprev)
-    model.cross_entropy_loss(Y, loss, outputs, labels)
 
+    np_Y, np_loss = np_cross_entropy_loss(outputs.numpy(), labels.numpy())
+    np_dY = np_deriv_softmax(np_Y, labels.numpy())
+    print('np')
+    print(np_dY)
+
+    model.cross_entropy_loss(dY, Y, loss, outputs, labels)
+
+    print('cpu')
+    dY.print()
     # print('forward outputs cpu')
     # outputs.print()
 
@@ -120,16 +146,23 @@ for i in range(2):
     # print('numpy softmax')
     # print(softmax(outputs.numpy()))
 
+    Y.zeros();
+    loss.zeros();
+    dY.zeros();
+
     model.cuda()
     [images[j].cuda() for j in range(seq_length)]
     hprev.cuda()
     outputs.cuda()
     labels.cuda()
     Y.cuda()
+    dY.cuda()
     loss.cuda()
     model.forward(outputs, images, hprev)
-    model.cross_entropy_loss(Y, loss, outputs, labels)
-    
+    model.cross_entropy_loss(dY, Y, loss, outputs, labels)
+    print('gpu')
+    dY.print()
+
     # outputs.cpu()
     # print('forward outputs gpu')
     # outputs.print()

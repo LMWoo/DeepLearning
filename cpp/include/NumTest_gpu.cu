@@ -224,6 +224,48 @@ namespace NumTest_gpu
         sum_div_<<<dimGrid, dimBlock>>>(dev_data);
     }
 
+    __global__ void minus_(double* dev_data)
+    {
+        dev_data[threadIdx.x] = -dev_data[threadIdx.x];
+    }
+
+    void minus_gpu(double* dev_data, const size_t& size)
+    {
+        dim3 dimGrid(1, 1, 1);
+        dim3 dimBlock(size, 1, 1);
+
+        minus_<<<dimGrid, dimBlock>>>(dev_data);
+    }
+
+    __global__ void log_(double* dev_data)
+    {
+        dev_data[threadIdx.x] = log(dev_data[threadIdx.x]);
+    }
+
+    void log_gpu(double* dev_data, const size_t& size)
+    {
+        dim3 dimGrid(1, 1, 1);
+        dim3 dimBlock(size, 1, 1);
+
+        log_<<<dimGrid, dimBlock>>>(dev_data);
+    }
+
+
+    __global__ void deriv_softmax_(double* out_dY_data, double* out_loss_data, const double* in_Y_data, double* labels)
+    {
+        out_loss_data[(size_t)labels[0]] = in_Y_data[(size_t)labels[0]];
+        out_dY_data[(size_t)labels[0]] -= 1.0;
+    }
+
+    void deriv_softmax_gpu(size_t size, double* out_dY_data, double* out_loss_data, const double* in_Y_data, double* labels)
+    {
+        dim3 dimGrid(1, 1, 1);
+        dim3 dimBlock(size, 1, 1);
+
+        deriv_softmax_<<<dimGrid, dimBlock>>>(out_dY_data, out_loss_data, in_Y_data, labels);
+    }
+
+
     // __global__ void div_(double* dev_data, const double& div)
     // {
     //     dev_data[threadIdx.x] /= div;

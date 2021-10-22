@@ -108,6 +108,8 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("cuda", &numTestDouble::cuda)
         .def("cpu", &numTestDouble::cpu)
         .def("numpy", &numTestDouble::numpy)
+        .def("zeros", &numTestDouble::zeros)
+        .def("ones", &numTestDouble::ones)
         .def("print_pointer", &numTestDouble::print_pointer)
         .def("print", &numTestDouble::print)
         .def("test", &numTestDouble::test);

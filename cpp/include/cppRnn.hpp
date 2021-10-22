@@ -268,28 +268,46 @@ public:
     }
 
 
-    void cross_entropy_loss(numTest<dtype>& Y, numTest<dtype>& loss, const numTest<dtype>& outputs, const numTest<dtype>& labels)
+    void cross_entropy_loss(numTest<dtype>& dY, numTest<dtype>& Y, numTest<dtype>& loss, const numTest<dtype>& outputs, const numTest<dtype>& labels)
     {
-        if ((Y.is_cuda_ && outputs.is_cuda_) && labels.is_cuda_)
+        if ((Y.is_cuda_ && outputs.is_cuda_) && (loss.is_cuda_ && labels.is_cuda_))
         {
-            cross_entropy_loss_gpu(Y, loss, outputs, labels);
+            cross_entropy_loss_gpu(dY, Y, loss, outputs, labels);
         }
         else
         {
-            cross_entropy_loss_cpu(Y, loss, outputs, labels);
+            cross_entropy_loss_cpu(dY, Y, loss, outputs, labels);
         }
     }
     
 private:
 
-    void cross_entropy_loss_gpu(numTest<dtype>& Y, numTest<dtype>& loss, const numTest<dtype>& outputs, const numTest<dtype>& labels)
+    void cross_entropy_loss_gpu(numTest<dtype>& dY, numTest<dtype>& Y, numTest<dtype>& loss, const numTest<dtype>& outputs, const numTest<dtype>& labels)
     {
-        numTest_Functions::softmax_gpu(&Y, outputs);
+        numTest_Functions::softmax_gpu(&dY, outputs);
+        numTest_Functions::copy_gpu(&Y, dY);
+
+        numTest_Functions::log_gpu(&Y);
+        numTest_Functions::minus_gpu(&Y);
+        numTest_Functions::deriv_softmax_gpu(dY, loss, Y, labels);
+
+        // const_cast<numTest<dtype>&>(labels).print();
+        // Y.print();
+        // loss.print();
     }
 
-    void cross_entropy_loss_cpu(numTest<dtype>& Y, numTest<dtype>& loss, const numTest<dtype>& outputs, const numTest<dtype>& labels)
+    void cross_entropy_loss_cpu(numTest<dtype>& dY, numTest<dtype>& Y, numTest<dtype>& loss, const numTest<dtype>& outputs, const numTest<dtype>& labels)
     {
-        numTest_Functions::softmax_cpu(&Y, outputs);
+        numTest_Functions::softmax_cpu(&dY, outputs);
+        numTest_Functions::copy_cpu(&Y, dY);
+        
+        numTest_Functions::log_cpu(&Y);
+        numTest_Functions::minus_cpu(&Y);
+        numTest_Functions::deriv_softmax_cpu(dY, loss, Y, labels);
+
+        // const_cast<numTest<dtype>&>(labels).print();
+        // Y.print();
+        // loss.print();
     }
 
     void forward_gpu(numTest<dtype>& outputs, const std::vector<numTest<dtype>>& x, const numTest<dtype>& hprev)

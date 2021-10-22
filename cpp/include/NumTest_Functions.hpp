@@ -284,8 +284,6 @@ namespace numTest_Functions
 
         exp_gpu(returnArray, otherArray);
         sum_div_gpu(*returnArray);
-        printf("softmax_gpu\n");
-        returnArray->print();
     }
 
     template<typename dtype>
@@ -303,8 +301,71 @@ namespace numTest_Functions
         exp_cpu(returnArray, otherArray);
         dtype sum = sum_cpu(*returnArray);
         div_cpu(returnArray, sum);
+    }
 
-        printf("softmax_cpu\n");
-        returnArray->print();
+    template<typename dtype>
+    void minus_gpu(numTest<dtype>* returnArray)
+    {
+        std::string function_name = "void minus_gpu(numTest<dtype>*)";
+        NumTest_Utils::null_check(function_name, "returnArray->dev_data_", returnArray->dev_data_);
+
+        NumTest_gpu::minus_gpu(returnArray->dev_data_, returnArray->shape_.size());
+    }
+
+    template<typename dtype>
+    void minus_cpu(numTest<dtype>* returnArray)
+    {
+        std::string function_name = "void minus_cpu(numTest<dtype>*)";
+        NumTest_Utils::null_check(function_name, "returnArray->data_", returnArray->data_);
+
+        for (size_t i = 0; i < returnArray->shape_.size(); ++i)
+        {
+            returnArray->data_[i] = -returnArray->data_[i];
+        }
+    }
+
+    template<typename dtype>
+    void log_gpu(numTest<dtype>* returnArray)
+    {
+        std::string function_name = "void log_gpu(numTest<dtype>*)";
+        NumTest_Utils::null_check(function_name, "returnArray->dev_data_", returnArray->dev_data_);
+
+        NumTest_gpu::log_gpu(returnArray->dev_data_, returnArray->shape_.size());
+    }
+
+    template<typename dtype>
+    void log_cpu(numTest<dtype>* returnArray)
+    {
+        std::string function_name = "void log_cpu(numTest<dtype>*)";
+        NumTest_Utils::null_check(function_name, "returnArray->data_", returnArray->data_);
+
+        for (size_t i = 0; i < returnArray->shape_.size(); ++i)
+        {
+            returnArray->data_[i] = std::log(returnArray->data_[i]);
+        }
+    }
+
+    template<typename dtype>
+    void deriv_softmax_gpu(numTest<dtype>& dY, numTest<dtype>& loss, numTest<dtype>& Y, const numTest<dtype>& labels)
+    {
+        std::string function_name = "void deriv_softmax_gpu(numTest<dtype>&, numTest<dtype>&, numTest<dtype>&)";
+        NumTest_Utils::null_check(function_name, "loss.dev_data_", loss.dev_data_);
+        NumTest_Utils::null_check(function_name, "Y.dev_data_", Y.dev_data_);
+        NumTest_Utils::null_check(function_name, "labels.dev_data_", labels.dev_data_);
+
+        NumTest_gpu::deriv_softmax_gpu(loss.shape_.size(), dY.dev_data_, loss.dev_data_, Y.dev_data_, labels.dev_data_);
+    }
+
+    template<typename dtype>
+    void deriv_softmax_cpu(numTest<dtype>& dY, numTest<dtype>& loss, numTest<dtype>& Y, const numTest<dtype>& labels)
+    {
+        std::string function_name = "void deriv_softmax_cpu(numTest<dtype>&, numTest<dtype>&, numTest<dtype>&)";
+        NumTest_Utils::null_check(function_name, "loss.data_", loss.data_);
+        NumTest_Utils::null_check(function_name, "Y.data_", Y.data_);
+        NumTest_Utils::null_check(function_name, "labels.data_", labels.data_);
+
+        int index = const_cast<numTest<dtype>&>(labels)(0, 0);
+        dY(index, 0) -= 1;
+        loss(index, 0) = Y(index, 0);
     }
 }
