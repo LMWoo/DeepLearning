@@ -222,8 +222,9 @@ public:
 
         if ((this->is_cuda_ && x_is_cuda) && hprev.is_cuda_)
         {
+            NumTest_Utils::time_start();
             forward_gpu(result, x, hprev);
-
+            NumTest_Utils::time_end();
             // this->cpu();
             // result.cpu();
             // hprev.cpu();
@@ -244,7 +245,9 @@ public:
         }
         else
         {
+            NumTest_Utils::time_start();
             forward_cpu(result, x, hprev);
+            NumTest_Utils::time_end();
         }
 
         // result.data_=nullptr;
@@ -271,12 +274,13 @@ private:
             numTest_Functions::dot_gpu(A[seq_length + 1], *W, *S[t - 1]);
             numTest_Functions::add_gpu(A[t], *A[seq_length], *A[seq_length + 1]);
             numTest_Functions::add_gpu(A[t], *A[t], *b);
+            numTest_Functions::tanh_gpu(S[t], *A[t]);
         }
 
-        // for (int t = 0; t < seq_length; ++t)
-        // {
-        //     A[t]->print();
-        // }
+        for (int t = 0; t < seq_length; ++t)
+        {
+            S[t]->print();
+        }
 
         PRINT_DEBUG("call by forward_gpu() end\n");
     }
@@ -293,12 +297,13 @@ private:
             numTest_Functions::dot_cpu(A[seq_length + 1], *W, *S[t - 1]);
             numTest_Functions::add_cpu(A[t], *A[seq_length], *A[seq_length + 1]);
             numTest_Functions::add_cpu(A[t], *A[t], *b);
+            numTest_Functions::tanh_cpu(S[t], *A[t]);
         }
 
-        // for (int t = 0; t < seq_length; ++t)
-        // {
-        //     A[t]->print();
-        // }
+        for (int t = 0; t < seq_length; ++t)
+        {
+            S[t]->print();
+        }
 
         PRINT_DEBUG("call by forward_cpu() end\n");
     }

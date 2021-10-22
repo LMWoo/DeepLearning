@@ -167,4 +167,18 @@ namespace nt_gpu
         add<<<dimGrid, dimBlock>>>(dev_out, dev_lhs, dev_rhs);
         return dev_out;
     }
+
+    __global__ void tanh_(double* out_dev_data, const double* in_dev_data)
+    {
+        size_t i = threadIdx.y * blockDim.x + threadIdx.x;
+        out_dev_data[i] = tanh(in_dev_data[i]);
+    }
+
+    void tanh_gpu(double* out_dev_data, const double* in_dev_data, const size_t& rows, const size_t& cols)
+    {
+        dim3 dimGrid(1, 1, 1);
+        dim3 dimBlock(cols, rows, 1);
+
+        tanh_<<<dimGrid, dimBlock>>>(out_dev_data, in_dev_data);
+    }
 }
