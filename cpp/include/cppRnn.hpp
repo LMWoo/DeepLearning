@@ -284,7 +284,7 @@ private:
 
     void cross_entropy_loss_gpu(numTest<dtype>& Y, numTest<dtype>& loss, const numTest<dtype>& outputs, const numTest<dtype>& labels)
     {
-
+        numTest_Functions::softmax_gpu(&Y, outputs);
     }
 
     void cross_entropy_loss_cpu(numTest<dtype>& Y, numTest<dtype>& loss, const numTest<dtype>& outputs, const numTest<dtype>& labels)

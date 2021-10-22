@@ -193,6 +193,21 @@ namespace numTest_Functions
     }
 
     template<typename dtype>
+    void exp_gpu(numTest<dtype>* returnArray, const numTest<dtype>& otherArray)
+    {
+        std::string function_name = "void exp_gpu(numTest<dtype>*, const numTest<dtype>&)";
+        NumTest_Utils::null_check(function_name, "returnArray->dev_data_", returnArray->dev_data_);
+        NumTest_Utils::null_check(function_name, "otherArray.dev_data_", otherArray.dev_data_);
+
+        if (returnArray->shape_.rows != otherArray.shape_.rows || returnArray->shape_.cols != otherArray.shape_.cols)
+        {
+            NumTest_Utils::exception_print(function_name, "no match returnArray, otherArray shape");
+        }
+
+        NumTest_gpu::exp_gpu(returnArray->dev_data_, otherArray.dev_data_, returnArray->shape_.rows, returnArray->shape_.cols);
+    }
+
+    template<typename dtype>
     void exp_cpu(numTest<dtype>* returnArray, const numTest<dtype>& otherArray)
     {
         std::string function_name = "void exp_cpu(numTest<dtype>*, const numTest<dtype>&)";
@@ -212,6 +227,15 @@ namespace numTest_Functions
     }
 
     template<typename dtype>
+    void sum_div_gpu(const numTest<dtype>& inArray)
+    {
+        std::string function_name = "void sum_div_gpu(const numTest<dtype>&)";
+        NumTest_Utils::null_check(function_name, "inArray.dev_data_", inArray.dev_data_);
+
+        NumTest_gpu::sum_div_gpu(inArray.dev_data_, inArray.shape_.size());
+    }
+
+    template<typename dtype>
     dtype sum_cpu(const numTest<dtype>& inArray)
     {
         std::string function_name = "dtype sum_cpu(const numTest<dtype>&)";
@@ -219,6 +243,15 @@ namespace numTest_Functions
 
         return std::accumulate(inArray.data_, inArray.data_ + inArray.shape_.size(), dtype{0});
     }
+
+    // template<typename dtype>
+    // void div_gpu(numTest<dtype>* returnArray, double div)
+    // {
+    //     std::string function_name = "void div_gpu(numTest<dtype>*, dtype)";
+    //     NumTest_Utils::null_check(function_name, "returnArray->dev_data_", returnArray->dev_data_);
+
+    //     NumTest_gpu::div_gpu(returnArray->dev_data_, div, returnArray->shape_.size());
+    // }
 
     template<typename dtype>
     void div_cpu(numTest<dtype>* returnArray, dtype div)
@@ -238,6 +271,24 @@ namespace numTest_Functions
     }
 
     template<typename dtype>
+    void softmax_gpu(numTest<dtype>* returnArray, const numTest<dtype>& otherArray)
+    {
+        std::string function_name = "void softmax_gpu(numTest<dtype>*, const numTest<dtype>&)";
+        NumTest_Utils::null_check(function_name, "returnArray->dev_data_", returnArray->dev_data_);
+        NumTest_Utils::null_check(function_name, "otherArray.dev_data_", otherArray.dev_data_);
+
+        if (returnArray->shape_.rows != otherArray.shape_.rows || returnArray->shape_.cols != otherArray.shape_.cols)
+        {
+            NumTest_Utils::exception_print(function_name, "no match returnArray, otherArray shape");
+        }
+
+        exp_gpu(returnArray, otherArray);
+        sum_div_gpu(*returnArray);
+        printf("softmax_gpu\n");
+        returnArray->print();
+    }
+
+    template<typename dtype>
     void softmax_cpu(numTest<dtype>* returnArray, const numTest<dtype>& otherArray)
     {
         std::string function_name = "void softmax_cpu(numTest<dtype>*, const numTest<dtype>&)";
@@ -252,5 +303,8 @@ namespace numTest_Functions
         exp_cpu(returnArray, otherArray);
         dtype sum = sum_cpu(*returnArray);
         div_cpu(returnArray, sum);
+
+        printf("softmax_cpu\n");
+        returnArray->print();
     }
 }

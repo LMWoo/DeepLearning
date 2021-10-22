@@ -181,4 +181,59 @@ namespace NumTest_gpu
 
         tanh_<<<dimGrid, dimBlock>>>(out_dev_data, in_dev_data);
     }
+
+    __global__ void exp_(double* out_dev_data, const double* in_dev_data)
+    {
+        size_t i = threadIdx.y * blockDim.x + threadIdx.x;
+        out_dev_data[i] = exp(in_dev_data[i]);
+    }
+
+    void exp_gpu(double* out_dev_data, const double* in_dev_data, const size_t& rows, const size_t& cols)
+    {
+        dim3 dimGrid(1, 1, 1);
+        dim3 dimBlock(cols, rows, 1);
+
+        exp_<<<dimGrid, dimBlock>>>(out_dev_data, in_dev_data);
+    }
+
+    __global__ void sum_div_(double* dev_data)
+    {
+        __shared__ double arr[1024];
+        
+        arr[threadIdx.x] = dev_data[threadIdx.x];
+
+        __syncthreads();
+
+        for (size_t stride = 1; stride <= blockDim.x; stride *= 2)
+        {
+            if (threadIdx.x % stride == 0)
+            {
+                arr[2 * threadIdx.x] += arr[2 * threadIdx.x + stride];
+            }
+            __syncthreads();
+        }
+        
+        dev_data[threadIdx.x] /= arr[0];
+    }
+
+    void sum_div_gpu(double* dev_data, const size_t& size)
+    {
+        dim3 dimGrid(1, 1, 1);
+        dim3 dimBlock(size, 1, 1);
+
+        sum_div_<<<dimGrid, dimBlock>>>(dev_data);
+    }
+
+    // __global__ void div_(double* dev_data, const double& div)
+    // {
+    //     dev_data[threadIdx.x] /= div;
+    // }
+
+    // void div_gpu(double* dev_data, const double& div, const size_t& size)
+    // {
+    //     dim3 dimGrid(1, 1, 1);
+    //     dim3 dimBlock(size, 1, 1);
+
+    //     div_<<<dimGrid, dimBlock>>>(dev_data, div);
+    // }
 }

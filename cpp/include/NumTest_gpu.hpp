@@ -39,4 +39,7 @@ namespace NumTest_gpu
     double* add_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, const size_t& rows, const size_t& cols);
 
     void tanh_gpu(double* out_dev_data, const double* in_dev_data, const size_t& rows, const size_t& cols);
+    void exp_gpu(double* out_dev_data, const double* in_dev_data, const size_t& rows, const size_t& cols);
+    void sum_div_gpu(double* dev_data, const size_t& size);
+    //void div_gpu(double* dev_data, const double& div, const size_t& size);
 }
