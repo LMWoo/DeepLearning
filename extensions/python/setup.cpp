@@ -109,8 +109,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("cpu", &numTestDouble::cpu)
         .def("numpy", &numTestDouble::numpy)
         .def("print_pointer", &numTestDouble::print_pointer)
-        .def("print", &numTestDouble::print);
-
+        .def("print", &numTestDouble::print)
+        .def("test", &numTestDouble::test);
+    
+    m.def("test_dot_gpu", &numTest_Functions::test_dot_gpu);
     m.def("transpose_cpu", &numTest_Functions::transpose_cpu<double>);    
     m.def("dot_cpu", &numTest_Functions::dot_cpu<double>);
     m.def("dot_gpu", &numTest_Functions::dot_gpu<double>);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "NumTest.hpp"
+#include "NumTest_Functions.hpp"
 #include <unordered_map>
 #include <tuple>
 
@@ -248,27 +249,15 @@ private:
         for (int t = 0; t < seq_length; ++t)
         {
             numTest_Functions::transpose_gpu(X[t], x[t]);
-            numTest_Functions::dot_gpu(A[seq_length], *U, *X[t]);
+            numTest_Functions::dot_gpu(A[t], *U, *X[t]);
             numTest_Functions::dot_gpu(A[seq_length + 1], *W, *S[t - 1]);
+        }
 
-            // A[t]->cpu();
-            
-            // printf("gpu start\n");
-            // A[t]->print();
-            // printf("gpu end\n");
-            
-            // U->cpu();
-            // X[t]->cpu();
-
-            // numTest_Functions::dot_cpu(A[t], *U, *X[t]);
-
-            // printf("cpu start\n");
-            // A[t]->print();
-            // printf("cpu end\n");
-            // A[t]->cuda();
-            // U->cuda();
-            // X[t]->cuda();
-
+        for (int t = 0; t < seq_length; ++t)
+        {
+            U->print();
+            X[t]->print();
+            A[t]->print();
         }
         PRINT_DEBUG("call by forward_gpu() end\n");
     }
@@ -287,10 +276,10 @@ private:
             numTest_Functions::add_cpu(A[t], *A[t], *b);
         }
 
-        // for (int t = 0; t < seq_length; ++t)
-        // {
-        //     A[t]->print();
-        // }
+        for (int t = 0; t < seq_length; ++t)
+        {
+            A[t]->print();
+        }
 
         PRINT_DEBUG("call by forward_cpu() end\n");
     }
