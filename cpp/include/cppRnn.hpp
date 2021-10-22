@@ -34,6 +34,7 @@ public:
         numTest_Functions::copy_cpu(this->V, V);
 
         this->FC_W = new numTest<dtype>(num_classes, hidden_size);
+        this->fc_b = new numTest<dtype>(num_classes, 1);
         numTest_Functions::copy_cpu(this->FC_W, FC_W);
         
         for (int i = -1; i < seq_length; ++i)
@@ -90,6 +91,11 @@ public:
             delete FC_W;
             FC_W = nullptr;
         }
+        if (fc_b)
+        {
+            delete fc_b;
+            fc_b = nullptr;
+        }
 
         numTestTypeMapDoubleIter mapIter;
 
@@ -140,6 +146,7 @@ public:
         b->cuda();
         c->cuda();
         FC_W->cuda();
+        fc_b->cuda();
 
         numTestTypeMapDoubleIter mapIter;
         for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
@@ -185,6 +192,7 @@ public:
         b->cpu();
         c->cpu();
         FC_W->cpu();
+        fc_b->cpu();
 
         numTestTypeMapDoubleIter mapIter;
         for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
@@ -264,23 +272,6 @@ public:
             NumTest_Utils::time_start();
             forward_gpu(result, x, hprev);
             NumTest_Utils::time_end();
-            // this->cpu();
-            // result.cpu();
-            // hprev.cpu();
-            // for (int i = 0; i < x.size(); ++i)
-            // {
-            //     x[i].cpu();
-            // }
-
-            // forward_cpu(result, x, hprev);
-
-            // this->cuda();
-            // result.cuda();
-            // hprev.cuda();
-            // for (int i = 0; i < x.size(); ++i)
-            // {
-            //     x[i].cuda();
-            // }
         }
         else
         {
@@ -318,11 +309,9 @@ private:
             numTest_Functions::add_gpu(O[t], *O[seq_length], *c);
         }
 
-        // for (int t = 0; t < seq_length; ++t)
-        // {
-        //     O[t]->print();
-        // }
-
+        numTest_Functions::dot_gpu(&result, *FC_W, *O[seq_length-1]);
+        numTest_Functions::add_gpu(&result, result, *fc_b);
+        
         PRINT_DEBUG("call by forward_gpu() end\n");
     }
 
@@ -343,10 +332,8 @@ private:
             numTest_Functions::add_cpu(O[t], *O[seq_length], *c);
         }
 
-        for (int t = 0; t < seq_length; ++t)
-        {
-            O[t]->print();
-        }
+        numTest_Functions::dot_cpu(&result, *FC_W, *O[seq_length-1]);
+        numTest_Functions::add_cpu(&result, result, *fc_b);
 
         PRINT_DEBUG("call by forward_cpu() end\n");
     }
@@ -366,6 +353,7 @@ private:
     numTestType* c;
 
     numTestType* FC_W;
+    numTestType* fc_b;
 
     numTestTypeMap X;
     numTestTypeMap A;

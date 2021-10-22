@@ -92,27 +92,28 @@ V = cpp.numTest(xavier_init(hidden_size, hidden_size, fc=True))
 FC_W = cpp.numTest(xavier_init(num_classes, hidden_size, fc=True))
 
 model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
-#model.cuda()
+# model.cuda()
 
-for i in range(2000000000000000000000000):
-    print("images start")
+for i in range(2):
     images = [cpp.numTest(np.random.randn(1, input_size)) for j in range(seq_length)]
-    #[images[j].cuda() for j in range(seq_length)]
-    print("images end")
-
-    print("hprev start")
     hprev = cpp.numTest(np.random.randn(hidden_size, 1))
-    #hprev.cuda()
-    print("hprev end")
+    result = cpp.numTest(np.zeros((num_classes, 1)))
 
-    print("result start")
-    result = cpp.numTest(np.zeros((10, 1)))
-    #result.cuda()
-    print("result end")
+    model.cpu()
     
-    print("forward start")
     model.forward(result, images, hprev)
-    print("forward end")
+    print('result cpu')
+    result.print()
+
+    model.cuda()
+    [images[j].cuda() for j in range(seq_length)]
+    hprev.cuda()
+    result.cuda()
+    model.forward(result, images, hprev)
+    result.cpu()
+    print('result gpu')
+    result.print()
+
 ##################################################
 
 ################# gpu test #######################
