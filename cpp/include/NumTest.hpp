@@ -75,9 +75,9 @@ private:
     {
         print_pointer("deleteArray()");
 
-        nt_gpu::cpu_free(data_);
+        NumTest_gpu::cpu_free(data_);
         data_=nullptr;
-        nt_gpu::gpu_free(dev_data_);
+        NumTest_gpu::gpu_free(dev_data_);
         dev_data_=nullptr;
     }
 
@@ -234,9 +234,9 @@ public:
     {
         if (dev_data_ == nullptr) 
         {
-            dev_data_ = nt_gpu::gpu_malloc(shape_.size() * sizeof(double));
-            nt_gpu::copy_cpu_to_gpu(shape_.size() * sizeof(double), dev_data_, data_);
-            nt_gpu::cpu_free(data_);
+            dev_data_ = NumTest_gpu::gpu_malloc(shape_.size() * sizeof(double));
+            NumTest_gpu::copy_cpu_to_gpu(shape_.size() * sizeof(double), dev_data_, data_);
+            NumTest_gpu::cpu_free(data_);
 
             print_pointer("cuda()");
             
@@ -249,9 +249,9 @@ public:
     {
         if (dev_data_)
         {
-            data_ = (dtype*)nt_gpu::cpu_malloc(shape_.size() * sizeof(dtype));
-            nt_gpu::copy_gpu_to_cpu(shape_.size() * sizeof(double), data_, dev_data_);
-            nt_gpu::gpu_free(dev_data_);
+            data_ = (dtype*)NumTest_gpu::cpu_malloc(shape_.size() * sizeof(dtype));
+            NumTest_gpu::copy_gpu_to_cpu(shape_.size() * sizeof(double), data_, dev_data_);
+            NumTest_gpu::gpu_free(dev_data_);
 
             print_pointer("cpu()");
 

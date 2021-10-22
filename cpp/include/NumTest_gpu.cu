@@ -1,6 +1,6 @@
 #include "NumTest_gpu.hpp"
 
-namespace nt_gpu
+namespace NumTest_gpu
 {
     __global__ void test_dot(double *c, const double *a, const double *b, const int WIDTH)
     {

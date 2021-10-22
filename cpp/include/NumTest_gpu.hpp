@@ -20,7 +20,7 @@
 #define CUDA_CHECK(x) (x)
 #endif
 
-namespace nt_gpu
+namespace NumTest_gpu
 {
     void test_dot_gpu();
     

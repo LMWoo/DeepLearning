@@ -14,7 +14,7 @@ namespace numTest_Functions
 {
     void test_dot_gpu()
     {
-        nt_gpu::test_dot_gpu();
+        NumTest_gpu::test_dot_gpu();
     }
 
     template<typename dtype>
@@ -24,7 +24,7 @@ namespace numTest_Functions
         NumTest_Utils::null_check(function_name, "returnArray->dev_data_", returnArray->dev_data_);
         NumTest_Utils::null_check(function_name, "otherArray.dev_data_", otherArray.dev_data_);
 
-        nt_gpu::copy_gpu_to_gpu(otherArray.shape_.size() * sizeof(dtype), returnArray->dev_data_, otherArray.dev_data_);
+        NumTest_gpu::copy_gpu_to_gpu(otherArray.shape_.size() * sizeof(dtype), returnArray->dev_data_, otherArray.dev_data_);
     }
 
     template<typename dtype>
@@ -50,7 +50,7 @@ namespace numTest_Functions
             return;
         }
 
-        nt_gpu::transpose_gpu(returnArray->dev_data_, otherArray.dev_data_, otherArray.shape_.rows, otherArray.shape_.cols);  
+        NumTest_gpu::transpose_gpu(returnArray->dev_data_, otherArray.dev_data_, otherArray.shape_.rows, otherArray.shape_.cols);  
     }
 
     template<typename dtype>
@@ -90,7 +90,7 @@ namespace numTest_Functions
             return;
         }
 
-        nt_gpu::matrix_dot_gpu(returnArray->dev_data_, lhs.dev_data_, rhs.dev_data_,
+        NumTest_gpu::matrix_dot_gpu(returnArray->dev_data_, lhs.dev_data_, rhs.dev_data_,
             lhs.shape_.rows, lhs.shape_.cols, rhs.shape_.rows, rhs.shape_.cols);
     }
 
@@ -138,7 +138,7 @@ namespace numTest_Functions
             return;
         }
 
-        nt_gpu::add_gpu(returnArray->dev_data_, lhs.dev_data_, rhs.dev_data_, returnArray->shape_.rows, returnArray->shape_.cols);
+        NumTest_gpu::add_gpu(returnArray->dev_data_, lhs.dev_data_, rhs.dev_data_, returnArray->shape_.rows, returnArray->shape_.cols);
     }
 
     template<typename dtype>
@@ -170,7 +170,7 @@ namespace numTest_Functions
             NumTest_Utils::exception_print(function_name, "no match returnArray, otherArray shape");
         }
 
-        nt_gpu::tanh_gpu(returnArray->dev_data_, otherArray.dev_data_, returnArray->shape_.rows, returnArray->shape_.cols);
+        NumTest_gpu::tanh_gpu(returnArray->dev_data_, otherArray.dev_data_, returnArray->shape_.rows, returnArray->shape_.cols);
     }
 
     template<typename dtype>
@@ -190,5 +190,11 @@ namespace numTest_Functions
             {
                 return std::tanh(inValue);
             });
+    }
+
+    template<typename dtype>
+    void softmax_cpu(numTest<dtype>* returnArray, const numTest<dtype>& otherArray)
+    {
+        
     }
 }
