@@ -68,9 +68,9 @@ def dot_test():
 # r.optimizer(gradients)
 
 ################# rnn test #######################
-seq_length = 5
+seq_length = 3
 input_size = 4
-hidden_size = 10
+hidden_size = 5
 num_layers = 1
 num_classes = 10
 batch_size = 1

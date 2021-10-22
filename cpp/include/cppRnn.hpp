@@ -223,6 +223,24 @@ public:
         if ((this->is_cuda_ && x_is_cuda) && hprev.is_cuda_)
         {
             forward_gpu(result, x, hprev);
+
+            // this->cpu();
+            // result.cpu();
+            // hprev.cpu();
+            // for (int i = 0; i < x.size(); ++i)
+            // {
+            //     x[i].cpu();
+            // }
+
+            // forward_cpu(result, x, hprev);
+
+            // this->cuda();
+            // result.cuda();
+            // hprev.cuda();
+            // for (int i = 0; i < x.size(); ++i)
+            // {
+            //     x[i].cuda();
+            // }
         }
         else
         {
@@ -249,16 +267,17 @@ private:
         for (int t = 0; t < seq_length; ++t)
         {
             numTest_Functions::transpose_gpu(X[t], x[t]);
-            numTest_Functions::dot_gpu(A[t], *U, *X[t]);
+            numTest_Functions::dot_gpu(A[seq_length], *U, *X[t]);
             numTest_Functions::dot_gpu(A[seq_length + 1], *W, *S[t - 1]);
+            numTest_Functions::add_gpu(A[t], *A[seq_length], *A[seq_length + 1]);
+            numTest_Functions::add_gpu(A[t], *A[t], *b);
         }
 
-        for (int t = 0; t < seq_length; ++t)
-        {
-            U->print();
-            X[t]->print();
-            A[t]->print();
-        }
+        // for (int t = 0; t < seq_length; ++t)
+        // {
+        //     A[t]->print();
+        // }
+
         PRINT_DEBUG("call by forward_gpu() end\n");
     }
 
@@ -276,10 +295,10 @@ private:
             numTest_Functions::add_cpu(A[t], *A[t], *b);
         }
 
-        for (int t = 0; t < seq_length; ++t)
-        {
-            A[t]->print();
-        }
+        // for (int t = 0; t < seq_length; ++t)
+        // {
+        //     A[t]->print();
+        // }
 
         PRINT_DEBUG("call by forward_cpu() end\n");
     }

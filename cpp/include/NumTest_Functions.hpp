@@ -157,7 +157,7 @@ namespace numTest_Functions
             return;
         }
 
-        std::transform(lhs.data_, lhs.data_ + lhs.shape_.size(), rhs.data_, returnArray->data_, std::plus<dtype>());
+        nt_gpu::add_gpu(returnArray->dev_data_, lhs.dev_data_, rhs.dev_data_, returnArray->shape_.rows, returnArray->shape_.cols);
     }
 
     template<typename dtype>

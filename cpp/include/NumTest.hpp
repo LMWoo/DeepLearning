@@ -8,7 +8,7 @@
 #include <cuda.h>
 #include "NumTest_gpu.hpp"
 
-//#define NUMTEST_DEBUG
+// #define NUMTEST_DEBUG
 
 #if defined(NUMTEST_DEBUG)
 #define PRINT_DEBUG(str, ...) do { \

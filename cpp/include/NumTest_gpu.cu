@@ -121,9 +121,9 @@ namespace nt_gpu
     void transpose_gpu(double* out_dev_data, const double* in_dev_data, const size_t in_rows, const size_t in_cols)
     {
         dim3 dimGrid(1, 1, 1);
-        dim3 dimBlocks(in_cols, in_rows, 1);
+        dim3 dimThread(in_cols, in_rows, 1);
 
-        transpose<<<dimGrid, dimBlocks>>>(out_dev_data, in_dev_data, in_rows, in_cols);
+        transpose<<<dimGrid, dimThread>>>(out_dev_data, in_dev_data, in_rows, in_cols);
     }
 
     __global__ void matrix_dot(double *dev_out, const double* dev_lhs, const double* dev_rhs, 
@@ -147,9 +147,24 @@ namespace nt_gpu
         const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols)
     {
         dim3 dimGrid(1, 1, 1);
-        dim3 dimBlock(rhs_cols, lhs_rows, 1);
+        dim3 dimThread(rhs_cols, lhs_rows, 1);
 
-        matrix_dot<<<dimGrid, dimBlock>>>(dev_out, dev_lhs, dev_rhs, lhs_rows, lhs_cols, rhs_rows, rhs_cols);
+        matrix_dot<<<dimGrid, dimThread>>>(dev_out, dev_lhs, dev_rhs, lhs_rows, lhs_cols, rhs_rows, rhs_cols);
+        return dev_out;
+    }
+
+    __global__ void add(double* dev_out, const double* dev_lhs, const double* dev_rhs)
+    {
+        size_t i = threadIdx.y * blockDim.x + threadIdx.x;
+        dev_out[i] = dev_lhs[i] + dev_rhs[i];
+    }
+
+    double* add_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, const size_t& rows, const size_t& cols)
+    {
+        dim3 dimGrid(1, 1, 1);
+        dim3 dimBlock(cols, rows, 1);
+
+        add<<<dimGrid, dimBlock>>>(dev_out, dev_lhs, dev_rhs);
         return dev_out;
     }
 }
