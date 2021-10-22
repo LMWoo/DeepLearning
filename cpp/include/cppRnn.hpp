@@ -25,6 +25,7 @@ public:
         this->U = new numTest<dtype>(hidden_size, input_size);
         this->W = new numTest<dtype>(hidden_size, hidden_size);
         this->V = new numTest<dtype>(hidden_size, hidden_size);
+        this->b = new numTest<dtype>(hidden_size, 1);
         numTest_Functions::copy_cpu(this->U, U);
         numTest_Functions::copy_cpu(this->W, W);
         numTest_Functions::copy_cpu(this->V, V);
@@ -64,6 +65,11 @@ public:
         {
             delete V;
             V = nullptr;
+        }
+        if (b)
+        {
+            delete b;
+            b = nullptr;
         }
         if (FC_W)
         {
@@ -108,7 +114,7 @@ public:
         U->cuda();
         W->cuda();
         V->cuda();
-        
+        b->cuda();
         FC_W->cuda();
 
         numTestTypeMapDoubleIter mapIter;
@@ -145,7 +151,7 @@ public:
         U->cpu();
         W->cpu();
         V->cpu();
-        
+        b->cpu();
         FC_W->cpu();
 
         numTestTypeMapDoubleIter mapIter;
@@ -238,18 +244,13 @@ private:
     {
         PRINT_DEBUG("call by forward_gpu() start\n");
         numTest_Functions::copy_gpu(S[-1], hprev);
-        
-        // S[-1]->cpu();
-        // S[-1]->print();
-        // S[-1]->cuda();
 
         for (int t = 0; t < seq_length; ++t)
         {
             numTest_Functions::transpose_gpu(X[t], x[t]);
-            numTest_Functions::dot_gpu(A[t], *U, *X[t]);
+            numTest_Functions::dot_gpu(A[seq_length], *U, *X[t]);
+            numTest_Functions::dot_gpu(A[seq_length + 1], *W, *S[t - 1]);
 
-
-#ifdef NUMTEST_DEBUG
             // A[t]->cpu();
             
             // printf("gpu start\n");
@@ -267,23 +268,8 @@ private:
             // A[t]->cuda();
             // U->cuda();
             // X[t]->cuda();
-#endif
+
         }
-        
-        for (int t = 0; t < seq_length; ++t)
-        {
-            printf("prev transpose\n");
-            // x[t].cpu<dtype>();
-            // x[t].print<dtype>();
-            // x[t].cuda<dtype>();
-
-            printf("after transpose\n");
-            // X[t]->cpu();
-            // X[t]->print();
-            // X[t]->cuda();
-        }
-
-
         PRINT_DEBUG("call by forward_gpu() end\n");
     }
 
@@ -295,24 +281,16 @@ private:
         for (int t = 0; t < seq_length; ++t)
         {
             numTest_Functions::transpose_cpu(X[t], x[t]);
-            numTest_Functions::dot_cpu(A[t], *U, *X[t]);
-            // A[seq_length]->print();
+            numTest_Functions::dot_cpu(A[seq_length], *U, *X[t]);
+            numTest_Functions::dot_cpu(A[seq_length + 1], *W, *S[t - 1]);
+            numTest_Functions::add_cpu(A[t], *A[seq_length], *A[seq_length + 1]);
+            numTest_Functions::add_cpu(A[t], *A[t], *b);
         }
 
-        for (int t = 0; t < seq_length; ++t)
-        {
-            printf("U start\n");
-            U->print();
-            printf("U end\n");
-
-            printf("X[t] start\n");
-            X[t]->print();
-            printf("X[t] end\n");
-
-            printf("A[t] start\n");
-            A[t]->print();
-            printf("A[t] end\n");
-        }
+        // for (int t = 0; t < seq_length; ++t)
+        // {
+        //     A[t]->print();
+        // }
 
         PRINT_DEBUG("call by forward_cpu() end\n");
     }
@@ -328,6 +306,7 @@ private:
     numTestType* U;
     numTestType* W;
     numTestType* V;
+    numTestType* b;
 
     numTestType* FC_W;
 

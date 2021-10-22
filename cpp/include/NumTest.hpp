@@ -8,7 +8,7 @@
 #include <cuda.h>
 #include "NumTest_gpu.hpp"
 
-// #define NUMTEST_DEBUG
+//#define NUMTEST_DEBUG
 
 #if defined(NUMTEST_DEBUG)
 #define PRINT_DEBUG(str, ...) do { \
@@ -60,7 +60,7 @@ private:
     {
         deleteArray();
         data_ = (dtype*)malloc(sizeof(dtype) * shape_.size());
-        fill(dtype{0});
+        this->zeros();
 
         print_pointer("newArray()");
     }
@@ -79,11 +79,6 @@ private:
         data_=nullptr;
         nt_gpu::gpu_free(dev_data_);
         dev_data_=nullptr;
-        // if (data_)
-        // {
-        //     free(data_);
-        //     data_=nullptr;
-        // }
     }
 
 public:
@@ -170,6 +165,16 @@ public:
         return data_[row * shape_.cols + col];
     }
 
+    void zeros()
+    {
+        this->fill(dtype{0});
+    }
+
+    void ones()
+    {
+        this->fill(dtype{1});
+    }
+
     numpyArrayGeneric numpy()
     {
         const std::vector<pybind11::ssize_t> numpy_shape{static_cast<pybind11::ssize_t>(shape_.rows), 
@@ -182,6 +187,7 @@ public:
     std::string str() const
     {
         std::string out;
+        out += "print start\n";
         out += "[";
         for (size_t row = 0; row < shape_.rows; ++row)
         {
@@ -200,6 +206,7 @@ public:
             }
         }
         out += "]\n";
+        out += "print end\n";
         return out;
     }
 
@@ -236,6 +243,9 @@ public:
             data_ = (dtype*)nt_gpu::cpu_malloc(shape_.size() * sizeof(dtype));
             nt_gpu::copy_gpu_to_cpu(shape_.size() * sizeof(double), data_, dev_data_);
             nt_gpu::gpu_free(dev_data_);
+
+            print_pointer("cpu()");
+
             dev_data_ = nullptr;
             is_cuda_ = false;
         }
@@ -315,6 +325,20 @@ namespace numTest_Functions
     template<typename dtype> 
     void dot_gpu(numTest<dtype>* returnArray, const numTest<dtype>& lhs, const numTest<dtype>& rhs)
     {
+        if (!returnArray->dev_data_)
+        {
+            printf("void dot_gpu(numTest<dtype>* returnArray, const numTest<dtype>& lhs, const numTest<dtype>& rhs) exception\n");   
+            printf("returnArray dev_data_ == nullptr\n");
+            return;
+        }
+
+        if (lhs.shape_.cols != rhs.shape_.rows)
+        {
+            printf("void dot_gpu(numTest<dtype>* returnArray, const numTest<dtype>& lhs, const numTest<dtype>& rhs) exception\n");   
+            printf("no match lhs, rhs shape\n");
+            return;
+        }
+
         if (returnArray->dev_data_)
         {
             printf("lhs rows %d cols %d, rhs rows %d cols %d\n", lhs.shape_.rows, lhs.shape_.cols, rhs.shape_.rows, rhs.shape_.cols);
@@ -323,9 +347,16 @@ namespace numTest_Functions
         }
     }
 
-    // template<typename dtype>
-    // void add_cpu(numTest<dtype>& returnArray, const numTest<dtype>& lhs, const numTest<dtype>& rhs)
-    // {
-    //     if (lhs)
-    // }
+    template<typename dtype>
+    void add_cpu(numTest<dtype>* returnArray, const numTest<dtype>& lhs, const numTest<dtype>& rhs)
+    {
+        if (lhs.shape_.rows != rhs.shape_.rows || lhs.shape_.cols != rhs.shape_.cols)
+        {
+            printf("void add_cpu(numTest<dtype>* returnArray, const numTest<dtype>& lhs, const numTest<dtype>& rhs) exception\n");   
+            printf("no match lhs, rhs shape\n");
+            return;
+        }
+
+        std::transform(lhs.data_, lhs.data_ + lhs.shape_.size(), rhs.data_, returnArray->data_, std::plus<dtype>());
+    }
 }
