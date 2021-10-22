@@ -92,27 +92,36 @@ V = cpp.numTest(xavier_init(hidden_size, hidden_size, fc=True))
 FC_W = cpp.numTest(xavier_init(num_classes, hidden_size, fc=True))
 
 model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
-# model.cuda()
+model.cuda()
 
-for i in range(2):
+for i in range(200000000000000000000000000000000000000):
     images = [cpp.numTest(np.random.randn(1, input_size)) for j in range(seq_length)]
     hprev = cpp.numTest(np.random.randn(hidden_size, 1))
-    result = cpp.numTest(np.zeros((num_classes, 1)))
+    outputs = cpp.numTest(np.zeros((num_classes, 1)))
+    labels = cpp.numTest(np.random.randint(0, num_classes, (1, )))
+    Y = cpp.numTest(np.zeros((num_classes, 1)))
+    loss = cpp.numTest(np.zeros((num_classes, 1)))
 
     model.cpu()
     
-    model.forward(result, images, hprev)
-    print('result cpu')
-    result.print()
+    model.forward(outputs, images, hprev)
+    model.cross_entropy_loss(Y, loss, outputs, labels)
+
+    print('forward outputs cpu')
+    outputs.print()
 
     model.cuda()
     [images[j].cuda() for j in range(seq_length)]
     hprev.cuda()
-    result.cuda()
-    model.forward(result, images, hprev)
-    result.cpu()
-    print('result gpu')
-    result.print()
+    outputs.cuda()
+    labels.cuda()
+    Y.cuda()
+    loss.cuda()
+    model.forward(outputs, images, hprev)
+    model.cross_entropy_loss(Y, loss, outputs, labels)
+    outputs.cpu()
+    print('forward outputs gpu')
+    outputs.print()
 
 ##################################################
 

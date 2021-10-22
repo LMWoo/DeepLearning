@@ -234,32 +234,8 @@ public:
     }
 
 public:
-    void forward(numTest<dtype>& result,  std::vector<numTest<dtype>>& x,  numTest<dtype>& hprev)
+    void forward(numTest<dtype>& outputs,  std::vector<numTest<dtype>>& x,  numTest<dtype>& hprev)
     {
-#ifdef NUMTEST_DEBUG
-        // printf("cpp forward x print start\n");
-        // for (int i = 0; i < x.size(); ++i)
-        // {
-        //     x[i].cpu();
-        //     x[i].print();
-        //     x[i].cuda();
-
-        //     x_is_cuda=x[i].is_cuda_;
-        // }
-        // printf("cpp forward x print end\n");
-
-        // printf("cpp forward hprev print start\n");
-        // hprev.cpu();
-        // hprev.print();
-        // hprev.cuda();
-        // printf("cpp forward hprev print end\n");
-
-        // printf("cpp forward result print start\n");
-        // result.cpu();
-        // result.print();
-        // result.cuda();
-        // printf("cpp forward result print end\n");
-#endif
         bool x_is_cuda = false;
         
         for (int i = 0; i < x.size(); ++i)
@@ -270,17 +246,17 @@ public:
         if ((this->is_cuda_ && x_is_cuda) && hprev.is_cuda_)
         {
             NumTest_Utils::time_start();
-            forward_gpu(result, x, hprev);
+            forward_gpu(outputs, x, hprev);
             NumTest_Utils::time_end();
         }
         else
         {
             NumTest_Utils::time_start();
-            forward_cpu(result, x, hprev);
+            forward_cpu(outputs, x, hprev);
             NumTest_Utils::time_end();
         }
 
-        // result.data_=nullptr;
+        // outputs.data_=nullptr;
         // hprev.data_=nullptr;
         
         for (int i = 0; i < x.size(); ++i)
@@ -291,8 +267,32 @@ public:
         }
     }
 
+
+    void cross_entropy_loss(numTest<dtype>& Y, numTest<dtype>& loss, const numTest<dtype>& outputs, const numTest<dtype>& labels)
+    {
+        if ((Y.is_cuda_ && outputs.is_cuda_) && labels.is_cuda_)
+        {
+            cross_entropy_loss_gpu(Y, loss, outputs, labels);
+        }
+        else
+        {
+            cross_entropy_loss_cpu(Y, loss, outputs, labels);
+        }
+    }
+    
 private:
-    void forward_gpu(numTest<dtype>& result, const std::vector<numTest<dtype>>& x, const numTest<dtype>& hprev)
+
+    void cross_entropy_loss_gpu(numTest<dtype>& Y, numTest<dtype>& loss, const numTest<dtype>& outputs, const numTest<dtype>& labels)
+    {
+
+    }
+
+    void cross_entropy_loss_cpu(numTest<dtype>& Y, numTest<dtype>& loss, const numTest<dtype>& outputs, const numTest<dtype>& labels)
+    {
+
+    }
+
+    void forward_gpu(numTest<dtype>& outputs, const std::vector<numTest<dtype>>& x, const numTest<dtype>& hprev)
     {
         PRINT_DEBUG("call by forward_gpu() start\n");
         numTest_Functions::copy_gpu(S[-1], hprev);
@@ -309,13 +309,13 @@ private:
             numTest_Functions::add_gpu(O[t], *O[seq_length], *c);
         }
 
-        numTest_Functions::dot_gpu(&result, *FC_W, *O[seq_length-1]);
-        numTest_Functions::add_gpu(&result, result, *fc_b);
+        numTest_Functions::dot_gpu(&outputs, *FC_W, *O[seq_length-1]);
+        numTest_Functions::add_gpu(&outputs, outputs, *fc_b);
         
         PRINT_DEBUG("call by forward_gpu() end\n");
     }
 
-    void forward_cpu(numTest<dtype>& result, const std::vector<numTest<dtype>>& x, const numTest<dtype>& hprev)
+    void forward_cpu(numTest<dtype>& outputs, const std::vector<numTest<dtype>>& x, const numTest<dtype>& hprev)
     {
         PRINT_DEBUG("call by forward_cpu() start\n");
         numTest_Functions::copy_cpu(S[-1], hprev);
@@ -332,12 +332,11 @@ private:
             numTest_Functions::add_cpu(O[t], *O[seq_length], *c);
         }
 
-        numTest_Functions::dot_cpu(&result, *FC_W, *O[seq_length-1]);
-        numTest_Functions::add_cpu(&result, result, *fc_b);
+        numTest_Functions::dot_cpu(&outputs, *FC_W, *O[seq_length-1]);
+        numTest_Functions::add_cpu(&outputs, outputs, *fc_b);
 
         PRINT_DEBUG("call by forward_cpu() end\n");
     }
-
 
 private:
     double lr{0.0};
