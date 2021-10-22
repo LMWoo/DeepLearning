@@ -68,6 +68,10 @@ def dot_test():
 # r.optimizer(gradients)
 
 ################# rnn test #######################
+def softmax(x):
+    e = np.exp(x)
+    return e / np.sum(e)
+
 seq_length = 3
 input_size = 4
 hidden_size = 5
@@ -94,7 +98,7 @@ FC_W = cpp.numTest(xavier_init(num_classes, hidden_size, fc=True))
 model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
 model.cuda()
 
-for i in range(2):
+for i in range(200000000000000000000000000000000000000000000000):
     images = [cpp.numTest(np.random.randn(1, input_size)) for j in range(seq_length)]
     hprev = cpp.numTest(np.random.randn(hidden_size, 1))
     outputs = cpp.numTest(np.zeros((num_classes, 1)))
@@ -110,18 +114,24 @@ for i in range(2):
     print('forward outputs cpu')
     outputs.print()
 
-    model.cuda()
-    [images[j].cuda() for j in range(seq_length)]
-    hprev.cuda()
-    outputs.cuda()
-    labels.cuda()
-    Y.cuda()
-    loss.cuda()
-    model.forward(outputs, images, hprev)
-    model.cross_entropy_loss(Y, loss, outputs, labels)
-    outputs.cpu()
-    print('forward outputs gpu')
-    outputs.print()
+    print('numTest softmax')
+    Y.print()
+
+    print('numpy softmax')
+    print(softmax(outputs.numpy()))
+
+    # model.cuda()
+    # [images[j].cuda() for j in range(seq_length)]
+    # hprev.cuda()
+    # outputs.cuda()
+    # labels.cuda()
+    # Y.cuda()
+    # loss.cuda()
+    # model.forward(outputs, images, hprev)
+    # model.cross_entropy_loss(Y, loss, outputs, labels)
+    # outputs.cpu()
+    # print('forward outputs gpu')
+    # outputs.print()
 
 ##################################################
 

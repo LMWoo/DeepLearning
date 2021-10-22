@@ -193,8 +193,64 @@ namespace numTest_Functions
     }
 
     template<typename dtype>
+    void exp_cpu(numTest<dtype>* returnArray, const numTest<dtype>& otherArray)
+    {
+        std::string function_name = "void exp_cpu(numTest<dtype>*, const numTest<dtype>&)";
+        NumTest_Utils::null_check(function_name, "returnArray->data_", returnArray->data_);
+        NumTest_Utils::null_check(function_name, "otherArray.data_", otherArray.data_);
+
+        if (returnArray->shape_.rows != otherArray.shape_.rows || returnArray->shape_.cols != otherArray.shape_.cols)
+        {
+            NumTest_Utils::exception_print(function_name, "no match returnArray, otherArray shape");
+        }
+
+        std::transform(otherArray.data_, otherArray.data_ + otherArray.shape_.size(), returnArray->data_,
+            [](dtype inValue) -> auto
+            {
+                return std::exp(inValue);
+            });
+    }
+
+    template<typename dtype>
+    dtype sum_cpu(const numTest<dtype>& inArray)
+    {
+        std::string function_name = "dtype sum_cpu(const numTest<dtype>&)";
+        NumTest_Utils::null_check(function_name, "inArray.data_", inArray.data_);
+
+        return std::accumulate(inArray.data_, inArray.data_ + inArray.shape_.size(), dtype{0});
+    }
+
+    template<typename dtype>
+    void div_cpu(numTest<dtype>* returnArray, dtype div)
+    {
+        std::string function_name = "void div_cpu(numTest<dtype>*, dtype)";
+        NumTest_Utils::null_check(function_name, "returnArray->data_", returnArray->data_);
+
+        for (size_t i = 0; i < returnArray->shape_.size(); ++i)
+        {
+            returnArray->data_[i] /= (div + NumTest_Utils::epsilon<dtype>());
+        }
+        // std::transform(returnArray->data_, returnArray->data_ + returnArray->shape_.size(), returnArray->data_,
+        //     [](dtype inValue) -> auto
+        //     {
+        //         return inValue / (div + NumTest_Utils::epsilon<dtype>());
+        //     });
+    }
+
+    template<typename dtype>
     void softmax_cpu(numTest<dtype>* returnArray, const numTest<dtype>& otherArray)
     {
-        
+        std::string function_name = "void softmax_cpu(numTest<dtype>*, const numTest<dtype>&)";
+        NumTest_Utils::null_check(function_name, "returnArray->data_", returnArray->data_);
+        NumTest_Utils::null_check(function_name, "otherArray.data_", otherArray.data_);
+
+        if (returnArray->shape_.rows != otherArray.shape_.rows || returnArray->shape_.cols != otherArray.shape_.cols)
+        {
+            NumTest_Utils::exception_print(function_name, "no match returnArray, otherArray shape");
+        }
+
+        exp_cpu(returnArray, otherArray);
+        dtype sum = sum_cpu(*returnArray);
+        div_cpu(returnArray, sum);
     }
 }

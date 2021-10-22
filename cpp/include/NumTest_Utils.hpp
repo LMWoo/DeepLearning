@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <chrono>
+#include <limits>
 
 namespace NumTest_Utils
 {
@@ -39,5 +40,11 @@ namespace NumTest_Utils
         {
             exception_print(function_name, pointer_name + " == nullptr");
         }
+    }
+
+    template<typename dtype>
+    dtype epsilon()
+    {
+        return std::numeric_limits<dtype>::epsilon();
     }
 }
