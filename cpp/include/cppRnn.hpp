@@ -27,6 +27,8 @@ public:
         this->W = new numTest<dtype>(hidden_size, hidden_size);
         this->V = new numTest<dtype>(hidden_size, hidden_size);
         this->b = new numTest<dtype>(hidden_size, 1);
+        this->c = new numTest<dtype>(hidden_size, 1);
+
         numTest_Functions::copy_cpu(this->U, U);
         numTest_Functions::copy_cpu(this->W, W);
         numTest_Functions::copy_cpu(this->V, V);
@@ -47,6 +49,11 @@ public:
         for (int i = 0; i < seq_length + 2; ++i)
         {
             this->A[i] = new numTest<dtype>(hidden_size, 1);
+        }
+
+        for (int i = 0; i < seq_length + 1; ++i)
+        {
+            this->O[i] = new numTest<dtype>(hidden_size, 1);
         }
     }
 
@@ -72,6 +79,12 @@ public:
             delete b;
             b = nullptr;
         }
+        if (c)
+        {
+            delete c;
+            c = nullptr;
+        }
+
         if (FC_W)
         {
             delete FC_W;
@@ -106,6 +119,15 @@ public:
                 mapIter->second=nullptr;
             }
         }
+
+        for (mapIter = this->O.begin(); mapIter != this->O.end(); ++mapIter)
+        {
+            if (mapIter->second)
+            {
+                delete mapIter->second;
+                mapIter->second=nullptr;
+            }
+        }
     }
 
     void cuda()
@@ -116,6 +138,7 @@ public:
         W->cuda();
         V->cuda();
         b->cuda();
+        c->cuda();
         FC_W->cuda();
 
         numTestTypeMapDoubleIter mapIter;
@@ -143,6 +166,13 @@ public:
             }
         }
 
+        for (mapIter = this->O.begin(); mapIter != this->O.end(); ++mapIter)
+        {
+            if (mapIter->second)
+            {
+                mapIter->second->cuda();
+            }
+        }
     }
 
     void cpu()
@@ -153,6 +183,7 @@ public:
         W->cpu();
         V->cpu();
         b->cpu();
+        c->cpu();
         FC_W->cpu();
 
         numTestTypeMapDoubleIter mapIter;
@@ -173,6 +204,14 @@ public:
         }
 
         for (mapIter = this->A.begin(); mapIter != this->A.end(); ++mapIter)
+        {
+            if (mapIter->second)
+            {
+                mapIter->second->cpu();
+            }
+        }
+
+        for (mapIter = this->O.begin(); mapIter != this->O.end(); ++mapIter)
         {
             if (mapIter->second)
             {
@@ -275,12 +314,14 @@ private:
             numTest_Functions::add_gpu(A[t], *A[seq_length], *A[seq_length + 1]);
             numTest_Functions::add_gpu(A[t], *A[t], *b);
             numTest_Functions::tanh_gpu(S[t], *A[t]);
+            numTest_Functions::dot_gpu(O[seq_length], *V, *S[t]);
+            numTest_Functions::add_gpu(O[t], *O[seq_length], *c);
         }
 
-        for (int t = 0; t < seq_length; ++t)
-        {
-            S[t]->print();
-        }
+        // for (int t = 0; t < seq_length; ++t)
+        // {
+        //     O[t]->print();
+        // }
 
         PRINT_DEBUG("call by forward_gpu() end\n");
     }
@@ -298,11 +339,13 @@ private:
             numTest_Functions::add_cpu(A[t], *A[seq_length], *A[seq_length + 1]);
             numTest_Functions::add_cpu(A[t], *A[t], *b);
             numTest_Functions::tanh_cpu(S[t], *A[t]);
+            numTest_Functions::dot_cpu(O[seq_length], *V, *S[t]);
+            numTest_Functions::add_cpu(O[t], *O[seq_length], *c);
         }
 
         for (int t = 0; t < seq_length; ++t)
         {
-            S[t]->print();
+            O[t]->print();
         }
 
         PRINT_DEBUG("call by forward_cpu() end\n");
@@ -320,10 +363,12 @@ private:
     numTestType* W;
     numTestType* V;
     numTestType* b;
+    numTestType* c;
 
     numTestType* FC_W;
 
     numTestTypeMap X;
     numTestTypeMap A;
     numTestTypeMap S;
+    numTestTypeMap O;
 };
