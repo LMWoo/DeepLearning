@@ -187,7 +187,6 @@ public:
     std::string str()
     {
         std::string out;
-        out += "print start\n";
         out += "[";
         for (size_t row = 0; row < shape_.rows; ++row)
         {
@@ -206,7 +205,6 @@ public:
             }
         }
         out += "]\n";
-        out += "print end\n";
         return out;
     }
 

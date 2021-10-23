@@ -68,36 +68,6 @@ def dot_test():
 # r.optimizer(gradients)
 
 ################# rnn test #######################
-def np_one_hot_vector(Y, labels):
-    out = np.zeros_like(Y)
-    for i in range(len(labels)):
-        out[int(labels[i])][i] = 1
-    return out
-
-def np_cross_entropy_loss(outputs, labels):
-    Y = np_softmax(outputs)
-    loss = -np.log(Y) * np_one_hot_vector(Y, labels)
-    return Y, loss
-
-def np_softmax(x):
-    e = np.exp(x)
-    return e / np.sum(e)
-
-def np_deriv_softmax(Y, labels):
-    dY = np.copy(Y)
-    for i in range(len(labels)):
-        dY[int(labels[i])][i] -= 1
-    return dY
-
-seq_length = 3
-input_size = 4
-hidden_size = 5
-num_layers = 1
-num_classes = 10
-batch_size = 1
-num_epochs = 2
-learning_rate = 0.01
-
 def xavier_init(c1, c2, w=1, h=1, fc=False):
     fan_1 = c2 * w * h
     fan_2 = c1 * w * h
@@ -107,45 +77,165 @@ def xavier_init(c1, c2, w=1, h=1, fc=False):
         params = params.reshape(c1, c2)
     return params
 
-U = cpp.numTest(xavier_init(hidden_size, input_size, fc=True))
-W = cpp.numTest(xavier_init(hidden_size, hidden_size, fc=True))
-V = cpp.numTest(xavier_init(hidden_size, hidden_size, fc=True))
-FC_W = cpp.numTest(xavier_init(num_classes, hidden_size, fc=True))
+class My_RNN(object):
+    def __init__(self, input_size, hidden_size, num_classes, U, W, V, FC_W):
+        self.lr = learning_rate
+        self.seq_length = seq_length
+        self.hidden_size = hidden_size
+        self.U = U
+        self.W = W
+        self.V = V
+
+        self.b = np.zeros((hidden_size, 1)) # rnn input parameters
+        self.c = np.zeros((hidden_size, 1)) # rnn output parameters
+        
+        self.FC_W = FC_W
+        self.fc_b = np.zeros((num_classes, 1)) # fc parameters
+        
+        self.mU = np.zeros_like(self.U)
+        self.mW = np.zeros_like(self.W)
+        self.mV = np.zeros_like(self.V)
+        self.mb = np.zeros_like(self.b)
+        self.mc = np.zeros_like(self.c)
+        
+        self.mFC_W = np.zeros_like(self.FC_W)
+        self.mfc_b = np.zeros_like(self.fc_b)
+        
+        self.X = {}
+        self.A = {}
+        self.S = {}
+        self.O = {}
+        self.FC_O = {}
+        
+    def forward(self, x, hprev):
+        self.S[-1] = np.copy(hprev)
+        
+        for t in range(self.seq_length):
+            self.X[t] = x[t].T
+            self.A[t] = self.U @ self.X[t] + self.W @ self.S[t - 1] + self.b
+            self.S[t] = np.tanh(self.A[t])
+            self.O[t] = self.V @ self.S[t] + self.c # (hidden, hidden) @ (hidden, 1) + (hidden, 1)
+            
+        self.FC_O = self.FC_W @ self.O[self.seq_length - 1] + self.fc_b # (classes, hidden) @ (hidden, 1) + (classes, 1)
+
+        return self.FC_O # (classes, 1)
+    
+    def backward(self, dY): # (classes, 1)
+        # zero grad
+        dFC_W = np.zeros_like(self.FC_W)
+        dfc_b = np.zeros_like(self.fc_b)
+        
+        dU, dW, dV = np.zeros_like(self.U), np.zeros_like(self.W), np.zeros_like(self.V)
+        db, dc = np.zeros_like(self.b), np.zeros_like(self.c)
+        dS_next = np.zeros_like(self.S[0])
+        
+        dFC_W = dY @ self.O[self.seq_length - 1].T # (classes, 1) @ (1, hidden)
+        dfc_b = dY # (classes, 1)
+        dO = self.FC_W.T @ dY
+        
+        dV = dO @ self.S[self.seq_length - 1].T
+        dc = dO
+        
+        for t in reversed(range(self.seq_length)):
+            dS = self.V.T @ dO + dS_next
+            dA = (1 - self.S[t] ** 2) * dS
+            dU += dA @ self.X[t].T
+            dW += dA @ self.S[t - 1].T
+            db += dA
+            dS_next = self.W.T @ dA
+            
+        return [dU, dW, dV, db, dc, dFC_W, dfc_b]
+        
+    def optimizer_step(self, gradients):
+        for dparam in gradients:
+            np.clip(dparam, -5, 5, out=dparam)
+            
+        for param, dparam, mem in zip([self.U, self.W, self.V, self.b, self.c, self.FC_W, self.fc_b], 
+                                      gradients,
+                                      [self.mU, self.mW, self.mV, self.mb, self.mc, self.mFC_W, self.mfc_b]):
+            mem += dparam * dparam
+            param += -self.lr * dparam / np.sqrt(mem + 1e-8)
+        
+    def cross_entropy_loss(self, outputs, labels):
+        Y = self.softmax(outputs)
+        loss = -np.log(Y) * self.one_hot_vector(Y, labels)
+        return Y, loss
+    
+    def softmax(self, x):
+        e = np.exp(x)
+        return e / np.sum(e)
+    
+    def deriv_softmax(self, Y, labels):
+        dY = np.copy(Y)
+        for i in range(len(labels)):
+            dY[int(labels[i])][i] -= 1
+        return dY
+    
+    def one_hot_vector(self, Y, labels):
+        out = np.zeros_like(Y)
+        for i in range(len(labels)):
+            out[int(labels[i])][i] = 1
+        return out
+    
+    def predict(self, outputs):
+        return np.argmax(self.softmax(outputs), 0)
+        
+
+seq_length = 28
+input_size = 28
+hidden_size = 128
+num_layers = 1
+num_classes = 10
+batch_size = 1
+num_epochs = 2
+learning_rate = 0.01
+
+np_U = xavier_init(hidden_size, input_size, fc=True)
+np_W = xavier_init(hidden_size, hidden_size, fc=True)
+np_V = xavier_init(hidden_size, hidden_size, fc=True)
+np_FC_W = xavier_init(num_classes, hidden_size, fc=True)
+U = cpp.numTest(np_U.reshape(hidden_size, input_size))
+W = cpp.numTest(np_W.reshape(hidden_size, hidden_size))
+V = cpp.numTest(np_V.reshape(hidden_size, hidden_size))
+FC_W = cpp.numTest(np_FC_W)
 
 model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
 model.cuda()
 
-for i in range(2):
-    images = [cpp.numTest(np.random.randn(1, input_size)) for j in range(seq_length)]
-    hprev = cpp.numTest(np.random.randn(hidden_size, 1))
+np_model = My_RNN(input_size, hidden_size, num_classes, np_U, np_W, np_V, np_FC_W)
+
+for i in range(2000000000000000000000000000000000000000000000000000000000000):
+    np_images = np.random.randn(seq_length, 1, input_size)
+    np_hprev = np.zeros((hidden_size, 1))
+    np_labels = np.random.randint(0, num_classes, (1, ))
+
+    images = [cpp.numTest(np_images[j]) for j in range(len(np_images))]
+    hprev = cpp.numTest(np_hprev)
+    labels = cpp.numTest(np_labels)
+
     outputs = cpp.numTest(np.zeros((num_classes, 1)))
-    labels = cpp.numTest(np.random.randint(0, num_classes, (1, )))
     Y = cpp.numTest(np.zeros((num_classes, 1)))
     dY = cpp.numTest(np.zeros((num_classes, 1)))
     loss = cpp.numTest(np.zeros((num_classes, 1)))
 
+    ####### numpy ##########
+    print('=========== start np ===========')
+    np_outputs = np_model.forward(np_images, np_hprev)
+    np_Y, np_loss = np_model.cross_entropy_loss(np_outputs, np_labels)
+    np_dY = np_model.deriv_softmax(np_Y, np_labels)
+    print(np_loss)
+    print('=========== end np ===========')
+
+    ######## cpu ##########
+    print('=========== start cpu ===========')
     model.cpu()
-    
     model.forward(outputs, images, hprev)
-
-    np_Y, np_loss = np_cross_entropy_loss(outputs.numpy(), labels.numpy())
-    np_dY = np_deriv_softmax(np_Y, labels.numpy())
-    print('np')
-    print(np_dY)
-
     model.cross_entropy_loss(dY, Y, loss, outputs, labels)
+    loss.print()
+    print('=========== end cpu ===========')
 
-    print('cpu')
-    dY.print()
-    # print('forward outputs cpu')
-    # outputs.print()
-
-    # print('numTest softmax')
-    # Y.print()
-
-    # print('numpy softmax')
-    # print(softmax(outputs.numpy()))
-
+    ######### cuda #########
+    print('=========== start gpu ===========')
     Y.zeros();
     loss.zeros();
     dY.zeros();
@@ -158,14 +248,11 @@ for i in range(2):
     Y.cuda()
     dY.cuda()
     loss.cuda()
+
     model.forward(outputs, images, hprev)
     model.cross_entropy_loss(dY, Y, loss, outputs, labels)
-    print('gpu')
-    dY.print()
-
-    # outputs.cpu()
-    # print('forward outputs gpu')
-    # outputs.print()
+    loss.print()
+    print('=========== end gpu ===========')
 
 ##################################################
 
