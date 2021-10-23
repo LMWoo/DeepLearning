@@ -5,7 +5,7 @@
 #include <chrono>
 #include <limits>
 
-namespace NumTest_Utils
+namespace cppTensor_Utils
 {
     static std::chrono::system_clock::time_point start;
     static std::chrono::system_clock::time_point end;

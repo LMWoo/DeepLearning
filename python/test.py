@@ -35,10 +35,10 @@ np_U = xavier_init(hidden_size, input_size, fc=True)
 np_W = xavier_init(hidden_size, hidden_size, fc=True)
 np_V = xavier_init(hidden_size, hidden_size, fc=True)
 np_FC_W = xavier_init(num_classes, hidden_size, fc=True)
-U = cpp.numTest(np_U.reshape(hidden_size, input_size))
-W = cpp.numTest(np_W.reshape(hidden_size, hidden_size))
-V = cpp.numTest(np_V.reshape(hidden_size, hidden_size))
-FC_W = cpp.numTest(np_FC_W)
+U = cpp.cppTensor(np_U.reshape(hidden_size, input_size))
+W = cpp.cppTensor(np_W.reshape(hidden_size, hidden_size))
+V = cpp.cppTensor(np_V.reshape(hidden_size, hidden_size))
+FC_W = cpp.cppTensor(np_FC_W)
 
 cpp_model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
 cpp_model.cuda()
@@ -58,14 +58,14 @@ for epoch in range(num_epochs):
         np_labels = train_labels.detach().numpy()
         np_hprev = np.zeros((hidden_size, 1))
 
-        images = [cpp.numTest(np_images[j]) for j in range(len(np_images))]
-        hprev = cpp.numTest(np_hprev)
-        labels = cpp.numTest(np_labels)
+        images = [cpp.cppTensor(np_images[j]) for j in range(len(np_images))]
+        hprev = cpp.cppTensor(np_hprev)
+        labels = cpp.cppTensor(np_labels)
 
-        outputs = cpp.numTest(np.zeros((num_classes, 1)))
-        Y = cpp.numTest(np.zeros((num_classes, 1)))
-        dY = cpp.numTest(np.zeros((num_classes, 1)))
-        loss = cpp.numTest(np.zeros((num_classes, 1)))
+        outputs = cpp.cppTensor(np.zeros((num_classes, 1)))
+        Y = cpp.cppTensor(np.zeros((num_classes, 1)))
+        dY = cpp.cppTensor(np.zeros((num_classes, 1)))
+        loss = cpp.cppTensor(np.zeros((num_classes, 1)))
 
         ####### numpy ##########
         print('=========== start np ===========')

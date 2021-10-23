@@ -1,7 +1,7 @@
 #pragma once
 
-#include "NumTest.hpp"
-#include "NumTest_Functions.hpp"
+#include "cppTensor.hpp"
+#include "cppTensor_Functions.hpp"
 #include <unordered_map>
 #include <tuple>
 
@@ -11,50 +11,50 @@ class cppRnn
 public:
     using numpyArray = pybind11::array_t<dtype, pybind11::array::c_style>;
     using numpyArrayGeneric = pybind11::array;
-    using numTestType = numTest<dtype>;
-    using numTestTypeMap = std::unordered_map<int, numTest<dtype>*>;
-    using numTestTypeMapDoubleIter = std::unordered_map<int, numTest<double>*>::iterator;
+    using cppTensorType = cppTensor<dtype>;
+    using cppTensorTypeMap = std::unordered_map<int, cppTensor<dtype>*>;
+    using cppTensorTypeMapDoubleIter = std::unordered_map<int, cppTensor<double>*>::iterator;
 
 public:
-    cppRnn(double lr, const numTestType& U, const numTestType& W, const numTestType& V, const numTestType& FC_W,
+    cppRnn(double lr, const cppTensorType& U, const cppTensorType& W, const cppTensorType& V, const cppTensorType& FC_W,
         int seq_length, int input_size, int hidden_size, int num_classes)
     {
         this->lr = lr;
         this->seq_length = seq_length;
         this->hidden_size = hidden_size;
         
-        this->U = new numTest<dtype>(hidden_size, input_size);
-        this->W = new numTest<dtype>(hidden_size, hidden_size);
-        this->V = new numTest<dtype>(hidden_size, hidden_size);
-        this->b = new numTest<dtype>(hidden_size, 1);
-        this->c = new numTest<dtype>(hidden_size, 1);
+        this->U = new cppTensor<dtype>(hidden_size, input_size);
+        this->W = new cppTensor<dtype>(hidden_size, hidden_size);
+        this->V = new cppTensor<dtype>(hidden_size, hidden_size);
+        this->b = new cppTensor<dtype>(hidden_size, 1);
+        this->c = new cppTensor<dtype>(hidden_size, 1);
 
-        numTest_Functions::copy_cpu(this->U, U);
-        numTest_Functions::copy_cpu(this->W, W);
-        numTest_Functions::copy_cpu(this->V, V);
+        cppTensor_Functions::copy_cpu(this->U, U);
+        cppTensor_Functions::copy_cpu(this->W, W);
+        cppTensor_Functions::copy_cpu(this->V, V);
 
-        this->FC_W = new numTest<dtype>(num_classes, hidden_size);
-        this->fc_b = new numTest<dtype>(num_classes, 1);
-        numTest_Functions::copy_cpu(this->FC_W, FC_W);
+        this->FC_W = new cppTensor<dtype>(num_classes, hidden_size);
+        this->fc_b = new cppTensor<dtype>(num_classes, 1);
+        cppTensor_Functions::copy_cpu(this->FC_W, FC_W);
         
         for (int i = -1; i < seq_length; ++i)
         {
-            this->S[i] = new numTest<dtype>(hidden_size, 1);
+            this->S[i] = new cppTensor<dtype>(hidden_size, 1);
         }
 
         for (int i = 0; i < seq_length; ++i)
         {
-            this->X[i] = new numTest<dtype>(input_size, 1);
+            this->X[i] = new cppTensor<dtype>(input_size, 1);
         }
 
         for (int i = 0; i < seq_length + 2; ++i)
         {
-            this->A[i] = new numTest<dtype>(hidden_size, 1);
+            this->A[i] = new cppTensor<dtype>(hidden_size, 1);
         }
 
         for (int i = 0; i < seq_length + 1; ++i)
         {
-            this->O[i] = new numTest<dtype>(hidden_size, 1);
+            this->O[i] = new cppTensor<dtype>(hidden_size, 1);
         }
     }
 
@@ -97,7 +97,7 @@ public:
             fc_b = nullptr;
         }
 
-        numTestTypeMapDoubleIter mapIter;
+        cppTensorTypeMapDoubleIter mapIter;
 
         for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
         {
@@ -148,7 +148,7 @@ public:
         FC_W->cuda();
         fc_b->cuda();
 
-        numTestTypeMapDoubleIter mapIter;
+        cppTensorTypeMapDoubleIter mapIter;
         for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
         {
             if (mapIter->second)
@@ -194,7 +194,7 @@ public:
         FC_W->cpu();
         fc_b->cpu();
 
-        numTestTypeMapDoubleIter mapIter;
+        cppTensorTypeMapDoubleIter mapIter;
         for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
         {
             if (mapIter->second)
@@ -234,7 +234,7 @@ public:
     }
 
 public:
-    void forward(numTest<dtype>& outputs,  std::vector<numTest<dtype>>& x,  numTest<dtype>& hprev)
+    void forward(cppTensor<dtype>& outputs,  std::vector<cppTensor<dtype>>& x,  cppTensor<dtype>& hprev)
     {
         bool x_is_cuda = false;
         
@@ -245,15 +245,15 @@ public:
 
         if ((this->is_cuda_ && x_is_cuda) && hprev.is_cuda_)
         {
-            NumTest_Utils::time_start();
+            cppTensor_Utils::time_start();
             forward_gpu(outputs, x, hprev);
-            NumTest_Utils::time_end();
+            cppTensor_Utils::time_end();
         }
         else
         {
-            NumTest_Utils::time_start();
+            cppTensor_Utils::time_start();
             forward_cpu(outputs, x, hprev);
-            NumTest_Utils::time_end();
+            cppTensor_Utils::time_end();
         }
 
         // outputs.data_=nullptr;
@@ -268,7 +268,7 @@ public:
     }
 
 
-    void cross_entropy_loss(numTest<dtype>& dY, numTest<dtype>& Y, numTest<dtype>& loss, const numTest<dtype>& outputs, const numTest<dtype>& labels)
+    void cross_entropy_loss(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
     {
         if ((Y.is_cuda_ && outputs.is_cuda_) && (loss.is_cuda_ && labels.is_cuda_))
         {
@@ -282,76 +282,76 @@ public:
     
 private:
 
-    void cross_entropy_loss_gpu(numTest<dtype>& dY, numTest<dtype>& Y, numTest<dtype>& loss, const numTest<dtype>& outputs, const numTest<dtype>& labels)
+    void cross_entropy_loss_gpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
     {
-        numTest_Functions::softmax_gpu(&dY, outputs);
-        numTest_Functions::copy_gpu(&Y, dY);
+        cppTensor_Functions::softmax_gpu(&dY, outputs);
+        cppTensor_Functions::copy_gpu(&Y, dY);
 
-        numTest_Functions::log_gpu(&Y);
-        numTest_Functions::minus_gpu(&Y);
-        numTest_Functions::deriv_softmax_gpu(dY, loss, Y, labels);
+        cppTensor_Functions::log_gpu(&Y);
+        cppTensor_Functions::minus_gpu(&Y);
+        cppTensor_Functions::deriv_softmax_gpu(dY, loss, Y, labels);
 
-        // const_cast<numTest<dtype>&>(labels).print();
+        // const_cast<cppTensor<dtype>&>(labels).print();
         // Y.print();
         // loss.print();
     }
 
-    void cross_entropy_loss_cpu(numTest<dtype>& dY, numTest<dtype>& Y, numTest<dtype>& loss, const numTest<dtype>& outputs, const numTest<dtype>& labels)
+    void cross_entropy_loss_cpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
     {
-        numTest_Functions::softmax_cpu(&dY, outputs);
-        numTest_Functions::copy_cpu(&Y, dY);
+        cppTensor_Functions::softmax_cpu(&dY, outputs);
+        cppTensor_Functions::copy_cpu(&Y, dY);
         
-        numTest_Functions::log_cpu(&Y);
-        numTest_Functions::minus_cpu(&Y);
-        numTest_Functions::deriv_softmax_cpu(dY, loss, Y, labels);
+        cppTensor_Functions::log_cpu(&Y);
+        cppTensor_Functions::minus_cpu(&Y);
+        cppTensor_Functions::deriv_softmax_cpu(dY, loss, Y, labels);
 
-        // const_cast<numTest<dtype>&>(labels).print();
+        // const_cast<cppTensor<dtype>&>(labels).print();
         // Y.print();
         // loss.print();
     }
 
-    void forward_gpu(numTest<dtype>& outputs, const std::vector<numTest<dtype>>& x, const numTest<dtype>& hprev)
+    void forward_gpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev)
     {
         PRINT_DEBUG("call by forward_gpu() start\n");
-        numTest_Functions::copy_gpu(S[-1], hprev);
+        cppTensor_Functions::copy_gpu(S[-1], hprev);
 
         for (int t = 0; t < seq_length; ++t)
         {
-            numTest_Functions::transpose_gpu(X[t], x[t]);
-            numTest_Functions::dot_gpu(A[seq_length], *U, *X[t]);
-            numTest_Functions::dot_gpu(A[seq_length + 1], *W, *S[t - 1]);
-            numTest_Functions::add_gpu(A[t], *A[seq_length], *A[seq_length + 1]);
-            numTest_Functions::add_gpu(A[t], *A[t], *b);
-            numTest_Functions::tanh_gpu(S[t], *A[t]);
-            numTest_Functions::dot_gpu(O[seq_length], *V, *S[t]);
-            numTest_Functions::add_gpu(O[t], *O[seq_length], *c);
+            cppTensor_Functions::transpose_gpu(X[t], x[t]);
+            cppTensor_Functions::dot_gpu(A[seq_length], *U, *X[t]);
+            cppTensor_Functions::dot_gpu(A[seq_length + 1], *W, *S[t - 1]);
+            cppTensor_Functions::add_gpu(A[t], *A[seq_length], *A[seq_length + 1]);
+            cppTensor_Functions::add_gpu(A[t], *A[t], *b);
+            cppTensor_Functions::tanh_gpu(S[t], *A[t]);
+            cppTensor_Functions::dot_gpu(O[seq_length], *V, *S[t]);
+            cppTensor_Functions::add_gpu(O[t], *O[seq_length], *c);
         }
 
-        numTest_Functions::dot_gpu(&outputs, *FC_W, *O[seq_length-1]);
-        numTest_Functions::add_gpu(&outputs, outputs, *fc_b);
+        cppTensor_Functions::dot_gpu(&outputs, *FC_W, *O[seq_length-1]);
+        cppTensor_Functions::add_gpu(&outputs, outputs, *fc_b);
         
         PRINT_DEBUG("call by forward_gpu() end\n");
     }
 
-    void forward_cpu(numTest<dtype>& outputs, const std::vector<numTest<dtype>>& x, const numTest<dtype>& hprev)
+    void forward_cpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev)
     {
         PRINT_DEBUG("call by forward_cpu() start\n");
-        numTest_Functions::copy_cpu(S[-1], hprev);
+        cppTensor_Functions::copy_cpu(S[-1], hprev);
         
         for (int t = 0; t < seq_length; ++t)
         {
-            numTest_Functions::transpose_cpu(X[t], x[t]);
-            numTest_Functions::dot_cpu(A[seq_length], *U, *X[t]);
-            numTest_Functions::dot_cpu(A[seq_length + 1], *W, *S[t - 1]);
-            numTest_Functions::add_cpu(A[t], *A[seq_length], *A[seq_length + 1]);
-            numTest_Functions::add_cpu(A[t], *A[t], *b);
-            numTest_Functions::tanh_cpu(S[t], *A[t]);
-            numTest_Functions::dot_cpu(O[seq_length], *V, *S[t]);
-            numTest_Functions::add_cpu(O[t], *O[seq_length], *c);
+            cppTensor_Functions::transpose_cpu(X[t], x[t]);
+            cppTensor_Functions::dot_cpu(A[seq_length], *U, *X[t]);
+            cppTensor_Functions::dot_cpu(A[seq_length + 1], *W, *S[t - 1]);
+            cppTensor_Functions::add_cpu(A[t], *A[seq_length], *A[seq_length + 1]);
+            cppTensor_Functions::add_cpu(A[t], *A[t], *b);
+            cppTensor_Functions::tanh_cpu(S[t], *A[t]);
+            cppTensor_Functions::dot_cpu(O[seq_length], *V, *S[t]);
+            cppTensor_Functions::add_cpu(O[t], *O[seq_length], *c);
         }
 
-        numTest_Functions::dot_cpu(&outputs, *FC_W, *O[seq_length-1]);
-        numTest_Functions::add_cpu(&outputs, outputs, *fc_b);
+        cppTensor_Functions::dot_cpu(&outputs, *FC_W, *O[seq_length-1]);
+        cppTensor_Functions::add_cpu(&outputs, outputs, *fc_b);
 
         PRINT_DEBUG("call by forward_cpu() end\n");
     }
@@ -363,17 +363,17 @@ private:
     size_t seq_length{0};
     size_t hidden_size{0};
 
-    numTestType* U;
-    numTestType* W;
-    numTestType* V;
-    numTestType* b;
-    numTestType* c;
+    cppTensorType* U;
+    cppTensorType* W;
+    cppTensorType* V;
+    cppTensorType* b;
+    cppTensorType* c;
 
-    numTestType* FC_W;
-    numTestType* fc_b;
+    cppTensorType* FC_W;
+    cppTensorType* fc_b;
 
-    numTestTypeMap X;
-    numTestTypeMap A;
-    numTestTypeMap S;
-    numTestTypeMap O;
+    cppTensorTypeMap X;
+    cppTensorTypeMap A;
+    cppTensorTypeMap S;
+    cppTensorTypeMap O;
 };

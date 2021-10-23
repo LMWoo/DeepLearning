@@ -1,6 +1,6 @@
-#include "NumTest_gpu.hpp"
+#include "cppTensor_gpu.hpp"
 
-namespace NumTest_gpu
+namespace cppTensor_gpu
 {
     __global__ void test_dot(double *c, const double *a, const double *b, const int WIDTH)
     {

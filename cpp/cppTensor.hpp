@@ -6,11 +6,11 @@
 #include <vector>
 #include <stdio.h>
 #include <cuda.h>
-#include "NumTest_gpu.hpp"
+#include "cppTensor_gpu.hpp"
 
-// #define NUMTEST_DEBUG
+// #define CPPTENSOR_DEBUG
 
-#if defined(NUMTEST_DEBUG)
+#if defined(CPPTENSOR_DEBUG)
 #define PRINT_DEBUG(str, ...) do { \
     printf((str), ##__VA_ARGS__); \
 } while(0)
@@ -19,7 +19,7 @@
 #endif
 
 template<typename dtype>
-class numTest
+class cppTensor
 {
 public:
     using numpyArray = pybind11::array_t<dtype, pybind11::array::c_style>;
@@ -75,22 +75,22 @@ private:
     {
         print_pointer("deleteArray()");
 
-        NumTest_gpu::cpu_free(data_);
+        cppTensor_gpu::cpu_free(data_);
         data_=nullptr;
-        NumTest_gpu::gpu_free(dev_data_);
+        cppTensor_gpu::gpu_free(dev_data_);
         dev_data_=nullptr;
     }
 
 public:
-    numTest() = default;
+    cppTensor() = default;
 
-    numTest(size_t rows, size_t cols) :
+    cppTensor(size_t rows, size_t cols) :
         shape_(shape(rows, cols))
     {
         newArray();
     }
 
-    numTest(const numpyArray& numpyInput)
+    cppTensor(const numpyArray& numpyInput)
     {
         const auto dataPtr = numpyInput.data();
 
@@ -123,7 +123,7 @@ public:
         }
     }
 
-    ~numTest()
+    ~cppTensor()
     {
         deleteArray();
     }
@@ -149,7 +149,7 @@ public:
         return cbegin(row) + shape_.cols;
     }
 
-    numTest<dtype>& fill(dtype value)
+    cppTensor<dtype>& fill(dtype value)
     {
         std::fill(begin(), end(), value);
         return *this;
@@ -232,9 +232,9 @@ public:
     {
         if (dev_data_ == nullptr) 
         {
-            dev_data_ = NumTest_gpu::gpu_malloc(shape_.size() * sizeof(double));
-            NumTest_gpu::copy_cpu_to_gpu(shape_.size() * sizeof(double), dev_data_, data_);
-            NumTest_gpu::cpu_free(data_);
+            dev_data_ = cppTensor_gpu::gpu_malloc(shape_.size() * sizeof(double));
+            cppTensor_gpu::copy_cpu_to_gpu(shape_.size() * sizeof(double), dev_data_, data_);
+            cppTensor_gpu::cpu_free(data_);
 
             print_pointer("cuda()");
             
@@ -247,9 +247,9 @@ public:
     {
         if (dev_data_)
         {
-            data_ = (dtype*)NumTest_gpu::cpu_malloc(shape_.size() * sizeof(dtype));
-            NumTest_gpu::copy_gpu_to_cpu(shape_.size() * sizeof(double), data_, dev_data_);
-            NumTest_gpu::gpu_free(dev_data_);
+            data_ = (dtype*)cppTensor_gpu::cpu_malloc(shape_.size() * sizeof(dtype));
+            cppTensor_gpu::copy_gpu_to_cpu(shape_.size() * sizeof(double), data_, dev_data_);
+            cppTensor_gpu::gpu_free(dev_data_);
 
             print_pointer("cpu()");
 
@@ -260,6 +260,6 @@ public:
 
     void test()
     {
-        printf("NumTest test\n");
+        printf("cppTensor test\n");
     }
 };
