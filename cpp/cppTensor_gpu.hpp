@@ -38,11 +38,16 @@ namespace cppTensor_gpu
         const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols);
     double* add_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, const size_t& rows, const size_t& cols);
 
+    void zeros_gpu(double* dev_data, const size_t& size);
+
     void tanh_gpu(double* out_dev_data, const double* in_dev_data, const size_t& rows, const size_t& cols);
     void exp_gpu(double* out_dev_data, const double* in_dev_data, const size_t& rows, const size_t& cols);
     void sum_div_gpu(double* dev_data, const size_t& size);
     void minus_gpu(double* dev_data, const size_t& size);
     void log_gpu(double* dev_data, const size_t& size);
     void deriv_softmax_gpu(size_t size, double* out_dY_data, double* out_loss_data, const double* in_Y_data, double* labels);
+    void mul_gpu(double* out_dev_data, const double* lhs_dev_data, const double* rhs_dev_data, const size_t& size);
+    void deriv_tanh_gpu(double* out_dev_data, const double* in_dev_data, const size_t& size);
+    
     //void div_gpu(double* dev_data, const double& div, const size_t& size);
 }

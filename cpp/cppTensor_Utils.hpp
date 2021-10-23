@@ -5,6 +5,8 @@
 #include <chrono>
 #include <limits>
 
+#define SAFE_DELETE(p) {if(p) { delete(p); (p) = nullptr;}}
+
 namespace cppTensor_Utils
 {
     static std::chrono::system_clock::time_point start;

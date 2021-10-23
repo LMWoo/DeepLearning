@@ -368,4 +368,53 @@ namespace cppTensor_Functions
         dY(index, 0) -= 1;
         loss(index, 0) = Y(index, 0);
     }
+
+    template<typename dtype>
+    void mul_gpu(cppTensor<dtype>* returnArray, cppTensor<dtype>& lhs, cppTensor<dtype>& rhs)
+    {
+        std::string function_name = "void mul_gpu(cppTensor<dtype>*, cppTensor<dtype>&, cppTensor<dtype>&)";
+        cppTensor_Utils::null_check(function_name, "returnArray->dev_data_", returnArray->dev_data_);
+        cppTensor_Utils::null_check(function_name, "lhs.dev_data_", lhs.dev_data_);
+        cppTensor_Utils::null_check(function_name, "rhs.dev_data_", rhs.dev_data_);
+
+        cppTensor_gpu::mul_gpu(returnArray->dev_data_, lhs.dev_data_, rhs.dev_data_, returnArray->shape_.size());
+    }
+
+    template<typename dtype>
+    void mul_cpu(cppTensor<dtype>* returnArray, cppTensor<dtype>& lhs, cppTensor<dtype>& rhs)
+    {
+        std::string function_name = "void mul_cpu(cppTensor<dtype>*, cppTensor<dtype>&, cppTensor<dtype>&)";
+        cppTensor_Utils::null_check(function_name, "returnArray->data_", returnArray->data_);
+        cppTensor_Utils::null_check(function_name, "lhs.data_", lhs.data_);
+        cppTensor_Utils::null_check(function_name, "rhs.data_", rhs.data_);
+
+        for (size_t i = 0; i < returnArray->shape_.size(); ++i)
+        {
+            returnArray->data_[i] = lhs.data_[i] * rhs.data_[i];
+        }
+    }
+
+
+    template<typename dtype>
+    void deriv_tanh_gpu(cppTensor<dtype>* returnArray, cppTensor<dtype>& otherArray)
+    {
+        std::string function_name = "void deriv_tanh_gpu(cppTensor<dtype>*, cppTensor<dtype>&)";
+        cppTensor_Utils::null_check(function_name, "returnArray->dev_data_", returnArray->dev_data_);
+        cppTensor_Utils::null_check(function_name, "otherArray.dev_data_", otherArray.dev_data_);
+
+        cppTensor_gpu::deriv_tanh_gpu(returnArray->dev_data_, otherArray.dev_data_, returnArray->shape_.size());
+    }
+
+    template<typename dtype>
+    void deriv_tanh_cpu(cppTensor<dtype>* returnArray, cppTensor<dtype>& otherArray)
+    {
+        std::string function_name = "void deriv_tanh_cpu(cppTensor<dtype>*, cppTensor<dtype>&)";
+        cppTensor_Utils::null_check(function_name, "returnArray->data_", returnArray->data_);
+        cppTensor_Utils::null_check(function_name, "otherArray.data_", otherArray.data_);
+
+        for (size_t i = 0; i < returnArray->shape_.size(); ++i)
+        {
+            returnArray->data_[i] = 1.0 - otherArray.data_[i] * otherArray.data_[i];
+        }
+    }
 }

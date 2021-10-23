@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cppTensor.hpp"
+#include "cppTensor_Utils.hpp"
 #include "cppTensor_Functions.hpp"
 #include <unordered_map>
 #include <tuple>
@@ -29,14 +30,70 @@ public:
         this->b = new cppTensor<dtype>(hidden_size, 1);
         this->c = new cppTensor<dtype>(hidden_size, 1);
 
+        this->FC_W = new cppTensor<dtype>(num_classes, hidden_size);
+        this->fc_b = new cppTensor<dtype>(num_classes, 1);
+
+        // this->params.push_back(this->U);
+        // this->params.push_back(this->W);
+        // this->params.push_back(this->V);
+        // this->params.push_back(this->b);
+        // this->params.push_back(this->c);
+        // this->params.push_back(this->FC_W);
+        // this->params.push_back(this->fc_b);
+
         cppTensor_Functions::copy_cpu(this->U, U);
         cppTensor_Functions::copy_cpu(this->W, W);
         cppTensor_Functions::copy_cpu(this->V, V);
 
-        this->FC_W = new cppTensor<dtype>(num_classes, hidden_size);
-        this->fc_b = new cppTensor<dtype>(num_classes, 1);
         cppTensor_Functions::copy_cpu(this->FC_W, FC_W);
+
+        this->dU = new cppTensor<dtype>(hidden_size, input_size);
+        this->dW = new cppTensor<dtype>(hidden_size, hidden_size);
+        this->dV = new cppTensor<dtype>(hidden_size, hidden_size);
+        this->db = new cppTensor<dtype>(hidden_size, 1);
+        this->dc = new cppTensor<dtype>(hidden_size, 1);
+
+        this->dFC_W = new cppTensor<dtype>(num_classes, hidden_size);
+        this->dfc_b = new cppTensor<dtype>(num_classes, 1);
+
+        // this->dparams.push_back(this->dU);
+        // this->dparams.push_back(this->dW);
+        // this->dparams.push_back(this->dV);
+        // this->dparams.push_back(this->db);
+        // this->dparams.push_back(this->dc);
+        // this->dparams.push_back(this->dFC_W);
+        // this->dparams.push_back(this->dfc_b);
+
+        this->mU = new cppTensor<dtype>(hidden_size, input_size);
+        this->mW = new cppTensor<dtype>(hidden_size, hidden_size);
+        this->mV = new cppTensor<dtype>(hidden_size, hidden_size);
+        this->mb = new cppTensor<dtype>(hidden_size, 1);
+        this->mc = new cppTensor<dtype>(hidden_size, 1);
+
+        this->mFC_W = new cppTensor<dtype>(num_classes, hidden_size);
+        this->mfc_b = new cppTensor<dtype>(num_classes, 1);
+
+        // this->mem.push_back(this->mU);
+        // this->mem.push_back(this->mW);
+        // this->mem.push_back(this->mV);
+        // this->mem.push_back(this->mb);
+        // this->mem.push_back(this->mc);
+        // this->mem.push_back(this->mFC_W);
+        // this->mem.push_back(this->mfc_b);
         
+        this->dO = new cppTensor<dtype>(hidden_size, 1);
+        this->dA = new cppTensor<dtype>(hidden_size, 1);
+        this->dS = new cppTensor<dtype>(hidden_size, 1);
+        this->dS_next = new cppTensor<dtype>(hidden_size, 1);
+        this->dU_dot = new cppTensor<dtype>(hidden_size, input_size);
+        this->dW_dot = new cppTensor<dtype>(hidden_size, hidden_size);
+        this->FC_W_T = new cppTensor<dtype>(hidden_size, num_classes);
+        this->O_T = new cppTensor<dtype>(1, hidden_size);
+        this->S_T = new cppTensor<dtype>(1, hidden_size);
+        this->V_T = new cppTensor<dtype>(hidden_size, hidden_size);
+        this->X_T = new cppTensor<dtype>(1, input_size);
+        this->W_T = new cppTensor<dtype>(hidden_size, hidden_size);
+
         for (int i = -1; i < seq_length; ++i)
         {
             this->S[i] = new cppTensor<dtype>(hidden_size, 1);
@@ -60,85 +117,88 @@ public:
 
     ~cppRnn()
     {
-        if (U)
-        {
-            delete U;
-            U = nullptr;
-        }
-        if (W)
-        {
-            delete W;
-            W = nullptr;
-        }
-        if (V)
-        {
-            delete V;
-            V = nullptr;
-        }
-        if (b)
-        {
-            delete b;
-            b = nullptr;
-        }
-        if (c)
-        {
-            delete c;
-            c = nullptr;
-        }
+        SAFE_DELETE(U)
+        SAFE_DELETE(W)
+        SAFE_DELETE(V)
+        SAFE_DELETE(b)
+        SAFE_DELETE(c)
+        SAFE_DELETE(FC_W)
+        SAFE_DELETE(fc_b)
+        
+        SAFE_DELETE(dU)
+        SAFE_DELETE(dW)
+        SAFE_DELETE(dV)
+        SAFE_DELETE(db)
+        SAFE_DELETE(dc)
+        SAFE_DELETE(dFC_W)
+        SAFE_DELETE(dfc_b)
 
-        if (FC_W)
-        {
-            delete FC_W;
-            FC_W = nullptr;
-        }
-        if (fc_b)
-        {
-            delete fc_b;
-            fc_b = nullptr;
-        }
+        SAFE_DELETE(dO)
+        SAFE_DELETE(dA)
+        SAFE_DELETE(dS)
+        SAFE_DELETE(dS_next)
+        SAFE_DELETE(dU_dot)
+        SAFE_DELETE(dW_dot)
+        SAFE_DELETE(FC_W_T);
+        SAFE_DELETE(O_T)
+        SAFE_DELETE(S_T)
+        SAFE_DELETE(V_T)
+        SAFE_DELETE(X_T)
+        SAFE_DELETE(W_T)
+
+        SAFE_DELETE(mU)
+        SAFE_DELETE(mW)
+        SAFE_DELETE(mV)
+        SAFE_DELETE(mb)
+        SAFE_DELETE(mc)
+        SAFE_DELETE(mFC_W)
+        SAFE_DELETE(mfc_b)
+
+        // params.clear();
+        // dparams.clear();
+        // mem.clear();
 
         cppTensorTypeMapDoubleIter mapIter;
 
         for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
         {
-            if (mapIter->second)
-            {
-                delete mapIter->second;
-                mapIter->second=nullptr;
-            }
+            SAFE_DELETE(mapIter->second)
         }
 
         for (mapIter = this->X.begin(); mapIter != this->X.end(); ++mapIter)
         {
-            if (mapIter->second)
-            {
-                delete mapIter->second;
-                mapIter->second=nullptr;
-            }
+            SAFE_DELETE(mapIter->second)
         }
 
         for (mapIter = this->A.begin(); mapIter != this->A.end(); ++mapIter)
         {
-            if (mapIter->second)
-            {
-                delete mapIter->second;
-                mapIter->second=nullptr;
-            }
+            SAFE_DELETE(mapIter->second)
         }
 
         for (mapIter = this->O.begin(); mapIter != this->O.end(); ++mapIter)
         {
-            if (mapIter->second)
-            {
-                delete mapIter->second;
-                mapIter->second=nullptr;
-            }
+            SAFE_DELETE(mapIter->second)
         }
     }
 
     void cuda()
     {
         is_cuda_=true;
+
+        // for (int i = 0; i < params.size(); ++i)
+        // {
+        //     params[i]->cuda();
+        // }
+
+        // for (int i = 0; i < dparams.size(); ++i)
+        // {
+        //     dparams[i]->cuda();
+        // }
+
+        // for (int i = 0; i < dparams.size(); ++i)
+        // {
+        //     mem[i]->cuda();
+        // }
 
         U->cuda();
         W->cuda();
@@ -147,6 +207,36 @@ public:
         c->cuda();
         FC_W->cuda();
         fc_b->cuda();
+
+        dU->cuda();
+        dW->cuda();
+        dV->cuda();
+        db->cuda();
+        dc->cuda();
+        dFC_W->cuda();
+        dfc_b->cuda();
+
+        mU->cuda();
+        mW->cuda();
+        mV->cuda();
+        mb->cuda();
+        mc->cuda();
+        mFC_W->cuda();
+        mfc_b->cuda();
+
+        dO->cuda();
+        dA->cuda();
+        dS->cuda();
+        dS_next->cuda();
+        dU_dot->cuda();
+        dW_dot->cuda();
+        FC_W_T->cuda();
+        O_T->cuda();
+        S_T->cuda();
+        V_T->cuda();
+        X_T->cuda();
+        W_T->cuda();
+
 
         cppTensorTypeMapDoubleIter mapIter;
         for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
@@ -186,6 +276,21 @@ public:
     {
         is_cuda_=false;
 
+        // for (int i = 0; i < params.size(); ++i)
+        // {
+        //     params[i]->cpu();
+        // }
+
+        // for (int i = 0; i < dparams.size(); ++i)
+        // {
+        //     dparams[i]->cpu();
+        // }
+
+        // for (int i = 0; i < dparams.size(); ++i)
+        // {
+        //     mem[i]->cpu();
+        // }
+
         U->cpu();
         W->cpu();
         V->cpu();
@@ -193,6 +298,35 @@ public:
         c->cpu();
         FC_W->cpu();
         fc_b->cpu();
+
+        dU->cpu();
+        dW->cpu();
+        dV->cpu();
+        db->cpu();
+        dc->cpu();
+        dFC_W->cpu();
+        dfc_b->cpu();
+
+        mU->cpu();
+        mW->cpu();
+        mV->cpu();
+        mb->cpu();
+        mc->cpu();
+        mFC_W->cpu();
+        mfc_b->cpu();
+
+        dO->cpu();
+        dA->cpu();
+        dS->cpu();
+        dS_next->cpu();
+        dU_dot->cpu();
+        dW_dot->cpu();
+        FC_W_T->cpu();
+        O_T->cpu();
+        S_T->cpu();
+        V_T->cpu();
+        X_T->cpu();
+        W_T->cpu();
 
         cppTensorTypeMapDoubleIter mapIter;
         for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
@@ -270,7 +404,7 @@ public:
 
     void cross_entropy_loss(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
     {
-        if ((Y.is_cuda_ && outputs.is_cuda_) && (loss.is_cuda_ && labels.is_cuda_))
+        if (this->is_cuda_ && ((Y.is_cuda_ && outputs.is_cuda_) && (loss.is_cuda_ && labels.is_cuda_)))
         {
             cross_entropy_loss_gpu(dY, Y, loss, outputs, labels);
         }
@@ -279,8 +413,103 @@ public:
             cross_entropy_loss_cpu(dY, Y, loss, outputs, labels);
         }
     }
+
+    void backward(cppTensor<dtype>& dY)
+    {
+        if (this->is_cuda_ && dY.is_cuda_)
+        {
+            backward_gpu(dY);
+        }
+        else
+        {
+            backward_cpu(dY);
+        }
+    }
     
 private:
+
+    void backward_gpu(cppTensor<dtype>& dY)
+    {
+        dFC_W->zeros();
+        dfc_b->zeros();
+        dU->zeros();
+        dW->zeros();
+        dV->zeros();
+        db->zeros();
+        dc->zeros();
+        dS_next->zeros();
+        
+        cppTensor_Functions::transpose_gpu(O_T, *O[seq_length - 1]);
+        cppTensor_Functions::dot_gpu(dFC_W, dY, *O_T);
+        cppTensor_Functions::copy_gpu(dfc_b, dY);
+
+        cppTensor_Functions::transpose_gpu(FC_W_T, *FC_W);
+        cppTensor_Functions::dot_gpu(dO, *FC_W_T, dY);
+
+        cppTensor_Functions::transpose_gpu(S_T, *S[seq_length - 1]);
+        cppTensor_Functions::dot_gpu(dV, *dO, *S_T);
+        cppTensor_Functions::copy_gpu(dc, *dO);
+
+        for (int t = seq_length - 1; t >= 0; --t)
+        {
+            cppTensor_Functions::transpose_gpu(V_T, *V);
+            cppTensor_Functions::dot_gpu(dS, *V_T, *dO);
+            cppTensor_Functions::add_gpu(dS, *dS, *dS_next);
+            cppTensor_Functions::deriv_tanh_gpu(dA, *S[t]);
+            
+            cppTensor_Functions::mul_gpu(dA, *dA, *dS);
+            cppTensor_Functions::transpose_gpu(X_T, *X[t]);
+            cppTensor_Functions::dot_gpu(dU_dot, *dA, *X_T);
+            cppTensor_Functions::add_gpu(dU, *dU, *dU_dot);
+            cppTensor_Functions::transpose_gpu(S_T, *S[t - 1]);
+            cppTensor_Functions::dot_gpu(dW_dot, *dA, *S_T);
+            cppTensor_Functions::add_gpu(dW, *dW, *dW_dot);
+            cppTensor_Functions::add_gpu(db, *db, *dA);
+            cppTensor_Functions::transpose_gpu(W_T, *W);
+            cppTensor_Functions::dot_gpu(dS_next, *W_T, *dA);
+        }
+    }
+
+    void backward_cpu(cppTensor<dtype>& dY)
+    {
+        dFC_W->zeros();
+        dfc_b->zeros();
+        dU->zeros();
+        dW->zeros();
+        dV->zeros();
+        db->zeros();
+        dc->zeros();
+        dS_next->zeros();
+
+        cppTensor_Functions::transpose_cpu(O_T, *O[seq_length - 1]);
+        cppTensor_Functions::dot_cpu(dFC_W, dY, *O_T);
+        cppTensor_Functions::copy_cpu(dfc_b, dY);
+
+        cppTensor_Functions::transpose_cpu(FC_W_T, *FC_W);
+        cppTensor_Functions::dot_cpu(dO, *FC_W_T, dY);
+
+        cppTensor_Functions::transpose_cpu(S_T, *S[seq_length - 1]);
+        cppTensor_Functions::dot_cpu(dV, *dO, *S_T);
+        cppTensor_Functions::copy_cpu(dc, *dO);
+
+        for (int t = seq_length - 1; t >= 0; --t)
+        {
+            cppTensor_Functions::transpose_cpu(V_T, *V);
+            cppTensor_Functions::dot_cpu(dS, *V_T, *dO);
+            cppTensor_Functions::add_cpu(dS, *dS, *dS_next);
+            cppTensor_Functions::deriv_tanh_cpu(dA, *S[t]);
+            cppTensor_Functions::mul_cpu(dA, *dA, *dS);
+            cppTensor_Functions::transpose_cpu(X_T, *X[t]);
+            cppTensor_Functions::dot_cpu(dU_dot, *dA, *X_T);
+            cppTensor_Functions::add_cpu(dU, *dU, *dU_dot);
+            cppTensor_Functions::transpose_cpu(S_T, *S[t - 1]);
+            cppTensor_Functions::dot_cpu(dW_dot, *dA, *S_T);
+            cppTensor_Functions::add_cpu(dW, *dW, *dW_dot);
+            cppTensor_Functions::add_cpu(db, *db, *dA);
+            cppTensor_Functions::transpose_cpu(W_T, *W);
+            cppTensor_Functions::dot_cpu(dS_next, *W_T, *dA);
+        }
+    }
 
     void cross_entropy_loss_gpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
     {
@@ -290,10 +519,6 @@ private:
         cppTensor_Functions::log_gpu(&Y);
         cppTensor_Functions::minus_gpu(&Y);
         cppTensor_Functions::deriv_softmax_gpu(dY, loss, Y, labels);
-
-        // const_cast<cppTensor<dtype>&>(labels).print();
-        // Y.print();
-        // loss.print();
     }
 
     void cross_entropy_loss_cpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
@@ -304,15 +529,10 @@ private:
         cppTensor_Functions::log_cpu(&Y);
         cppTensor_Functions::minus_cpu(&Y);
         cppTensor_Functions::deriv_softmax_cpu(dY, loss, Y, labels);
-
-        // const_cast<cppTensor<dtype>&>(labels).print();
-        // Y.print();
-        // loss.print();
     }
 
     void forward_gpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev)
     {
-        PRINT_DEBUG("call by forward_gpu() start\n");
         cppTensor_Functions::copy_gpu(S[-1], hprev);
 
         for (int t = 0; t < seq_length; ++t)
@@ -329,13 +549,10 @@ private:
 
         cppTensor_Functions::dot_gpu(&outputs, *FC_W, *O[seq_length-1]);
         cppTensor_Functions::add_gpu(&outputs, outputs, *fc_b);
-        
-        PRINT_DEBUG("call by forward_gpu() end\n");
     }
 
     void forward_cpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev)
     {
-        PRINT_DEBUG("call by forward_cpu() start\n");
         cppTensor_Functions::copy_cpu(S[-1], hprev);
         
         for (int t = 0; t < seq_length; ++t)
@@ -352,8 +569,6 @@ private:
 
         cppTensor_Functions::dot_cpu(&outputs, *FC_W, *O[seq_length-1]);
         cppTensor_Functions::add_cpu(&outputs, outputs, *fc_b);
-
-        PRINT_DEBUG("call by forward_cpu() end\n");
     }
 
 private:
@@ -371,6 +586,44 @@ private:
 
     cppTensorType* FC_W;
     cppTensorType* fc_b;
+
+    // std::vector<cppTensorType*> params;
+
+    cppTensorType* dU;
+    cppTensorType* dW;
+    cppTensorType* dV;
+    cppTensorType* db;
+    cppTensorType* dc;
+    
+    cppTensorType* dFC_W;
+    cppTensorType* dfc_b;
+
+    // std::vector<cppTensorType*> dparams;
+
+    cppTensorType* mU;
+    cppTensorType* mW;
+    cppTensorType* mV;
+    cppTensorType* mb;
+    cppTensorType* mc;
+
+    cppTensorType* mFC_W;
+    cppTensorType* mfc_b;
+
+    // std::vector<cppTensorType*> mem;
+
+    cppTensorType* dO;
+    cppTensorType* dA;
+    cppTensorType* dS;
+    cppTensorType* dS_next;
+    cppTensorType* dU_dot;
+    cppTensorType* dW_dot;
+    cppTensorType* FC_W_T;
+    cppTensorType* O_T;
+    cppTensorType* S_T;
+    cppTensorType* V_T;
+    cppTensorType* X_T;
+    cppTensorType* W_T;
+    
 
     cppTensorTypeMap X;
     cppTensorTypeMap A;

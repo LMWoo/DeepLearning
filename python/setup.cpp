@@ -33,5 +33,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("cpu", &CPPRNNDouble::cpu)
         .def("forward", &CPPRNNDouble::forward)
         .def("cross_entropy_loss", &CPPRNNDouble::cross_entropy_loss)
+        .def("backward", &CPPRNNDouble::backward)
         .def("test", &CPPRNNDouble::test);
 }

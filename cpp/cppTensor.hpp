@@ -167,7 +167,14 @@ public:
 
     void zeros()
     {
-        this->fill(dtype{0});
+        if (is_cuda_)
+        {
+            cppTensor_gpu::zeros_gpu(this->dev_data_, this->shape_.size());
+        }
+        else
+        {
+            this->fill(dtype{0});
+        }
     }
 
     void ones()

@@ -168,6 +168,19 @@ namespace cppTensor_gpu
         return dev_out;
     }
 
+    __global__ void zeros_(double* dev_data)
+    {
+        dev_data[threadIdx.x] = 0.0;
+    }
+
+    void zeros_gpu(double* dev_data, const size_t& size)
+    {
+        dim3 dimGrid(1, 1, 1);
+        dim3 dimBlock(size, 1, 1);
+
+        zeros_<<<dimGrid, dimBlock>>>(dev_data);
+    }
+
     __global__ void tanh_(double* out_dev_data, const double* in_dev_data)
     {
         size_t i = threadIdx.y * blockDim.x + threadIdx.x;
@@ -265,6 +278,31 @@ namespace cppTensor_gpu
         deriv_softmax_<<<dimGrid, dimBlock>>>(out_dY_data, out_loss_data, in_Y_data, labels);
     }
 
+    __global__ void mul_(double* out_dev_data, const double* lhs_dev_data, const double* rhs_dev_data)
+    {
+        out_dev_data[threadIdx.x] = lhs_dev_data[threadIdx.x] * rhs_dev_data[threadIdx.x];
+    }
+
+    void mul_gpu(double* out_dev_data, const double* lhs_dev_data, const double* rhs_dev_data, const size_t& size)
+    {
+        dim3 dimGrid(1, 1, 1);
+        dim3 dimBlock(size, 1, 1);
+
+        mul_<<<dimGrid, dimBlock>>>(out_dev_data, lhs_dev_data, rhs_dev_data);
+    }
+
+    __global__ void deriv_tanh_(double* out_dev_data, const double* in_dev_data)
+    {
+        out_dev_data[threadIdx.x] = 1.0 - in_dev_data[threadIdx.x] * in_dev_data[threadIdx.x];
+    }
+
+    void deriv_tanh_gpu(double* out_dev_data, const double* in_dev_data, const size_t& size)
+    {
+        dim3 dimGrid(1, 1, 1);
+        dim3 dimBlock(size, 1, 1);
+
+        deriv_tanh_<<<dimGrid, dimBlock>>>(out_dev_data, in_dev_data);
+    }
 
     // __global__ void div_(double* dev_data, const double& div)
     // {

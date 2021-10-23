@@ -17,7 +17,7 @@ def xavier_init(c1, c2, w=1, h=1, fc=False):
 
 seq_length = 28
 input_size = 28
-hidden_size = 128
+hidden_size = 32
 num_layers = 1
 num_classes = 10
 batch_size = 1
@@ -72,7 +72,12 @@ for epoch in range(num_epochs):
         np_outputs = np_model.forward(np_images, np_hprev)
         np_Y, np_loss = np_model.cross_entropy_loss(np_outputs, np_labels)
         np_dY = np_model.deriv_softmax(np_Y, np_labels)
-        print(np_dY)
+        np_gradients = np_model.backward(np_dY)
+
+        print(np_gradients[2])
+        # for j in range(len(np_gradients)):
+        #     print(np_gradients[j])
+        # print(np_dY)
         print('=========== end np ===========')
 
         ######## cpu ##########
@@ -80,7 +85,11 @@ for epoch in range(num_epochs):
         cpp_model.cpu()
         cpp_model.forward(outputs, images, hprev)
         cpp_model.cross_entropy_loss(dY, Y, loss, outputs, labels)
-        dY.print()
+        cpp_model.backward(dY)
+
+        # for j in range(len(gradients)):
+        #     print(gradients[j].numpy())
+        # dY.print()
         print('=========== end cpu ===========')
 
         ######### cuda #########
@@ -100,5 +109,9 @@ for epoch in range(num_epochs):
 
         cpp_model.forward(outputs, images, hprev)
         cpp_model.cross_entropy_loss(dY, Y, loss, outputs, labels)
-        dY.print()
+        cpp_model.backward(dY)
+        #dY.print()
         print('=========== end gpu ===========')
+    #     if i == 2:
+    #         break
+    # break
