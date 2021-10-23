@@ -17,7 +17,7 @@ def xavier_init(c1, c2, w=1, h=1, fc=False):
 
 seq_length = 28
 input_size = 28
-hidden_size = 32
+hidden_size = 128
 num_layers = 1
 num_classes = 10
 batch_size = 1
@@ -68,50 +68,55 @@ for epoch in range(num_epochs):
         loss = cpp.cppTensor(np.zeros((num_classes, 1)))
 
         ####### numpy ##########
-        print('=========== start np ===========')
+        #print('=========== start np ===========')
         np_outputs = np_model.forward(np_images, np_hprev)
         np_Y, np_loss = np_model.cross_entropy_loss(np_outputs, np_labels)
         np_dY = np_model.deriv_softmax(np_Y, np_labels)
         np_gradients = np_model.backward(np_dY)
+        np_model.optimizer_step(np_gradients)
+        np_iter_loss += np.sum(np_loss)
 
-        print(np_gradients[2])
-        # for j in range(len(np_gradients)):
-        #     print(np_gradients[j])
-        # print(np_dY)
-        print('=========== end np ===========')
+        #print('=========== end np ===========')
 
         ######## cpu ##########
-        print('=========== start cpu ===========')
+        # print('=========== start cpu ===========')
         cpp_model.cpu()
         cpp_model.forward(outputs, images, hprev)
         cpp_model.cross_entropy_loss(dY, Y, loss, outputs, labels)
         cpp_model.backward(dY)
+        cpp_model.optimizer()
 
-        # for j in range(len(gradients)):
-        #     print(gradients[j].numpy())
-        # dY.print()
-        print('=========== end cpu ===========')
+        cpu_iter_loss += np.sum(loss.numpy())
+        # print('=========== end cpu ===========')
 
-        ######### cuda #########
-        print('=========== start gpu ===========')
-        Y.zeros()
-        loss.zeros()
-        dY.zeros()
+        ######## cuda #########
+        #print('=========== start gpu ===========')
+        # Y.zeros()
+        # loss.zeros()
+        # dY.zeros()
 
-        cpp_model.cuda()
-        [images[j].cuda() for j in range(seq_length)]
-        hprev.cuda()
-        outputs.cuda()
-        labels.cuda()
-        Y.cuda()
-        dY.cuda()
-        loss.cuda()
+        # cpp_model.cuda()
+        # [images[j].cuda() for j in range(seq_length)]
+        # hprev.cuda()
+        # outputs.cuda()
+        # labels.cuda()
+        # Y.cuda()
+        # dY.cuda()
+        # loss.cuda()
 
-        cpp_model.forward(outputs, images, hprev)
-        cpp_model.cross_entropy_loss(dY, Y, loss, outputs, labels)
-        cpp_model.backward(dY)
-        #dY.print()
-        print('=========== end gpu ===========')
-    #     if i == 2:
-    #         break
-    # break
+        # cpp_model.forward(outputs, images, hprev)
+        # cpp_model.cross_entropy_loss(dY, Y, loss, outputs, labels)
+        # cpp_model.backward(dY)
+        # cpp_model.optimizer()
+        
+        # loss.cpu()
+        # gpu_iter_loss += np.sum(loss.numpy())
+        #print('=========== end gpu ===========')
+
+        if (i + 1) % interval == 0:
+            print("numpy epoch {}/{} iter {}/{} loss {:.4f}".format(epoch + 1, num_epochs, i + 1, total_step, np_iter_loss / interval))
+            print("cpu epoch {}/{} iter {}/{} loss {:.4f}".format(epoch + 1, num_epochs, i + 1, total_step, cpu_iter_loss / interval))
+            #print("gpu epoch {}/{} iter {}/{} loss {:.4f}".format(epoch + 1, num_epochs, i + 1, total_step, gpu_iter_loss / interval))
+            np_iter_loss = 0
+            cpu_iter_loss = 0
+            #gpu_iter_loss = 0

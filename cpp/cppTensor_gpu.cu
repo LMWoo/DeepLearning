@@ -278,6 +278,19 @@ namespace cppTensor_gpu
         deriv_softmax_<<<dimGrid, dimBlock>>>(out_dY_data, out_loss_data, in_Y_data, labels);
     }
 
+    __global__ void mul_(double* out_dev_data, double inValue)
+    {
+        out_dev_data[threadIdx.x] = out_dev_data[threadIdx.x] * inValue;
+    }
+
+    void mul_gpu(double* out_dev_data, double inValue, const size_t& size)
+    {
+        dim3 dimGrid(1, 1, 1);
+        dim3 dimBlock(size, 1, 1);
+
+        mul_<<<dimGrid, dimBlock>>>(out_dev_data, inValue);
+    }
+
     __global__ void mul_(double* out_dev_data, const double* lhs_dev_data, const double* rhs_dev_data)
     {
         out_dev_data[threadIdx.x] = lhs_dev_data[threadIdx.x] * rhs_dev_data[threadIdx.x];
@@ -302,6 +315,34 @@ namespace cppTensor_gpu
         dim3 dimBlock(size, 1, 1);
 
         deriv_tanh_<<<dimGrid, dimBlock>>>(out_dev_data, in_dev_data);
+    }
+    
+    __global__ void clip_(double* out_dev_data, double low, double high)
+    {
+        out_dev_data[threadIdx.x] = min(high, out_dev_data[threadIdx.x]);
+        out_dev_data[threadIdx.x] = max(low, out_dev_data[threadIdx.x]);
+    }
+
+    void clip_gpu(double* out_dev_data, double low, double high, const size_t& size)
+    {
+        dim3 dimGrid(1, 1, 1);
+        dim3 dimBlock(size, 1, 1);
+
+        clip_<<<dimGrid, dimBlock>>>(out_dev_data, low, high);
+    }
+
+    __global__ void optimizer_(double* param, double* mem, const double* dparam)
+    {
+        mem[threadIdx.x] += dparam[threadIdx.x] * dparam[threadIdx.x];
+        param[threadIdx.x] += (-0.01 * dparam[threadIdx.x]) / sqrt(mem[threadIdx.x] + 1e-8);
+    }
+
+    void optimizer_gpu(double* param, double* mem, const double* dparam, const size_t& size)
+    {
+        dim3 dimGrid(1, 1, 1);
+        dim3 dimBlock(size, 1, 1);
+
+        optimizer_<<<dimGrid, dimBlock>>>(param, mem, dparam);
     }
 
     // __global__ void div_(double* dev_data, const double& div)

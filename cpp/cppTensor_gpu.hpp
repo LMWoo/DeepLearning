@@ -46,8 +46,11 @@ namespace cppTensor_gpu
     void minus_gpu(double* dev_data, const size_t& size);
     void log_gpu(double* dev_data, const size_t& size);
     void deriv_softmax_gpu(size_t size, double* out_dY_data, double* out_loss_data, const double* in_Y_data, double* labels);
+    void mul_gpu(double* out_dev_data, double inValue, const size_t& size);
     void mul_gpu(double* out_dev_data, const double* lhs_dev_data, const double* rhs_dev_data, const size_t& size);
     void deriv_tanh_gpu(double* out_dev_data, const double* in_dev_data, const size_t& size);
-    
+    void clip_gpu(double* out_dev_data, double low, double high, const size_t& size);
+    void optimizer_gpu(double* param, double* mem, const double* dparam, const size_t& size);
+
     //void div_gpu(double* dev_data, const double& div, const size_t& size);
 }

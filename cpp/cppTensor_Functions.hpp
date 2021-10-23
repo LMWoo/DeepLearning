@@ -370,6 +370,27 @@ namespace cppTensor_Functions
     }
 
     template<typename dtype>
+    void mul_gpu(cppTensor<dtype>* returnArray, dtype inValue)
+    {
+        std::string function_name = "void mul_gpu(cppTensor<dtype>*, dtype)";
+        cppTensor_Utils::null_check(function_name, "returnArray->dev_data_", returnArray->dev_data_);
+
+        cppTensor_gpu::mul_gpu(returnArray->dev_data_, inValue, returnArray->shape_.size());
+    }
+
+    template<typename dtype>
+    void mul_cpu(cppTensor<dtype>* returnArray, dtype inValue)
+    {
+        std::string function_name = "void mul_cpu(cppTensor<dtype>*, dtype)";
+        cppTensor_Utils::null_check(function_name, "returnArray->data_", returnArray->data_);
+
+        for (size_t i = 0; i < returnArray->shape_.size(); ++i)
+        {
+            returnArray->data_[i] = returnArray->data_[i] * inValue;
+        }
+    }
+
+    template<typename dtype>
     void mul_gpu(cppTensor<dtype>* returnArray, cppTensor<dtype>& lhs, cppTensor<dtype>& rhs)
     {
         std::string function_name = "void mul_gpu(cppTensor<dtype>*, cppTensor<dtype>&, cppTensor<dtype>&)";
@@ -415,6 +436,53 @@ namespace cppTensor_Functions
         for (size_t i = 0; i < returnArray->shape_.size(); ++i)
         {
             returnArray->data_[i] = 1.0 - otherArray.data_[i] * otherArray.data_[i];
+        }
+    }
+
+    template<typename dtype>
+    void clip_gpu(cppTensor<dtype>* returnArray, const dtype& low, const dtype& high)
+    {
+        std::string function_name = "void clip_gpu(cppTensor<dtype>*, const dtype&, const dtype&)";
+        cppTensor_Utils::null_check(function_name, "returnArray->dev_data_", returnArray->dev_data_);
+
+        cppTensor_gpu::clip_gpu(returnArray->dev_data_, low, high, returnArray->shape_.size());
+    }
+
+    template<typename dtype>
+    void clip_cpu(cppTensor<dtype>* returnArray, const dtype& low, const dtype& high)
+    {
+        std::string function_name = "void clip_cpu(cppTensor<dtype>*, const dtype&, const dtype&)";
+        cppTensor_Utils::null_check(function_name, "returnArray->data_", returnArray->data_);
+
+        for (size_t i = 0; i < returnArray->shape_.size(); ++i)
+        {
+            returnArray->data_[i] = std::max(low, std::min(high, returnArray->data_[i]));
+        }
+    }
+
+    template<typename dtype>
+    void optimizer_gpu(cppTensor<dtype>* param, cppTensor<dtype>* mem, const cppTensor<dtype>& dparam, double lr)
+    {
+        std::string function_name = "void optimizer_gpu(cppTensor<dtype>*, cppTensor<dtype>*, const cppTensor<dtype>&, double)";
+        cppTensor_Utils::null_check(function_name, "param->dev_data_", param->dev_data_);
+        cppTensor_Utils::null_check(function_name, "mem->dev_data_", mem->dev_data_);
+        cppTensor_Utils::null_check(function_name, "dparam.dev_data_", dparam.dev_data_);
+
+        cppTensor_gpu::optimizer_gpu(param->dev_data_, mem->dev_data_, dparam.dev_data_, param->shape_.size());
+    }
+
+    template<typename dtype>
+    void optimizer_cpu(cppTensor<dtype>* param, cppTensor<dtype>* mem, const cppTensor<dtype>& dparam, double lr)
+    {
+        std::string function_name = "void optimizer_cpu(cppTensor<dtype>*, cppTensor<dtype>*, const cppTensor<dtype>&, double)";
+        cppTensor_Utils::null_check(function_name, "param->data_", param->data_);
+        cppTensor_Utils::null_check(function_name, "mem->data_", mem->data_);
+        cppTensor_Utils::null_check(function_name, "dparam.data_", dparam.data_);
+
+        for (size_t i = 0; i < param->shape_.size(); ++i)
+        {
+            mem->data_[i] += dparam.data_[i] * dparam.data_[i];
+            param->data_[i] += (lr * dparam.data_[i]) / sqrt(mem->data_[i] + 1e-8);
         }
     }
 }

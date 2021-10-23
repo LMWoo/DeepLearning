@@ -370,24 +370,13 @@ public:
 public:
     void forward(cppTensor<dtype>& outputs,  std::vector<cppTensor<dtype>>& x,  cppTensor<dtype>& hprev)
     {
-        bool x_is_cuda = false;
-        
-        for (int i = 0; i < x.size(); ++i)
+        if (this->is_cuda_)
         {
-            x_is_cuda=x[i].is_cuda_;
-        }
-
-        if ((this->is_cuda_ && x_is_cuda) && hprev.is_cuda_)
-        {
-            cppTensor_Utils::time_start();
             forward_gpu(outputs, x, hprev);
-            cppTensor_Utils::time_end();
         }
         else
         {
-            cppTensor_Utils::time_start();
             forward_cpu(outputs, x, hprev);
-            cppTensor_Utils::time_end();
         }
 
         // outputs.data_=nullptr;
@@ -404,7 +393,7 @@ public:
 
     void cross_entropy_loss(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
     {
-        if (this->is_cuda_ && ((Y.is_cuda_ && outputs.is_cuda_) && (loss.is_cuda_ && labels.is_cuda_)))
+        if (this->is_cuda_)
         {
             cross_entropy_loss_gpu(dY, Y, loss, outputs, labels);
         }
@@ -416,7 +405,7 @@ public:
 
     void backward(cppTensor<dtype>& dY)
     {
-        if (this->is_cuda_ && dY.is_cuda_)
+        if (this->is_cuda_)
         {
             backward_gpu(dY);
         }
@@ -425,8 +414,57 @@ public:
             backward_cpu(dY);
         }
     }
+
+    void optimizer()
+    {
+        if (this->is_cuda_)
+        {
+            optimizer_gpu();
+        }
+        else
+        {
+            optimizer_cpu();
+        }
+    }
     
 private:
+    void optimizer_gpu()
+    {
+        cppTensor_Functions::clip_gpu(dU, -5.0, 5.0);
+        cppTensor_Functions::clip_gpu(dW, -5.0, 5.0);
+        cppTensor_Functions::clip_gpu(dV, -5.0, 5.0);
+        cppTensor_Functions::clip_gpu(db, -5.0, 5.0);
+        cppTensor_Functions::clip_gpu(dc, -5.0, 5.0);
+        cppTensor_Functions::clip_gpu(dFC_W, -5.0, 5.0);
+        cppTensor_Functions::clip_gpu(dfc_b, -5.0, 5.0);
+        
+        cppTensor_Functions::optimizer_gpu(U, mU, *dU, -lr);
+        cppTensor_Functions::optimizer_gpu(W, mW, *dW, -lr);
+        cppTensor_Functions::optimizer_gpu(V, mV, *dV, -lr);
+        cppTensor_Functions::optimizer_gpu(b, mb, *db, -lr);
+        cppTensor_Functions::optimizer_gpu(c, mc, *dc, -lr);
+        cppTensor_Functions::optimizer_gpu(FC_W, mFC_W, *dFC_W, -lr);
+        cppTensor_Functions::optimizer_gpu(fc_b, mfc_b, *dfc_b, -lr);
+    }
+
+    void optimizer_cpu()
+    {
+        cppTensor_Functions::clip_cpu(dU, -5.0, 5.0);
+        cppTensor_Functions::clip_cpu(dW, -5.0, 5.0);
+        cppTensor_Functions::clip_cpu(dV, -5.0, 5.0);
+        cppTensor_Functions::clip_cpu(db, -5.0, 5.0);
+        cppTensor_Functions::clip_cpu(dc, -5.0, 5.0);
+        cppTensor_Functions::clip_cpu(dFC_W, -5.0, 5.0);
+        cppTensor_Functions::clip_cpu(dfc_b, -5.0, 5.0);
+
+        cppTensor_Functions::optimizer_cpu(U, mU, *dU, -lr);
+        cppTensor_Functions::optimizer_cpu(W, mW, *dW, -lr);
+        cppTensor_Functions::optimizer_cpu(V, mV, *dV, -lr);
+        cppTensor_Functions::optimizer_cpu(b, mb, *db, -lr);
+        cppTensor_Functions::optimizer_cpu(c, mc, *dc, -lr);
+        cppTensor_Functions::optimizer_cpu(FC_W, mFC_W, *dFC_W, -lr);
+        cppTensor_Functions::optimizer_cpu(fc_b, mfc_b, *dfc_b, -lr);
+    }
 
     void backward_gpu(cppTensor<dtype>& dY)
     {
@@ -456,7 +494,6 @@ private:
             cppTensor_Functions::dot_gpu(dS, *V_T, *dO);
             cppTensor_Functions::add_gpu(dS, *dS, *dS_next);
             cppTensor_Functions::deriv_tanh_gpu(dA, *S[t]);
-            
             cppTensor_Functions::mul_gpu(dA, *dA, *dS);
             cppTensor_Functions::transpose_gpu(X_T, *X[t]);
             cppTensor_Functions::dot_gpu(dU_dot, *dA, *X_T);
