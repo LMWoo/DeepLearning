@@ -12,8 +12,11 @@
   * cpp
     * main.cpp
   * python 
-    * extensions
-    * example.py
+    * npRnn.py (numpy rnn 구현)
+    * setup.cpp (cppTensor, cppRnn extension c++ 소스)
+    * setup.py (cppTensor, cppRnn extensions python 소스)
+    * test.ipynb (numpy rnn, lstm 구현 소스)
+    * test.py (npRnn.py, cppRnn.cpp test 소스, 현재 gpu 쪽에서 hidden_size가 32보다 클 경우 에러 발생)
 
 # Installation
 
@@ -36,20 +39,20 @@ cd pytorch
 #### 수정 전
 ```
 ...
-      if(NOT NO_API)
-        add_subdirectory(${TORCH_ROOT}/test/cpp/api ${CMAKE_BINARY_DIR}/test_api)
-      endif()
+894 elseif(USE_CUDA)
+895  set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)
+896  if(CUDA_SEPARABLE_COMPILATION)
 ...
 ```
 
 #### 수정 후
 ```
-...
-      if(NOT NO_API)
-        add_subdirectory(${TORCH_ROOT}/test/cpp/api ${CMAKE_BINARY_DIR}/test_api)
-        add_subdirectory(${Project Path}/cpp ${CMAKE_BINARY_DIR}/DeepLearning_cpp)
-      endif()
-...
+```
+894 elseif(USE_CUDA)
+895  list(APPEND Caffe2_GPU_SRCS {ProjectPath}/cpp/cppTensor_gpu.cu)
+896  set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)
+897  if(CUDA_SEPARABLE_COMPILATION)
+```
 ```
 
 ### PyTorch Build
@@ -60,35 +63,28 @@ export CMAKE_PREFIX_PATH=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}
 python setup.py install
 ```
 
-# Running the example (starting from DeepLearning folder)
-## c++
-```
-cd pytorch
-cd build
-cd bin
-./DeepLearning_cpp
-```
+# Running the test
 
-## python
-
-### python extensions install
+### python extension 설치
 ```
 cd python
-cd extensions
 python setup.py install
 ```
 
-### example.py 실행
+### test.py 실행
 ```
 cd python
-python example.py
+python test.py
 ```
 
 # Requirements
  * python >= 3.6
  * cuda >= 11.2
  * cudnn >= 8.1.1
+ * numpy >= 1.17.0
+ * torchvision >= 0.2.1
 
 # References
 [pytorch](https://github.com/pytorch/pytorch) \
-[numcpp](https://github.com/dpilger26/NumCpp)
+[numcpp](https://github.com/dpilger26/NumCpp) \
+[cuda](http://www.kocw.or.kr/home/cview.do?cid=9495e57150084864)
