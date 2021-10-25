@@ -8,14 +8,19 @@
 ## Project Structure
 
 * DeepLearning
-  * pytorch
   * cpp
+    * cppRnn.hpp (rnn c++ 구현)
+    * cppTensor.hpp (tensor c++ 구현, 현재 2차원 Tensor까지만 구현)
+    * cppTensor_Functions.hpp (cpu, gpu 관련 함수 구현, gpu는 cppTensor_gpu 함수들을 호출함)
+    * cppTensor_gpu.cu (gpu 관련 함수 구현)
+    * cppTensor_gpu.hpp (gpu 관련 함수 선언)
+    * cppUtils.hpp (time check, exception check 등 c++ 구현)
     * main.cpp
   * python 
-    * npRnn.py (numpy rnn 구현)
+    * npRnn.py (rnn numpy 구현)
     * setup.cpp (cppTensor, cppRnn extension c++ 소스)
     * setup.py (cppTensor, cppRnn extensions python 소스)
-    * test.ipynb (numpy rnn, lstm 구현 소스)
+    * test.ipynb (rnn, lstm numpy 구현)
     * test.py (npRnn.py, cppRnn.cpp test 소스, 현재 gpu 쪽에서 hidden_size가 32보다 클 경우 에러 발생)
 
 # Installation
@@ -47,6 +52,7 @@ cd pytorch
 
 #### 수정 후
 ```
+
 ```
 894 elseif(USE_CUDA)
 895  list(APPEND Caffe2_GPU_SRCS {ProjectPath}/cpp/cppTensor_gpu.cu)
