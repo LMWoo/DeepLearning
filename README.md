@@ -5,7 +5,7 @@
  2. pytorch의 extension기능을 이용하여 python에서도 이용할 수 있게한다.
  3. 최근 많이 이용되는 PyTorch를 참고하여, PyTorch의 동작원리를 이해한다.
 
-## Project Structure
+# Project Structure
 
 * DeepLearning
   * cpp
@@ -23,6 +23,10 @@
     * np_test.py (numpy Rnn test)
     * cpu_test.py (cppTensor cpu Rnn test)
     * gpu_test.py (cppTensor gpu Rnn test 속도 개선 중)
+
+# Cuda Parallel Programming
+
+
 
 # Installation
 
@@ -80,12 +84,19 @@ python cpu_test.py (cpp cpu version)
 python gpu_test.py (cpp gpu version)
 ```
 
+# Result (hidden_size = 256)
+||Accuracy|Speed (s / 5000 iters)|
+|----|----|
+|gpu_test|94.95 %|10.89|
+
 # Requirements
  * python >= 3.6
  * cuda >= 11.2
  * cudnn >= 8.1.1
  * numpy >= 1.17.0
  * torchvision >= 0.2.1
+
+
 
 # References
 [pytorch](https://github.com/pytorch/pytorch) \
