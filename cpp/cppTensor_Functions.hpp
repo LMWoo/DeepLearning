@@ -38,19 +38,19 @@ namespace cppTensor_Functions
     }
 
     template<typename dtype>
-    void transpose_gpu(cppTensor<dtype>* returnArray, const cppTensor<dtype>& otherArray)
+    void transpose_gpu(cppTensor<dtype>& returnArray, const cppTensor<dtype>& otherArray)
     {
-        std::string function_name = "void transpose_gpu(cppTensor<dtype>*, const cppTensor<dtype>&)";
-        cppTensor_Utils::null_check(function_name, "returnArray->dev_data_", returnArray->dev_data_);
+        std::string function_name = "void transpose_gpu(cppTensor<dtype>&, const cppTensor<dtype>&)";
+        cppTensor_Utils::null_check(function_name, "returnArray.dev_data_", returnArray.dev_data_);
         cppTensor_Utils::null_check(function_name, "otherArray.dev_data_", otherArray.dev_data_);
 
-        if (returnArray->shape_.cols != otherArray.shape_.rows || returnArray->shape_.rows != otherArray.shape_.cols)
+        if (returnArray.shape_.cols != otherArray.shape_.rows || returnArray.shape_.rows != otherArray.shape_.cols)
         {
             cppTensor_Utils::exception_print(function_name, "no match returnArray, otherArray shape");
             return;
         }
 
-        cppTensor_gpu::transpose_gpu(returnArray->dev_data_, otherArray.dev_data_, otherArray.shape_.rows, otherArray.shape_.cols);  
+        cppTensor_gpu::transpose_gpu(returnArray.dev_data_, otherArray.dev_data_, otherArray.shape_.rows, otherArray.shape_.cols);  
     }
 
     template<typename dtype>
@@ -125,10 +125,10 @@ namespace cppTensor_Functions
     }
 
     template<typename dtype>
-    void add_gpu(cppTensor<dtype>* returnArray, const cppTensor<dtype>& lhs, const cppTensor<dtype>& rhs)
+    void add_gpu(cppTensor<dtype>& returnArray, const cppTensor<dtype>& lhs, const cppTensor<dtype>& rhs)
     {
-        std::string function_name = "void add_gpu(cppTensor<dtype>*, const cppTensor<dtype>&, const cppTensor<dtype>&)";
-        cppTensor_Utils::null_check(function_name, "returnArray->dev_data_", returnArray->dev_data_);
+        std::string function_name = "void add_gpu(cppTensor<dtype>&, const cppTensor<dtype>&, const cppTensor<dtype>&)";
+        cppTensor_Utils::null_check(function_name, "returnArray.dev_data_", returnArray.dev_data_);
         cppTensor_Utils::null_check(function_name, "lhs.dev_data_", lhs.dev_data_);
         cppTensor_Utils::null_check(function_name, "rhs.dev_data_", rhs.dev_data_);
         
@@ -138,7 +138,7 @@ namespace cppTensor_Functions
             return;
         }
 
-        cppTensor_gpu::add_gpu(returnArray->dev_data_, lhs.dev_data_, rhs.dev_data_, returnArray->shape_.rows, returnArray->shape_.cols);
+        cppTensor_gpu::add_gpu(returnArray.dev_data_, lhs.dev_data_, rhs.dev_data_, returnArray.shape_.size());
     }
 
     template<typename dtype>

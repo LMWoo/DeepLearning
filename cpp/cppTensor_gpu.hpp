@@ -36,9 +36,9 @@ namespace cppTensor_gpu
     void transpose_gpu(double* out_dev_data, const double* in_dev_data, const size_t in_rows, const size_t in_cols);
     double* matrix_dot_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, 
         const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols);
-    double* add_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, const size_t& rows, const size_t& cols);
-
-    void zeros_gpu(double* dev_data, const size_t& size);
+    
+    void add_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, const size_t size);
+    void zeros_gpu(double* dev_data, const size_t size);
 
     void tanh_gpu(double* out_dev_data, const double* in_dev_data, const size_t& rows, const size_t& cols);
     void exp_gpu(double* out_dev_data, const double* in_dev_data, const size_t& rows, const size_t& cols);
@@ -49,8 +49,8 @@ namespace cppTensor_gpu
     void mul_gpu(double* out_dev_data, double inValue, const size_t& size);
     void mul_gpu(double* out_dev_data, const double* lhs_dev_data, const double* rhs_dev_data, const size_t& size);
     void deriv_tanh_gpu(double* out_dev_data, const double* in_dev_data, const size_t& size);
-    void clip_gpu(double* out_dev_data, double low, double high, const size_t& size);
-    void optimizer_gpu(double* param, double* mem, const double* dparam, const size_t& size);
+    void clip_gpu(double* out_dev_data, double low, double high, const size_t size);
+    void optimizer_gpu(double* param, double* mem, const double* dparam, const size_t size);
 
     //void div_gpu(double* dev_data, const double& div, const size_t& size);
 }

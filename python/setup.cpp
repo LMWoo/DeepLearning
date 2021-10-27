@@ -21,7 +21,10 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("test", &cppTensorDouble::test);
     
     m.def("test_dot_gpu", &cppTensor_Functions::test_dot_gpu);
+    m.def("add_cpu", &cppTensor_Functions::add_cpu<double>);
+    m.def("add_gpu", &cppTensor_Functions::add_gpu<double>);
     m.def("transpose_cpu", &cppTensor_Functions::transpose_cpu<double>);    
+    m.def("transpose_gpu", &cppTensor_Functions::transpose_gpu<double>);
     m.def("dot_cpu", &cppTensor_Functions::dot_cpu<double>);
     m.def("dot_gpu", &cppTensor_Functions::dot_gpu<double>);
 

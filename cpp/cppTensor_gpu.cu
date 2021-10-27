@@ -1,5 +1,6 @@
 #include "cppTensor_gpu.hpp"
 
+#define TILED_WIDTH 32
 namespace cppTensor_gpu
 {
     __global__ void test_dot(double *c, const double *a, const double *b, const int WIDTH)
@@ -112,16 +113,20 @@ namespace cppTensor_gpu
 
     __global__ void transpose(double* out_dev_data, const double* in_dev_data, const size_t in_rows, const size_t in_cols)
     {
-        size_t x = threadIdx.x;
-        size_t y = threadIdx.y;
+        size_t in_x = blockIdx.x * blockDim.x + threadIdx.x;
+        size_t in_y = blockIdx.y * blockDim.y + threadIdx.y;
+        if (in_x >= in_cols || in_y >= in_rows)
+        {
+            return;
+        }
 
-        out_dev_data[x * in_rows + y] = in_dev_data[y * in_cols + x];
+        out_dev_data[in_x * in_rows + in_y] = in_dev_data[in_y * in_cols + in_x];
     }
 
     void transpose_gpu(double* out_dev_data, const double* in_dev_data, const size_t in_rows, const size_t in_cols)
     {
-        dim3 dimGrid(1, 1, 1);
-        dim3 dimThread(in_cols, in_rows, 1);
+        dim3 dimGrid(in_cols / TILED_WIDTH + 1, in_rows / TILED_WIDTH + 1, 1);
+        dim3 dimThread(TILED_WIDTH, TILED_WIDTH, 1);
 
         transpose<<<dimGrid, dimThread>>>(out_dev_data, in_dev_data, in_rows, in_cols);
     }
@@ -129,8 +134,13 @@ namespace cppTensor_gpu
     __global__ void matrix_dot(double *dev_out, const double* dev_lhs, const double* dev_rhs, 
         const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols)
     {
-        size_t x = threadIdx.x;
-        size_t y = threadIdx.y;
+        size_t x = blockIdx.x * blockDim.x + threadIdx.x;
+        size_t y = blockIdx.y * blockDim.y + threadIdx.y;
+        if (x >= rhs_cols || y >= lhs_rows)
+        {
+            return;
+        }
+
         size_t i = y * rhs_cols + x;
 
         double sum = 0.0;
@@ -146,39 +156,48 @@ namespace cppTensor_gpu
     double* matrix_dot_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, 
         const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols)
     {
-        dim3 dimGrid(1, 1, 1);
-        dim3 dimThread(rhs_cols, lhs_rows, 1);
+        dim3 dimGrid(rhs_cols / TILED_WIDTH + 1, lhs_rows / TILED_WIDTH + 1, 1);
+        dim3 dimThread(TILED_WIDTH, TILED_WIDTH, 1);
 
         matrix_dot<<<dimGrid, dimThread>>>(dev_out, dev_lhs, dev_rhs, lhs_rows, lhs_cols, rhs_rows, rhs_cols);
         return dev_out;
     }
 
-    __global__ void add(double* dev_out, const double* dev_lhs, const double* dev_rhs)
+    __global__ void add_(double* dev_out, const double* dev_lhs, const double* dev_rhs, const size_t size)
     {
-        size_t i = threadIdx.y * blockDim.x + threadIdx.x;
+        int i = blockIdx.x * blockDim.x + threadIdx.x;
+        if (i >= size)
+        {
+            return;
+        }
+        
         dev_out[i] = dev_lhs[i] + dev_rhs[i];
     }
 
-    double* add_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, const size_t& rows, const size_t& cols)
+    void add_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, const size_t size)
     {
-        dim3 dimGrid(1, 1, 1);
-        dim3 dimBlock(cols, rows, 1);
+        dim3 dimGrid(size / TILED_WIDTH + 1, 1, 1);
+        dim3 dimBlock(TILED_WIDTH, 1, 1);
 
-        add<<<dimGrid, dimBlock>>>(dev_out, dev_lhs, dev_rhs);
-        return dev_out;
+        add_<<<dimGrid, dimBlock>>>(dev_out, dev_lhs, dev_rhs, size);
     }
 
-    __global__ void zeros_(double* dev_data)
+    __global__ void zeros_(double* dev_data, const size_t size)
     {
-        dev_data[threadIdx.x] = 0.0;
+        size_t x = blockIdx.x * blockDim.x + threadIdx.x;
+        if (x >= size)
+        {
+            return;
+        }
+        dev_data[x] = 0.0;
     }
 
-    void zeros_gpu(double* dev_data, const size_t& size)
+    void zeros_gpu(double* dev_data, const size_t size)
     {
-        dim3 dimGrid(1, 1, 1);
-        dim3 dimBlock(size, 1, 1);
+        dim3 dimGrid(size / TILED_WIDTH + 1, 1, 1);
+        dim3 dimBlock(TILED_WIDTH, 1, 1);
 
-        zeros_<<<dimGrid, dimBlock>>>(dev_data);
+        zeros_<<<dimGrid, dimBlock>>>(dev_data, size);
     }
 
     __global__ void tanh_(double* out_dev_data, const double* in_dev_data)
@@ -317,32 +336,43 @@ namespace cppTensor_gpu
         deriv_tanh_<<<dimGrid, dimBlock>>>(out_dev_data, in_dev_data);
     }
     
-    __global__ void clip_(double* out_dev_data, double low, double high)
+    __global__ void clip_(double* out_dev_data, double low, double high, const size_t size)
     {
-        out_dev_data[threadIdx.x] = min(high, out_dev_data[threadIdx.x]);
-        out_dev_data[threadIdx.x] = max(low, out_dev_data[threadIdx.x]);
+        size_t x = blockIdx.x * blockDim.x + threadIdx.x;
+        if (x >= size)
+        {
+            return;
+        }
+
+        out_dev_data[x] = min(high, out_dev_data[x]);
+        out_dev_data[x] = max(low, out_dev_data[x]);
     }
 
-    void clip_gpu(double* out_dev_data, double low, double high, const size_t& size)
+    void clip_gpu(double* out_dev_data, double low, double high, const size_t size)
     {
-        dim3 dimGrid(1, 1, 1);
-        dim3 dimBlock(size, 1, 1);
+        dim3 dimGrid(size / TILED_WIDTH + 1, 1, 1);
+        dim3 dimBlock(TILED_WIDTH, 1, 1);
 
-        clip_<<<dimGrid, dimBlock>>>(out_dev_data, low, high);
+        clip_<<<dimGrid, dimBlock>>>(out_dev_data, low, high, size);
     }
 
-    __global__ void optimizer_(double* param, double* mem, const double* dparam)
+    __global__ void optimizer_(double* param, double* mem, const double* dparam, const size_t size)
     {
-        mem[threadIdx.x] += dparam[threadIdx.x] * dparam[threadIdx.x];
-        param[threadIdx.x] += (-0.01 * dparam[threadIdx.x]) / sqrt(mem[threadIdx.x] + 1e-8);
+        size_t x = blockIdx.x * blockDim.x + threadIdx.x;
+        if (x >= size)
+        {
+            return;
+        }
+        mem[x] += dparam[x] * dparam[x];
+        param[x] += (-0.01 * dparam[x]) / sqrt(mem[x] + 1e-8);
     }
 
-    void optimizer_gpu(double* param, double* mem, const double* dparam, const size_t& size)
+    void optimizer_gpu(double* param, double* mem, const double* dparam, const size_t size)
     {
-        dim3 dimGrid(1, 1, 1);
-        dim3 dimBlock(size, 1, 1);
+        dim3 dimGrid(size / TILED_WIDTH + 1, 1, 1);
+        dim3 dimBlock(TILED_WIDTH, 1, 1);
 
-        optimizer_<<<dimGrid, dimBlock>>>(param, mem, dparam);
+        optimizer_<<<dimGrid, dimBlock>>>(param, mem, dparam, size);
     }
 
     // __global__ void div_(double* dev_data, const double& div)
