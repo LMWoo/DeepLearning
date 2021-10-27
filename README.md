@@ -20,7 +20,7 @@
     * npRnn.py (rnn numpy로 구현)
     * setup.cpp (cppTensor, cppRnn extension c++ 소스)
     * setup.py (cppTensor, cppRnn extensions python 소스)
-    * test.ipynb (numpy Rnn, cpu Rnn, gpu Rnn test, 현재 gpu 쪽에서 hidden_size가 32보다 클 경우 에러 발생)
+    * test.ipynb (numpy Rnn, cpu Rnn, gpu Rnn test, gpu 속도 개선 중)
 
 # Installation
 
