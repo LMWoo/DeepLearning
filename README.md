@@ -24,9 +24,8 @@
     * cpu_test.py (cppTensor cpu Rnn test)
     * gpu_test.py (cppTensor gpu Rnn test 속도 개선 중)
 
-# Cuda Parallel Programming
-
-
+# Documents
+[CUDA](documents/CUDA.pdf)
 
 # Installation
 
@@ -74,8 +73,6 @@ python setup.py install
 ```
 
 # Running the test
-
-### test
 ```
 cd python
 python setup.py install
@@ -84,9 +81,10 @@ python cpu_test.py (cpp cpu version)
 python gpu_test.py (cpp gpu version)
 ```
 
-# Result (hidden_size = 256)
-||Accuracy|Speed (s / 5000 iters)|
+# Result (seq_length = 28, input_size = 28, hidden_size = 256, num_classes = 10, hidden_size = 256)
+||Accuracy|Speed (s / 5000 images)|
 |----|----|----|
+|cpu_test|95.00 %|20.47|
 |gpu_test|94.95 %|10.89|
 
 # Requirements
