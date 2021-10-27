@@ -92,7 +92,7 @@ python gpu_test.py (cpp gpu version)
 
 |model|Accuracy|Speed (s / 1000 images)|
 |----|----|----|
-|np_test|93.36|6.36|
+|np_test|93.36 %|6.36|
 |cpu_test|95.00 %|20.47|
 |gpu_test|94.95 %|10.89|
 
