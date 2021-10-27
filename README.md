@@ -86,7 +86,7 @@ python gpu_test.py (cpp gpu version)
 
 # Result (hidden_size = 256)
 ||Accuracy|Speed (s / 5000 iters)|
-|----|----|
+|----|----|----|
 |gpu_test|94.95 %|10.89|
 
 # Requirements
