@@ -81,9 +81,12 @@ python cpu_test.py (cpp cpu version)
 python gpu_test.py (cpp gpu version)
 ```
 
-# Result (seq_length = 28, input_size = 28, hidden_size = 256, num_classes = 10, hidden_size = 256)
-||Accuracy|Speed (s / 5000 images)|
+# test result
+ * Hyper Parameters : seq_length = 28, input_size = 28, hidden_size = 256, num_classes = 10, hidden_size = 256
+
+||Accuracy|Speed (s / 1000 images)|
 |----|----|----|
+|np_test|||
 |cpu_test|95.00 %|20.47|
 |gpu_test|94.95 %|10.89|
 
@@ -93,8 +96,6 @@ python gpu_test.py (cpp gpu version)
  * cudnn >= 8.1.1
  * numpy >= 1.17.0
  * torchvision >= 0.2.1
-
-
 
 # References
 [pytorch](https://github.com/pytorch/pytorch) \
