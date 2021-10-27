@@ -69,11 +69,13 @@ python setup.py install
 
 # Running the test
 
-### test.ipynb 실행
+### test
 ```
 cd python
 python setup.py install
-test.ipynb 실행
+python np_test.py (numpy version)
+python cpu_test.py (cpp cpu version)
+python gpu_test.py (cpp gpu version)
 ```
 
 # Requirements
