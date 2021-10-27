@@ -24,8 +24,8 @@
     * cpu_test.py (cppTensor cpu Rnn test)
     * gpu_test.py (cppTensor gpu Rnn test 속도 개선 중)
 
-# Documents
-[CUDA](documents/CUDA.pdf)
+# Study
+[CUDA](study/CUDA.pdf)
 
 # Installation
 
