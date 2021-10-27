@@ -20,7 +20,9 @@
     * npRnn.py (rnn numpy로 구현)
     * setup.cpp (cppTensor, cppRnn extension c++ 소스)
     * setup.py (cppTensor, cppRnn extensions python 소스)
-    * test.ipynb (numpy Rnn, cpu Rnn, gpu Rnn test, gpu 속도 개선 중)
+    * np_test.py (numpy Rnn test)
+    * cpu_test.py (cppTensor cpu Rnn test)
+    * gpu_test.py (cppTensor gpu Rnn test 속도 개선 중)
 
 # Installation
 
