@@ -22,7 +22,7 @@
     * setup.py (cppTensor, cppRnn extensions python 소스)
     * np_test.py (rnn numpy version)
     * cpu_test.py (rnn cpu version)
-    * gpu_test.py (rnn gpu version 현재 코드 개선 및 실험 진행 중)
+    * gpu_test.py (rnn gpu version **현재 코드 개선 및 실험 진행 중**)
 
 # Experiments
 |Hyper Parameters|value|
