@@ -17,12 +17,14 @@
     * cppUtils.hpp
     * main.cpp
   * python 
-    * npRnn.py (rnn numpy로 구현)
-    * setup.cpp (cppTensor, cppRnn extension c++ 소스)
-    * setup.py (cppTensor, cppRnn extensions python 소스)
-    * np_test.py (rnn numpy version)
-    * cpu_test.py (rnn cpu version)
-    * gpu_test.py (rnn gpu version **현재 코드 개선 및 실험 진행 중**)
+    * npRnn.py (rnn numpy)
+    * npLSTM.py (lstm numpy)
+    * setup.cpp
+    * setup.py
+    * np_test.py (rnn numpy version test)
+    * cpu_test.py (rnn cpu version test)
+    * gpu_test.py (rnn gpu version test **현재 코드 개선 및 실험 진행 중**)
+    
 
 # Experiments
 |Hyper Parameters|value|
