@@ -42,8 +42,8 @@
 |gpu_test (TILED_WIDTH = 32) |94.95 %|10.89|
 |gpu_test (TILED_WIDTH = 8) |94.08 %|4.47|
 
-# Study
-[CUDA](study/CUDA.pdf)
+# Note
+[CUDA](note/CUDA.pdf)
 
 # Installation
 
