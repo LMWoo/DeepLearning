@@ -1,6 +1,6 @@
 #include "cppTensor_gpu.hpp"
 
-#define TILED_WIDTH 8
+#define TILE_WIDTH 8
 namespace cppTensor_gpu
 {
     __global__ void test_matMul(double *c, const double *a, const double *b, const int WIDTH)
@@ -21,17 +21,17 @@ namespace cppTensor_gpu
     
     void test_matMul_gpu()
     {
-        int WIDTH = 512;
-        int TILE_WIDTH = 16;
-        int GRID_WIDTH = WIDTH / TILE_WIDTH;
+        int TEST_WIDTH = 512;
+        int TEST_TILE_WIDTH = 16;
+        int TEST_GRID_WIDTH = TEST_WIDTH / TEST_TILE_WIDTH;
 
-        double a[WIDTH][WIDTH];
-        double b[WIDTH][WIDTH];
-        double c[WIDTH][WIDTH] = {0};
+        double a[TEST_WIDTH][TEST_WIDTH];
+        double b[TEST_WIDTH][TEST_WIDTH];
+        double c[TEST_WIDTH][TEST_WIDTH] = {0};
 
-        for (int y = 0; y < WIDTH; ++y)
+        for (int y = 0; y < TEST_WIDTH; ++y)
         {
-            for (int x = 0; x < WIDTH; ++x)
+            for (int x = 0; x < TEST_WIDTH; ++x)
             {
                 a[y][x] = 1.0;
                 b[y][x] = 1.0;
@@ -41,26 +41,26 @@ namespace cppTensor_gpu
         double *dev_a = 0;
         double *dev_b = 0;
         double *dev_c = 0;
-        CUDA_CHECK(cudaMalloc((void**)&dev_a, WIDTH * WIDTH * sizeof(double)));
-        CUDA_CHECK(cudaMalloc((void**)&dev_b, WIDTH * WIDTH * sizeof(double)));
-        CUDA_CHECK(cudaMalloc((void**)&dev_c, WIDTH * WIDTH * sizeof(double)));
+        CUDA_CHECK(cudaMalloc((void**)&dev_a, TEST_WIDTH * TEST_WIDTH * sizeof(double)));
+        CUDA_CHECK(cudaMalloc((void**)&dev_b, TEST_WIDTH * TEST_WIDTH * sizeof(double)));
+        CUDA_CHECK(cudaMalloc((void**)&dev_c, TEST_WIDTH * TEST_WIDTH * sizeof(double)));
 
-        CUDA_CHECK(cudaMemcpy(dev_a, a, WIDTH * WIDTH * sizeof(double), cudaMemcpyHostToDevice));
-        CUDA_CHECK(cudaMemcpy(dev_b, b, WIDTH * WIDTH * sizeof(double), cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(dev_a, a, TEST_WIDTH * TEST_WIDTH * sizeof(double), cudaMemcpyHostToDevice));
+        CUDA_CHECK(cudaMemcpy(dev_b, b, TEST_WIDTH * TEST_WIDTH * sizeof(double), cudaMemcpyHostToDevice));
 
-        dim3 dimGrid(GRID_WIDTH, GRID_WIDTH, 1);
-        dim3 dimThread(TILE_WIDTH, TILE_WIDTH, 1);
+        dim3 dimGrid(TEST_GRID_WIDTH, TEST_GRID_WIDTH, 1);
+        dim3 dimThread(TEST_TILE_WIDTH, TEST_TILE_WIDTH, 1);
         for (int i = 0; i < 128; ++i)
-            test_matMul<<<dimGrid, dimThread>>>(dev_c, dev_a, dev_b, WIDTH);
+            test_matMul<<<dimGrid, dimThread>>>(dev_c, dev_a, dev_b, TEST_WIDTH);
 
-        CUDA_CHECK(cudaMemcpy(c, dev_c, WIDTH * WIDTH * sizeof(double), cudaMemcpyDeviceToHost));
+        CUDA_CHECK(cudaMemcpy(c, dev_c, TEST_WIDTH * TEST_WIDTH * sizeof(double), cudaMemcpyDeviceToHost));
         cudaFree(dev_c);
         cudaFree(dev_a);
         cudaFree(dev_b);
 
-        for (int y = 0; y < WIDTH; ++y)
+        for (int y = 0; y < TEST_WIDTH; ++y)
         {
-            for (int x = 0; x < WIDTH; ++x)
+            for (int x = 0; x < TEST_WIDTH; ++x)
             {
                 printf("%lf ", c[y][x]);
             }
@@ -125,8 +125,8 @@ namespace cppTensor_gpu
 
     void transpose_gpu(double* out_dev_data, const double* in_dev_data, const size_t in_rows, const size_t in_cols)
     {
-        dim3 dimGrid(in_cols / TILED_WIDTH + 1, in_rows / TILED_WIDTH + 1, 1);
-        dim3 dimThread(TILED_WIDTH, TILED_WIDTH, 1);
+        dim3 dimGrid(in_cols / TILE_WIDTH + 1, in_rows / TILE_WIDTH + 1, 1);
+        dim3 dimThread(TILE_WIDTH, TILE_WIDTH, 1);
 
         transpose<<<dimGrid, dimThread>>>(out_dev_data, in_dev_data, in_rows, in_cols);
     }
@@ -156,8 +156,8 @@ namespace cppTensor_gpu
     double* matrix_matMul_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, 
         const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols)
     {
-        dim3 dimGrid(rhs_cols / TILED_WIDTH + 1, lhs_rows / TILED_WIDTH + 1, 1);
-        dim3 dimThread(TILED_WIDTH, TILED_WIDTH, 1);
+        dim3 dimGrid(rhs_cols / TILE_WIDTH + 1, lhs_rows / TILE_WIDTH + 1, 1);
+        dim3 dimThread(TILE_WIDTH, TILE_WIDTH, 1);
 
         matrix_matMul<<<dimGrid, dimThread>>>(dev_out, dev_lhs, dev_rhs, lhs_rows, lhs_cols, rhs_rows, rhs_cols);
         return dev_out;
@@ -176,8 +176,8 @@ namespace cppTensor_gpu
 
     void add_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, const size_t size)
     {
-        dim3 dimGrid(size / TILED_WIDTH + 1, 1, 1);
-        dim3 dimBlock(TILED_WIDTH, 1, 1);
+        dim3 dimGrid(size / TILE_WIDTH + 1, 1, 1);
+        dim3 dimBlock(TILE_WIDTH, 1, 1);
 
         add_<<<dimGrid, dimBlock>>>(dev_out, dev_lhs, dev_rhs, size);
     }
@@ -194,8 +194,8 @@ namespace cppTensor_gpu
 
     void zeros_gpu(double* dev_data, const size_t size)
     {
-        dim3 dimGrid(size / TILED_WIDTH + 1, 1, 1);
-        dim3 dimBlock(TILED_WIDTH, 1, 1);
+        dim3 dimGrid(size / TILE_WIDTH + 1, 1, 1);
+        dim3 dimBlock(TILE_WIDTH, 1, 1);
 
         zeros_<<<dimGrid, dimBlock>>>(dev_data, size);
     }
@@ -350,8 +350,8 @@ namespace cppTensor_gpu
 
     void clip_gpu(double* out_dev_data, double low, double high, const size_t size)
     {
-        dim3 dimGrid(size / TILED_WIDTH + 1, 1, 1);
-        dim3 dimBlock(TILED_WIDTH, 1, 1);
+        dim3 dimGrid(size / TILE_WIDTH + 1, 1, 1);
+        dim3 dimBlock(TILE_WIDTH, 1, 1);
 
         clip_<<<dimGrid, dimBlock>>>(out_dev_data, low, high, size);
     }
@@ -369,8 +369,8 @@ namespace cppTensor_gpu
 
     void optimizer_gpu(double* param, double* mem, const double* dparam, const size_t size)
     {
-        dim3 dimGrid(size / TILED_WIDTH + 1, 1, 1);
-        dim3 dimBlock(TILED_WIDTH, 1, 1);
+        dim3 dimGrid(size / TILE_WIDTH + 1, 1, 1);
+        dim3 dimBlock(TILE_WIDTH, 1, 1);
 
         optimizer_<<<dimGrid, dimBlock>>>(param, mem, dparam, size);
     }
