@@ -77,9 +77,9 @@ namespace cppTensor_Functions
 
 
     template<typename dtype> 
-    void matMul_gpu(cppTensor<dtype>* returnArray, const cppTensor<dtype>& lhs, const cppTensor<dtype>& rhs)
+    void matMul_gpu(cppTensor<dtype>* returnArray, const cppTensor<dtype>& lhs, const cppTensor<dtype>& rhs, bool useSharedMemory)
     {
-        std::string function_name = "void matMul_gpu(cppTensor<dtype>*, const cppTensor<dtype>&, const cppTensor<dtype>&)";
+        std::string function_name = "void matMul_gpu(cppTensor<dtype>*, const cppTensor<dtype>&, const cppTensor<dtype>&, bool)";
         cppTensor_Utils::null_check(function_name, "returnArray->dev_data_", returnArray->dev_data_);
         cppTensor_Utils::null_check(function_name, "lhs.dev_data_", lhs.dev_data_);
         cppTensor_Utils::null_check(function_name, "rhs.dev_data_", rhs.dev_data_);
@@ -90,8 +90,8 @@ namespace cppTensor_Functions
             return;
         }
 
-        cppTensor_gpu::matrix_matMul_gpu(returnArray->dev_data_, lhs.dev_data_, rhs.dev_data_,
-            lhs.shape_.rows, lhs.shape_.cols, rhs.shape_.rows, rhs.shape_.cols);
+        cppTensor_gpu::matMul_gpu(returnArray->dev_data_, lhs.dev_data_, rhs.dev_data_,
+            lhs.shape_.rows, lhs.shape_.cols, rhs.shape_.rows, rhs.shape_.cols, useSharedMemory);
     }
 
     template<typename dtype>

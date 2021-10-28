@@ -34,8 +34,8 @@ namespace cppTensor_gpu
     void cpu_free(void* data);
 
     void transpose_gpu(double* out_dev_data, const double* in_dev_data, const size_t in_rows, const size_t in_cols);
-    double* matrix_matMul_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, 
-        const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols);
+    void matMul_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, 
+        const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols, bool useSharedMemory);
     
     void add_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, const size_t size);
     void zeros_gpu(double* dev_data, const size_t size);

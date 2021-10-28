@@ -131,7 +131,7 @@ namespace cppTensor_gpu
         transpose<<<dimGrid, dimThread>>>(out_dev_data, in_dev_data, in_rows, in_cols);
     }
 
-    __global__ void matrix_matMul(double *dev_out, const double* dev_lhs, const double* dev_rhs, 
+    __global__ void matMul_(double *dev_out, const double* dev_lhs, const double* dev_rhs, 
         const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols)
     {
         size_t x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -153,14 +153,42 @@ namespace cppTensor_gpu
         dev_out[i] = sum;
     }
 
-    double* matrix_matMul_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, 
+    __global__ void matMul_sharedMemory_(double *dev_out, const double* dev_lhs, const double* dev_rhs, 
         const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols)
+    {
+        size_t x = blockIdx.x * blockDim.x + threadIdx.x;
+        size_t y = blockIdx.y * blockDim.y + threadIdx.y;
+        if (x >= rhs_cols || y >= lhs_rows)
+        {
+            return;
+        }
+
+        size_t i = y * rhs_cols + x;
+
+        double sum = 0.0;
+
+        for (size_t k = 0; k < lhs_cols; ++k)
+        {
+            sum += dev_lhs[y * lhs_cols + k] * dev_rhs[k * rhs_cols + x];
+        }
+
+        dev_out[i] = sum;
+    }
+
+    void matMul_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, 
+        const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols, bool useSharedMemory)
     {
         dim3 dimGrid(rhs_cols / TILE_WIDTH + 1, lhs_rows / TILE_WIDTH + 1, 1);
         dim3 dimThread(TILE_WIDTH, TILE_WIDTH, 1);
 
-        matrix_matMul<<<dimGrid, dimThread>>>(dev_out, dev_lhs, dev_rhs, lhs_rows, lhs_cols, rhs_rows, rhs_cols);
-        return dev_out;
+        if (useSharedMemory)
+        {
+            matMul_sharedMemory_<<<dimGrid, dimThread>>>(dev_out, dev_lhs, dev_rhs, lhs_rows, lhs_cols, rhs_rows, rhs_cols);
+        }
+        else
+        {
+            matMul_<<<dimGrid, dimThread>>>(dev_out, dev_lhs, dev_rhs, lhs_rows, lhs_cols, rhs_rows, rhs_cols);
+        }
     }
 
     __global__ void add_(double* dev_out, const double* dev_lhs, const double* dev_rhs, const size_t size)
