@@ -27,6 +27,7 @@
     
 
 # Experiments
+
 |Hyper Parameters|value|
 |----|----|
 |seq_length|28|
@@ -39,11 +40,13 @@
 |----|----|----|
 |np_test|93.36 %|6.36|
 |cpu_test|95.00 %|20.47|
-|gpu_test (TILED_WIDTH = 32) |94.95 %|10.89|
-|gpu_test (TILED_WIDTH = 8) |94.08 %|4.47|
+|gpu_test (TILED_WIDTH = 32, not use sharedMemory) |94.95 %|10.89|
+|gpu_test (TILED_WIDTH = 8, not use sharedMemory) |94.08 %|4.47|
+|gpu_test (TILED_WIDTH = 8, use sharedMemory) |94.08 %|4.87|
 
 # Note
-[CUDA](note/CUDA.pdf)
+
+* [CUDA](note/CUDA.pdf)
 
 # Installation
 

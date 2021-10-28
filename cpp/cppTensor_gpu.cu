@@ -158,27 +158,70 @@ namespace cppTensor_gpu
     {
         size_t x = blockIdx.x * blockDim.x + threadIdx.x;
         size_t y = blockIdx.y * blockDim.y + threadIdx.y;
+
+        __shared__ double s_lhs[TILE_WIDTH][TILE_WIDTH];
+        __shared__ double s_rhs[TILE_WIDTH][TILE_WIDTH];
+
+        double sum = 0.0;
+
+        size_t lhs_y = 0;
+        size_t lhs_x = 0;
+        size_t rhs_y = 0;
+        size_t rhs_x = 0;
+
+        for (int i = 0; i < lhs_cols / TILE_WIDTH + 1; ++i)
+        {
+            lhs_y = y;
+            lhs_x = i * TILE_WIDTH + threadIdx.x;
+            rhs_y = i * TILE_WIDTH + threadIdx.y;
+            rhs_x = x;
+
+            if (lhs_y >= lhs_rows || lhs_x >= lhs_cols)
+            {
+                s_lhs[threadIdx.y][threadIdx.x] = 0.0;    
+            }
+            else
+            {
+                s_lhs[threadIdx.y][threadIdx.x] = dev_lhs[lhs_y * lhs_cols + lhs_x];
+            }
+
+            if (rhs_y >= rhs_rows || rhs_x >= rhs_cols)
+            {
+                s_rhs[threadIdx.y][threadIdx.x] = 0.0;
+            }
+            else
+            {
+                s_rhs[threadIdx.y][threadIdx.x] = dev_rhs[rhs_y * rhs_cols + rhs_x];
+            }
+
+            __syncthreads();
+
+            for (int k = 0; k < TILE_WIDTH; ++k)
+            {
+                sum += s_lhs[threadIdx.y][k] * s_rhs[k][threadIdx.x];
+            }
+        }
+
+        __syncthreads();
+
+
         if (x >= rhs_cols || y >= lhs_rows)
         {
             return;
         }
 
-        size_t i = y * rhs_cols + x;
-
-        double sum = 0.0;
-
-        for (size_t k = 0; k < lhs_cols; ++k)
-        {
-            sum += dev_lhs[y * lhs_cols + k] * dev_rhs[k * rhs_cols + x];
-        }
-
-        dev_out[i] = sum;
+        dev_out[y * rhs_cols + x] = sum;
     }
 
     void matMul_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, 
         const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols, bool useSharedMemory)
     {
-        dim3 dimGrid(rhs_cols / TILE_WIDTH + 1, lhs_rows / TILE_WIDTH + 1, 1);
+        int blockDimY = lhs_rows / TILE_WIDTH;
+        int blockDimX = rhs_cols / TILE_WIDTH;
+        blockDimY += lhs_rows % TILE_WIDTH ? 1 : 0;
+        blockDimX += rhs_cols % TILE_WIDTH ? 1 : 0;
+
+        dim3 dimGrid(blockDimX, blockDimY, 1);
         dim3 dimThread(TILE_WIDTH, TILE_WIDTH, 1);
 
         if (useSharedMemory)

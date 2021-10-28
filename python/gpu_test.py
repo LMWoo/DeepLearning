@@ -48,7 +48,7 @@ FC_W = cpp.cppTensor(np_FC_W)
 
 gpu_model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
 gpu_model.cuda()
-
+gpu_model.useSharedMemory()
 start_time = time.time()
 
 print("start train gpu hidden_size {}".format(hidden_size))
@@ -151,13 +151,22 @@ print('gpu Accuracy of the model on the 10000 test images: {} %'.format(100 * gp
 # print(x.numpy())
 
 # matMul test
-# x = cpp.cppTensor(np.ones((128, 128)))
+# x = cpp.cppTensor(np.ones((512, 256)))
 # x.cuda()
-# y = cpp.cppTensor(np.ones((128, 28)))
+# y = cpp.cppTensor(np.ones((256, 512)))
 # y.cuda()
-# result = cpp.cppTensor(np.zeros((128, 28)))
+# result = cpp.cppTensor(np.zeros((512, 512)))
 # result.cuda()
 
-# cpp.matMul_gpu(result, x, y)
+# start_time = time.time()
+# for i in range(10000):
+#     cpp.matMul_gpu(result, x, y, True)
+# print("time : {}".format(time.time() - start_time))
+
+# start_time = time.time()
+# for i in range(10000):
+#     cpp.matMul_gpu(result, x, y, False)
+# print("time : {}".format(time.time() - start_time))
+
 # result.cpu()
 # print(result.numpy())

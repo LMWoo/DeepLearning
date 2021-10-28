@@ -488,32 +488,32 @@ private:
         dS_next->zeros();
         
         cppTensor_Functions::transpose_gpu(*O_T, *O[seq_length - 1]);
-        cppTensor_Functions::matMul_gpu(dFC_W, dY, *O_T, this->use_sharedMemory);
+        cppTensor_Functions::matMul_gpu(*dFC_W, dY, *O_T, this->use_sharedMemory);
         cppTensor_Functions::copy_gpu(dfc_b, dY);
 
         cppTensor_Functions::transpose_gpu(*FC_W_T, *FC_W);
-        cppTensor_Functions::matMul_gpu(dO, *FC_W_T, dY, this->use_sharedMemory);
+        cppTensor_Functions::matMul_gpu(*dO, *FC_W_T, dY, this->use_sharedMemory);
 
         cppTensor_Functions::transpose_gpu(*S_T, *S[seq_length - 1]);
-        cppTensor_Functions::matMul_gpu(dV, *dO, *S_T, this->use_sharedMemory);
+        cppTensor_Functions::matMul_gpu(*dV, *dO, *S_T, this->use_sharedMemory);
         cppTensor_Functions::copy_gpu(dc, *dO);
 
         for (int t = seq_length - 1; t >= 0; --t)
         {
             cppTensor_Functions::transpose_gpu(*V_T, *V);
-            cppTensor_Functions::matMul_gpu(dS, *V_T, *dO, this->use_sharedMemory);
+            cppTensor_Functions::matMul_gpu(*dS, *V_T, *dO, this->use_sharedMemory);
             cppTensor_Functions::add_gpu(*dS, *dS, *dS_next);
             cppTensor_Functions::deriv_tanh_gpu(dA, *S[t]);
             cppTensor_Functions::mul_gpu(dA, *dA, *dS);
             cppTensor_Functions::transpose_gpu(*X_T, *X[t]);
-            cppTensor_Functions::matMul_gpu(dU_matMul, *dA, *X_T, this->use_sharedMemory);
+            cppTensor_Functions::matMul_gpu(*dU_matMul, *dA, *X_T, this->use_sharedMemory);
             cppTensor_Functions::add_gpu(*dU, *dU, *dU_matMul);
             cppTensor_Functions::transpose_gpu(*S_T, *S[t - 1]);
-            cppTensor_Functions::matMul_gpu(dW_matMul, *dA, *S_T, this->use_sharedMemory);
+            cppTensor_Functions::matMul_gpu(*dW_matMul, *dA, *S_T, this->use_sharedMemory);
             cppTensor_Functions::add_gpu(*dW, *dW, *dW_matMul);
             cppTensor_Functions::add_gpu(*db, *db, *dA);
             cppTensor_Functions::transpose_gpu(*W_T, *W);
-            cppTensor_Functions::matMul_gpu(dS_next, *W_T, *dA, this->use_sharedMemory);
+            cppTensor_Functions::matMul_gpu(*dS_next, *W_T, *dA, this->use_sharedMemory);
         }
     }
 
@@ -585,16 +585,16 @@ private:
         for (int t = 0; t < seq_length; ++t)
         {
             cppTensor_Functions::transpose_gpu(*X[t], x[t]);
-            cppTensor_Functions::matMul_gpu(A[seq_length], *U, *X[t], this->use_sharedMemory);
-            cppTensor_Functions::matMul_gpu(A[seq_length + 1], *W, *S[t - 1], this->use_sharedMemory);
+            cppTensor_Functions::matMul_gpu(*A[seq_length], *U, *X[t], this->use_sharedMemory);
+            cppTensor_Functions::matMul_gpu(*A[seq_length + 1], *W, *S[t - 1], this->use_sharedMemory);
             cppTensor_Functions::add_gpu(*A[t], *A[seq_length], *A[seq_length + 1]);
             cppTensor_Functions::add_gpu(*A[t], *A[t], *b);
             cppTensor_Functions::tanh_gpu(S[t], *A[t]);
-            cppTensor_Functions::matMul_gpu(O[seq_length], *V, *S[t], this->use_sharedMemory);
+            cppTensor_Functions::matMul_gpu(*O[seq_length], *V, *S[t], this->use_sharedMemory);
             cppTensor_Functions::add_gpu(*O[t], *O[seq_length], *c);
         }
 
-        cppTensor_Functions::matMul_gpu(&outputs, *FC_W, *O[seq_length-1], this->use_sharedMemory);
+        cppTensor_Functions::matMul_gpu(outputs, *FC_W, *O[seq_length-1], this->use_sharedMemory);
         cppTensor_Functions::add_gpu(outputs, outputs, *fc_b);
     }
 
