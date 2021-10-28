@@ -24,6 +24,22 @@
     * cpu_test.py (cppTensor cpu Rnn test)
     * gpu_test.py (cppTensor gpu Rnn test 속도 개선 중)
 
+# Result
+|Hyper Parameters|value|
+|----|----|
+|seq_length|28|
+|input_size|28|
+|num_classes|10|
+|hidden_size|256|
+|learning_rate|0.01|
+
+|model|Accuracy|Speed (s / 1000 images)|
+|----|----|----|
+|np_test|93.36 %|6.36|
+|cpu_test|95.00 %|20.47|
+|gpu_test (TILED_WIDTH = 32) |94.95 %|10.89|
+|gpu_test (TILED_WIDTH = 8) |94.08 %|4.47|
+
 # Study
 [CUDA](study/CUDA.pdf)
 
@@ -80,22 +96,6 @@ python np_test.py (numpy version)
 python cpu_test.py (cpp cpu version)
 python gpu_test.py (cpp gpu version)
 ```
-
-# test result
-|Hyper Parameters|value|
-|----|----|
-|seq_length|28|
-|input_size|28|
-|num_classes|10|
-|hidden_size|256|
-|learning_rate|0.01|
-
-|model|Accuracy|Speed (s / 1000 images)|
-|----|----|----|
-|np_test|93.36 %|6.36|
-|cpu_test|95.00 %|20.47|
-|gpu_test (TILED_WIDTH = 32) |94.95 %|10.89|
-|gpu_test (TILED_WIDTH = 8) |94.08 %|4.47|
 
 # Requirements
  * python >= 3.6
