@@ -20,11 +20,11 @@
     * npRnn.py (rnn numpy로 구현)
     * setup.cpp (cppTensor, cppRnn extension c++ 소스)
     * setup.py (cppTensor, cppRnn extensions python 소스)
-    * np_test.py (numpy Rnn test)
-    * cpu_test.py (cppTensor cpu Rnn test)
-    * gpu_test.py (cppTensor gpu Rnn test 속도 개선 중)
+    * np_test.py (rnn numpy version)
+    * cpu_test.py (rnn cpu version)
+    * gpu_test.py (rnn gpu version 현재 코드 개선 및 실험 진행 중)
 
-# Result
+# Experiments
 |Hyper Parameters|value|
 |----|----|
 |seq_length|28|
