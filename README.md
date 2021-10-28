@@ -94,7 +94,8 @@ python gpu_test.py (cpp gpu version)
 |----|----|----|
 |np_test|93.36 %|6.36|
 |cpu_test|95.00 %|20.47|
-|gpu_test|94.95 %|10.89|
+|gpu_test (TILED_WIDTH = 32) |94.95 %|10.89|
+|gpu_test (TILED_WIDTH = 8) |94.08 %|4.47|
 
 # Requirements
  * python >= 3.6
