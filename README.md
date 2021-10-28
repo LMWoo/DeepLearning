@@ -9,12 +9,12 @@
 
 * DeepLearning
   * cpp
-    * cppRnn.hpp (cppTensor를 이용해 rnn구현)
-    * cppTensor.hpp (Tensor기본 클래스)
-    * cppTensor_Functions.hpp (cpu Tensor연산 구현, gpu는 cppTensor_gpu 함수들을 호출함)
-    * cppTensor_gpu.cu (gpu Tensor연산 구현)
-    * cppTensor_gpu.hpp (gpu 관련 함수 선언)
-    * cppUtils.hpp (time check, exception check 등 구현)
+    * cppRnn.hpp (**cppTensor를 이용해 rnn구현**)
+    * cppTensor.hpp (**cppTensor기본 클래스**)
+    * cppTensor_Functions.hpp (**cpu version** dot product, activation function, optimizer 등 구현)
+    * cppTensor_gpu.cu (**gpu version** dot product, activation function, optimizer 등 구현)
+    * cppTensor_gpu.hpp
+    * cppUtils.hpp
     * main.cpp
   * python 
     * npRnn.py (rnn numpy로 구현)
