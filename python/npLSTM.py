@@ -7,7 +7,7 @@ import numpy as np
 
 seq_length = 28
 input_size = 28
-hidden_size = 32
+hidden_size = 256
 num_layers = 1
 num_classes = 10
 batch_size = 1
