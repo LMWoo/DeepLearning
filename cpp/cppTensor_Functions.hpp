@@ -12,9 +12,9 @@
 
 namespace cppTensor_Functions
 {
-    void test_dot_gpu()
+    void test_matMul_gpu()
     {
-        cppTensor_gpu::test_dot_gpu();
+        cppTensor_gpu::test_matMul_gpu();
     }
 
     template<typename dtype>
@@ -77,9 +77,9 @@ namespace cppTensor_Functions
 
 
     template<typename dtype> 
-    void dot_gpu(cppTensor<dtype>* returnArray, const cppTensor<dtype>& lhs, const cppTensor<dtype>& rhs)
+    void matMul_gpu(cppTensor<dtype>* returnArray, const cppTensor<dtype>& lhs, const cppTensor<dtype>& rhs)
     {
-        std::string function_name = "void dot_gpu(cppTensor<dtype>*, const cppTensor<dtype>&, const cppTensor<dtype>&)";
+        std::string function_name = "void matMul_gpu(cppTensor<dtype>*, const cppTensor<dtype>&, const cppTensor<dtype>&)";
         cppTensor_Utils::null_check(function_name, "returnArray->dev_data_", returnArray->dev_data_);
         cppTensor_Utils::null_check(function_name, "lhs.dev_data_", lhs.dev_data_);
         cppTensor_Utils::null_check(function_name, "rhs.dev_data_", rhs.dev_data_);
@@ -90,14 +90,14 @@ namespace cppTensor_Functions
             return;
         }
 
-        cppTensor_gpu::matrix_dot_gpu(returnArray->dev_data_, lhs.dev_data_, rhs.dev_data_,
+        cppTensor_gpu::matrix_matMul_gpu(returnArray->dev_data_, lhs.dev_data_, rhs.dev_data_,
             lhs.shape_.rows, lhs.shape_.cols, rhs.shape_.rows, rhs.shape_.cols);
     }
 
     template<typename dtype>
-    void dot_cpu(cppTensor<dtype>* returnArray, const cppTensor<dtype>& lhs, const cppTensor<dtype>& rhs)
+    void matMul_cpu(cppTensor<dtype>* returnArray, const cppTensor<dtype>& lhs, const cppTensor<dtype>& rhs)
     {
-        std::string function_name = "void dot_cpu(cppTensor<dtype>&, const cppTensor<dtype>&, const cppTensor<dtype>&)";
+        std::string function_name = "void matMul_cpu(cppTensor<dtype>&, const cppTensor<dtype>&, const cppTensor<dtype>&)";
         cppTensor_Utils::null_check(function_name, "returnArray->data_", returnArray->data_);
         cppTensor_Utils::null_check(function_name, "lhs.data_", lhs.data_);
         cppTensor_Utils::null_check(function_name, "rhs.data_", rhs.data_);

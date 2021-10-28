@@ -150,7 +150,7 @@ print('gpu Accuracy of the model on the 10000 test images: {} %'.format(100 * gp
 # x.cpu()
 # print(x.numpy())
 
-# dot test
+# matMul test
 # x = cpp.cppTensor(np.ones((128, 128)))
 # x.cuda()
 # y = cpp.cppTensor(np.ones((128, 28)))
@@ -158,6 +158,6 @@ print('gpu Accuracy of the model on the 10000 test images: {} %'.format(100 * gp
 # result = cpp.cppTensor(np.zeros((128, 28)))
 # result.cuda()
 
-# cpp.dot_gpu(result, x, y)
+# cpp.matMul_gpu(result, x, y)
 # result.cpu()
 # print(result.numpy())

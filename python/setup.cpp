@@ -20,13 +20,13 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("print", &cppTensorDouble::print)
         .def("test", &cppTensorDouble::test);
     
-    m.def("test_dot_gpu", &cppTensor_Functions::test_dot_gpu);
+    m.def("test_matMul_gpu", &cppTensor_Functions::test_matMul_gpu);
     m.def("add_cpu", &cppTensor_Functions::add_cpu<double>);
     m.def("add_gpu", &cppTensor_Functions::add_gpu<double>);
     m.def("transpose_cpu", &cppTensor_Functions::transpose_cpu<double>);    
     m.def("transpose_gpu", &cppTensor_Functions::transpose_gpu<double>);
-    m.def("dot_cpu", &cppTensor_Functions::dot_cpu<double>);
-    m.def("dot_gpu", &cppTensor_Functions::dot_gpu<double>);
+    m.def("matMul_cpu", &cppTensor_Functions::matMul_cpu<double>);
+    m.def("matMul_gpu", &cppTensor_Functions::matMul_gpu<double>);
 
     using CPPRNNDouble = cppRnn<double>;
     pb11::class_<CPPRNNDouble>(m, "cppRnn")

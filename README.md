@@ -11,8 +11,8 @@
   * cpp
     * cppRnn.hpp (**cppTensor를 이용해 rnn구현**)
     * cppTensor.hpp (**cppTensor기본 클래스**)
-    * cppTensor_Functions.hpp (**cpu version** dot product, activation function, optimizer 등 구현)
-    * cppTensor_gpu.cu (**gpu version** dot product, activation function, optimizer 등 구현)
+    * cppTensor_Functions.hpp (**cpu version** matrix multiplicatio, activation function, optimizer 등 구현)
+    * cppTensor_gpu.cu (**gpu version** matrix multiplicatio, activation function, optimizer 등 구현)
     * cppTensor_gpu.hpp
     * cppUtils.hpp
     * main.cpp

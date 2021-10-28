@@ -3,7 +3,7 @@
 #define TILED_WIDTH 8
 namespace cppTensor_gpu
 {
-    __global__ void test_dot(double *c, const double *a, const double *b, const int WIDTH)
+    __global__ void test_matMul(double *c, const double *a, const double *b, const int WIDTH)
     {
         int x = blockIdx.x * blockDim.x + threadIdx.x;
         int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -19,7 +19,7 @@ namespace cppTensor_gpu
         c[i] = sum;
     }
     
-    void test_dot_gpu()
+    void test_matMul_gpu()
     {
         int WIDTH = 512;
         int TILE_WIDTH = 16;
@@ -51,7 +51,7 @@ namespace cppTensor_gpu
         dim3 dimGrid(GRID_WIDTH, GRID_WIDTH, 1);
         dim3 dimThread(TILE_WIDTH, TILE_WIDTH, 1);
         for (int i = 0; i < 128; ++i)
-            test_dot<<<dimGrid, dimThread>>>(dev_c, dev_a, dev_b, WIDTH);
+            test_matMul<<<dimGrid, dimThread>>>(dev_c, dev_a, dev_b, WIDTH);
 
         CUDA_CHECK(cudaMemcpy(c, dev_c, WIDTH * WIDTH * sizeof(double), cudaMemcpyDeviceToHost));
         cudaFree(dev_c);
@@ -131,7 +131,7 @@ namespace cppTensor_gpu
         transpose<<<dimGrid, dimThread>>>(out_dev_data, in_dev_data, in_rows, in_cols);
     }
 
-    __global__ void matrix_dot(double *dev_out, const double* dev_lhs, const double* dev_rhs, 
+    __global__ void matrix_matMul(double *dev_out, const double* dev_lhs, const double* dev_rhs, 
         const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols)
     {
         size_t x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -153,13 +153,13 @@ namespace cppTensor_gpu
         dev_out[i] = sum;
     }
 
-    double* matrix_dot_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, 
+    double* matrix_matMul_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs, 
         const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols)
     {
         dim3 dimGrid(rhs_cols / TILED_WIDTH + 1, lhs_rows / TILED_WIDTH + 1, 1);
         dim3 dimThread(TILED_WIDTH, TILED_WIDTH, 1);
 
-        matrix_dot<<<dimGrid, dimThread>>>(dev_out, dev_lhs, dev_rhs, lhs_rows, lhs_cols, rhs_rows, rhs_cols);
+        matrix_matMul<<<dimGrid, dimThread>>>(dev_out, dev_lhs, dev_rhs, lhs_rows, lhs_cols, rhs_rows, rhs_cols);
         return dev_out;
     }
 

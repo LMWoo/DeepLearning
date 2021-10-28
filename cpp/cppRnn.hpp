@@ -85,8 +85,8 @@ public:
         this->dA = new cppTensor<dtype>(hidden_size, 1);
         this->dS = new cppTensor<dtype>(hidden_size, 1);
         this->dS_next = new cppTensor<dtype>(hidden_size, 1);
-        this->dU_dot = new cppTensor<dtype>(hidden_size, input_size);
-        this->dW_dot = new cppTensor<dtype>(hidden_size, hidden_size);
+        this->dU_matMul = new cppTensor<dtype>(hidden_size, input_size);
+        this->dW_matMul = new cppTensor<dtype>(hidden_size, hidden_size);
         this->FC_W_T = new cppTensor<dtype>(hidden_size, num_classes);
         this->O_T = new cppTensor<dtype>(1, hidden_size);
         this->S_T = new cppTensor<dtype>(1, hidden_size);
@@ -137,8 +137,8 @@ public:
         SAFE_DELETE(dA)
         SAFE_DELETE(dS)
         SAFE_DELETE(dS_next)
-        SAFE_DELETE(dU_dot)
-        SAFE_DELETE(dW_dot)
+        SAFE_DELETE(dU_matMul)
+        SAFE_DELETE(dW_matMul)
         SAFE_DELETE(FC_W_T);
         SAFE_DELETE(O_T)
         SAFE_DELETE(S_T)
@@ -228,8 +228,8 @@ public:
         dA->cuda();
         dS->cuda();
         dS_next->cuda();
-        dU_dot->cuda();
-        dW_dot->cuda();
+        dU_matMul->cuda();
+        dW_matMul->cuda();
         FC_W_T->cuda();
         O_T->cuda();
         S_T->cuda();
@@ -319,8 +319,8 @@ public:
         dA->cpu();
         dS->cpu();
         dS_next->cpu();
-        dU_dot->cpu();
-        dW_dot->cpu();
+        dU_matMul->cpu();
+        dW_matMul->cpu();
         FC_W_T->cpu();
         O_T->cpu();
         S_T->cpu();
@@ -478,32 +478,32 @@ private:
         dS_next->zeros();
         
         cppTensor_Functions::transpose_gpu(*O_T, *O[seq_length - 1]);
-        cppTensor_Functions::dot_gpu(dFC_W, dY, *O_T);
+        cppTensor_Functions::matMul_gpu(dFC_W, dY, *O_T);
         cppTensor_Functions::copy_gpu(dfc_b, dY);
 
         cppTensor_Functions::transpose_gpu(*FC_W_T, *FC_W);
-        cppTensor_Functions::dot_gpu(dO, *FC_W_T, dY);
+        cppTensor_Functions::matMul_gpu(dO, *FC_W_T, dY);
 
         cppTensor_Functions::transpose_gpu(*S_T, *S[seq_length - 1]);
-        cppTensor_Functions::dot_gpu(dV, *dO, *S_T);
+        cppTensor_Functions::matMul_gpu(dV, *dO, *S_T);
         cppTensor_Functions::copy_gpu(dc, *dO);
 
         for (int t = seq_length - 1; t >= 0; --t)
         {
             cppTensor_Functions::transpose_gpu(*V_T, *V);
-            cppTensor_Functions::dot_gpu(dS, *V_T, *dO);
+            cppTensor_Functions::matMul_gpu(dS, *V_T, *dO);
             cppTensor_Functions::add_gpu(*dS, *dS, *dS_next);
             cppTensor_Functions::deriv_tanh_gpu(dA, *S[t]);
             cppTensor_Functions::mul_gpu(dA, *dA, *dS);
             cppTensor_Functions::transpose_gpu(*X_T, *X[t]);
-            cppTensor_Functions::dot_gpu(dU_dot, *dA, *X_T);
-            cppTensor_Functions::add_gpu(*dU, *dU, *dU_dot);
+            cppTensor_Functions::matMul_gpu(dU_matMul, *dA, *X_T);
+            cppTensor_Functions::add_gpu(*dU, *dU, *dU_matMul);
             cppTensor_Functions::transpose_gpu(*S_T, *S[t - 1]);
-            cppTensor_Functions::dot_gpu(dW_dot, *dA, *S_T);
-            cppTensor_Functions::add_gpu(*dW, *dW, *dW_dot);
+            cppTensor_Functions::matMul_gpu(dW_matMul, *dA, *S_T);
+            cppTensor_Functions::add_gpu(*dW, *dW, *dW_matMul);
             cppTensor_Functions::add_gpu(*db, *db, *dA);
             cppTensor_Functions::transpose_gpu(*W_T, *W);
-            cppTensor_Functions::dot_gpu(dS_next, *W_T, *dA);
+            cppTensor_Functions::matMul_gpu(dS_next, *W_T, *dA);
         }
     }
 
@@ -519,32 +519,32 @@ private:
         dS_next->zeros();
 
         cppTensor_Functions::transpose_cpu(O_T, *O[seq_length - 1]);
-        cppTensor_Functions::dot_cpu(dFC_W, dY, *O_T);
+        cppTensor_Functions::matMul_cpu(dFC_W, dY, *O_T);
         cppTensor_Functions::copy_cpu(dfc_b, dY);
 
         cppTensor_Functions::transpose_cpu(FC_W_T, *FC_W);
-        cppTensor_Functions::dot_cpu(dO, *FC_W_T, dY);
+        cppTensor_Functions::matMul_cpu(dO, *FC_W_T, dY);
 
         cppTensor_Functions::transpose_cpu(S_T, *S[seq_length - 1]);
-        cppTensor_Functions::dot_cpu(dV, *dO, *S_T);
+        cppTensor_Functions::matMul_cpu(dV, *dO, *S_T);
         cppTensor_Functions::copy_cpu(dc, *dO);
 
         for (int t = seq_length - 1; t >= 0; --t)
         {
             cppTensor_Functions::transpose_cpu(V_T, *V);
-            cppTensor_Functions::dot_cpu(dS, *V_T, *dO);
+            cppTensor_Functions::matMul_cpu(dS, *V_T, *dO);
             cppTensor_Functions::add_cpu(dS, *dS, *dS_next);
             cppTensor_Functions::deriv_tanh_cpu(dA, *S[t]);
             cppTensor_Functions::mul_cpu(dA, *dA, *dS);
             cppTensor_Functions::transpose_cpu(X_T, *X[t]);
-            cppTensor_Functions::dot_cpu(dU_dot, *dA, *X_T);
-            cppTensor_Functions::add_cpu(dU, *dU, *dU_dot);
+            cppTensor_Functions::matMul_cpu(dU_matMul, *dA, *X_T);
+            cppTensor_Functions::add_cpu(dU, *dU, *dU_matMul);
             cppTensor_Functions::transpose_cpu(S_T, *S[t - 1]);
-            cppTensor_Functions::dot_cpu(dW_dot, *dA, *S_T);
-            cppTensor_Functions::add_cpu(dW, *dW, *dW_dot);
+            cppTensor_Functions::matMul_cpu(dW_matMul, *dA, *S_T);
+            cppTensor_Functions::add_cpu(dW, *dW, *dW_matMul);
             cppTensor_Functions::add_cpu(db, *db, *dA);
             cppTensor_Functions::transpose_cpu(W_T, *W);
-            cppTensor_Functions::dot_cpu(dS_next, *W_T, *dA);
+            cppTensor_Functions::matMul_cpu(dS_next, *W_T, *dA);
         }
     }
 
@@ -575,16 +575,16 @@ private:
         for (int t = 0; t < seq_length; ++t)
         {
             cppTensor_Functions::transpose_gpu(*X[t], x[t]);
-            cppTensor_Functions::dot_gpu(A[seq_length], *U, *X[t]);
-            cppTensor_Functions::dot_gpu(A[seq_length + 1], *W, *S[t - 1]);
+            cppTensor_Functions::matMul_gpu(A[seq_length], *U, *X[t]);
+            cppTensor_Functions::matMul_gpu(A[seq_length + 1], *W, *S[t - 1]);
             cppTensor_Functions::add_gpu(*A[t], *A[seq_length], *A[seq_length + 1]);
             cppTensor_Functions::add_gpu(*A[t], *A[t], *b);
             cppTensor_Functions::tanh_gpu(S[t], *A[t]);
-            cppTensor_Functions::dot_gpu(O[seq_length], *V, *S[t]);
+            cppTensor_Functions::matMul_gpu(O[seq_length], *V, *S[t]);
             cppTensor_Functions::add_gpu(*O[t], *O[seq_length], *c);
         }
 
-        cppTensor_Functions::dot_gpu(&outputs, *FC_W, *O[seq_length-1]);
+        cppTensor_Functions::matMul_gpu(&outputs, *FC_W, *O[seq_length-1]);
         cppTensor_Functions::add_gpu(outputs, outputs, *fc_b);
     }
 
@@ -595,16 +595,16 @@ private:
         for (int t = 0; t < seq_length; ++t)
         {
             cppTensor_Functions::transpose_cpu(X[t], x[t]);
-            cppTensor_Functions::dot_cpu(A[seq_length], *U, *X[t]);
-            cppTensor_Functions::dot_cpu(A[seq_length + 1], *W, *S[t - 1]);
+            cppTensor_Functions::matMul_cpu(A[seq_length], *U, *X[t]);
+            cppTensor_Functions::matMul_cpu(A[seq_length + 1], *W, *S[t - 1]);
             cppTensor_Functions::add_cpu(A[t], *A[seq_length], *A[seq_length + 1]);
             cppTensor_Functions::add_cpu(A[t], *A[t], *b);
             cppTensor_Functions::tanh_cpu(S[t], *A[t]);
-            cppTensor_Functions::dot_cpu(O[seq_length], *V, *S[t]);
+            cppTensor_Functions::matMul_cpu(O[seq_length], *V, *S[t]);
             cppTensor_Functions::add_cpu(O[t], *O[seq_length], *c);
         }
 
-        cppTensor_Functions::dot_cpu(&outputs, *FC_W, *O[seq_length-1]);
+        cppTensor_Functions::matMul_cpu(&outputs, *FC_W, *O[seq_length-1]);
         cppTensor_Functions::add_cpu(&outputs, outputs, *fc_b);
     }
 
@@ -652,8 +652,8 @@ private:
     cppTensorType* dA;
     cppTensorType* dS;
     cppTensorType* dS_next;
-    cppTensorType* dU_dot;
-    cppTensorType* dW_dot;
+    cppTensorType* dU_matMul;
+    cppTensorType* dW_matMul;
     cppTensorType* FC_W_T;
     cppTensorType* O_T;
     cppTensorType* S_T;
