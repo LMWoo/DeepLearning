@@ -151,21 +151,21 @@ print('gpu Accuracy of the model on the 10000 test images: {} %'.format(100 * gp
 # print(x.numpy())
 
 # matMul test
-# x = cpp.cppTensor(np.ones((512, 256)))
+# x = cpp.cppTensor(np.ones((512, 257)))
 # x.cuda()
-# y = cpp.cppTensor(np.ones((256, 512)))
+# y = cpp.cppTensor(np.ones((257, 512)))
 # y.cuda()
 # result = cpp.cppTensor(np.zeros((512, 512)))
 # result.cuda()
 
 # start_time = time.time()
 # for i in range(10000):
-#     cpp.matMul_gpu(result, x, y, True)
+#     cpp.matMul_gpu(result, x, y, False)
 # print("time : {}".format(time.time() - start_time))
 
 # start_time = time.time()
 # for i in range(10000):
-#     cpp.matMul_gpu(result, x, y, False)
+#     cpp.matMul_gpu(result, x, y, True)
 # print("time : {}".format(time.time() - start_time))
 
 # result.cpu()

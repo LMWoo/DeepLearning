@@ -169,7 +169,9 @@ namespace cppTensor_gpu
         size_t rhs_y = 0;
         size_t rhs_x = 0;
 
-        for (int i = 0; i < lhs_cols / TILE_WIDTH + 1; ++i)
+        int m = lhs_cols / TILE_WIDTH;
+        m += lhs_cols % TILE_WIDTH ? 1 : 0;
+        for (int i = 0; i < m; ++i)
         {
             lhs_y = y;
             lhs_x = i * TILE_WIDTH + threadIdx.x;
