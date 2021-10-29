@@ -1,5 +1,5 @@
 #include <torch/extension.h>
-#include <cppTensor.hpp>
+#include <cppTensor/cppTensor.hpp>
 #include <cppNN/cppRnn.hpp>
 #include <cppNN/cppLSTM.hpp>
 #include <cppNN/cppGRU.hpp>

@@ -9,12 +9,8 @@
 
 * DeepLearning
   * cpp
-    * cppNN (**cppNN를 상속받아 다양한 neural network 구현** 현재 RNN구현 완, 나머지는 뼈대만 구성)
-    * cppTensor.hpp (**cppTensor기본 클래스**)
-    * cppTensor_Functions.hpp (**cpu version** matrix multiplication, activation function, optimizer 등 구현)
-    * cppTensor_gpu.cu (**gpu version** matrix multiplication, activation function, optimizer 등 구현)
-    * cppTensor_gpu.hpp
-    * cppUtils.hpp
+    * cppNN (**cppNN를 상속받아 다양한 neural network** 현재 RNN구현 완, 나머지는 뼈대만 구성)
+    * cppTensor (**cpu, cuda version tensor 연산** matrix multiplication, activation function, optimizer 등 구현)
     * main.cpp
   * python 
     * npRnn.py (rnn numpy)
@@ -79,7 +75,7 @@ cd pytorch
 ```
 ...
 894 elseif(USE_CUDA)
-895  list(APPEND Caffe2_GPU_SRCS {ProjectPath}/cpp/cppTensor_gpu.cu)
+895  list(APPEND Caffe2_GPU_SRCS {ProjectPath}/cpp/cppTensor/cppTensor_gpu.cu)
 896  set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)
 897  if(CUDA_SEPARABLE_COMPILATION)
 ...

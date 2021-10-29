@@ -1,8 +1,8 @@
 #pragma once
 
-#include "cppTensor.hpp"
-#include "cppTensor_Utils.hpp"
-#include "cppTensor_Functions.hpp"
+#include "cppTensor/cppTensor.hpp"
+#include "cppTensor/cppTensor_Utils.hpp"
+#include "cppTensor/cppTensor_Functions.hpp"
 #include <unordered_map>
 #include <tuple>
 
