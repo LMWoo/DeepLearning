@@ -22,6 +22,7 @@
 
 # Experiments
 
+* rnn
 |Hyper Parameters|value|
 |----|----|
 |seq_length|28|
@@ -30,13 +31,13 @@
 |hidden_size|256|
 |learning_rate|0.01|
 
-|model|Accuracy|Speed (s / 1000 images)|
+|version|Accuracy|Speed (s / 1000 images)|
 |----|----|----|
-|np_test|93.36 %|6.36|
-|cpu_test|95.00 %|20.47|
-|gpu_test (TILED_WIDTH = 32, not use sharedMemory) |94.95 %|10.89|
-|gpu_test (TILED_WIDTH = 8, not use sharedMemory) |94.08 %|4.47|
-|gpu_test (TILED_WIDTH = 8, use sharedMemory) |94.08 %|4.87|
+|numpy|93.36 %|6.36|
+|cpu|95.00 %|20.47|
+|gpu (TILED_WIDTH = 32, not use sharedMemory) |94.95 %|10.89|
+|gpu (TILED_WIDTH = 8, not use sharedMemory) |94.08 %|4.47|
+|gpu (TILED_WIDTH = 8, use sharedMemory) |94.08 %|4.87|
 
 # Note
 
