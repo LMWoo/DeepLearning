@@ -48,7 +48,6 @@ FC_W = cpp.cppTensor(np_FC_W)
 
 gpu_model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
 gpu_model.cuda()
-gpu_model.useSharedMemory()
 start_time = time.time()
 
 print("start train gpu hidden_size {}".format(hidden_size))

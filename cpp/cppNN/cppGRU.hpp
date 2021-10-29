@@ -16,42 +16,52 @@ public:
         printf("~cppGRU()\n");
     }
 protected:
-    virtual void optimizer_gpu()
+    virtual void cuda_child() override
+    {
+        printf("gru cuda_child()\n");
+    }
+
+    virtual void cpu_child() override
+    {
+        printf("gru cpu_child()\n");
+    }
+
+    virtual void optimizer_gpu() override
     {
         printf("gru optimizer_gpu\n");
     }
 
-    virtual void optimizer_cpu()
+    virtual void optimizer_cpu() override
     {
         printf("gru optimizer_cpu\n");
     }
 
-    virtual void backward_gpu(cppTensor<dtype>& dY)
+    virtual void backward_gpu(cppTensor<dtype>& dY) override
     {
         printf("gru backward_gpu\n");
     }
     
-    virtual void backward_cpu(cppTensor<dtype>& dY)
+    virtual void backward_cpu(cppTensor<dtype>& dY) override
     {
         printf("gru backward_cpu\n");
     }
 
-    virtual void cross_entropy_loss_gpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
+    virtual void cross_entropy_loss_gpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
     {
         printf("gru cross_entropy_loss_gpu\n");
     }
 
-    virtual void cross_entropy_loss_cpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
+    virtual void cross_entropy_loss_cpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
     {
         printf("gru cross_entropy_loss_cpu\n");
     }
 
-    virtual void forward_gpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev)
+    virtual void forward_gpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
     {
         printf("gru forward_gpu\n");
     }
 
-    virtual void forward_cpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev)
+    virtual void forward_cpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
     {
         printf("gru forward_cpu\n");
     }

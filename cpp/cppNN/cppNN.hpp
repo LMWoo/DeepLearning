@@ -30,11 +30,15 @@ public:
     void cuda()
     {
         is_cuda_=true;
+
+        cuda_child();
     }
 
     void cpu()
     {
         is_cuda_=false;
+
+        cpu_child();
     }
 
     void useSharedMemory()
@@ -108,6 +112,10 @@ public:
     }
     
 protected:
+    virtual void cuda_child() = 0;
+
+    virtual void cpu_child() = 0;
+
     virtual void optimizer_gpu() = 0;
 
     virtual void optimizer_cpu() = 0;
@@ -125,7 +133,6 @@ protected:
     virtual void forward_cpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) = 0;
 
 protected:
-    double lr{0.0};
     bool is_cuda_{false};
     bool use_sharedMemory{false};
 };

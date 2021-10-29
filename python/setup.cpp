@@ -1,6 +1,6 @@
 #include <torch/extension.h>
 #include <cppTensor.hpp>
-#include <cppRnn.hpp>
+#include <cppNN/cppRnn.hpp>
 #include <cppNN/cppLSTM.hpp>
 #include <cppNN/cppGRU.hpp>
 

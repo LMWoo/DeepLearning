@@ -1,13 +1,9 @@
 #pragma once
 
-#include "cppTensor.hpp"
-#include "cppTensor_Utils.hpp"
-#include "cppTensor_Functions.hpp"
-#include <unordered_map>
-#include <tuple>
+#include "cppNN.hpp"
 
 template<typename dtype>
-class cppRnn
+class cppRnn : public cppNN<dtype>
 {
 public:
     using numpyArray = pybind11::array_t<dtype, pybind11::array::c_style>;
@@ -181,10 +177,8 @@ public:
         }
     }
 
-    void cuda()
+    virtual void cuda_child() override
     {
-        is_cuda_=true;
-
         // for (int i = 0; i < params.size(); ++i)
         // {
         //     params[i]->cuda();
@@ -272,10 +266,8 @@ public:
         }
     }
 
-    void cpu()
+    virtual void cpu_child() override
     {
-        is_cuda_=false;
-
         // for (int i = 0; i < params.size(); ++i)
         // {
         //     params[i]->cpu();
@@ -362,83 +354,13 @@ public:
         }
     }
 
-    void useSharedMemory()
-    {
-        this->use_sharedMemory=true;
-    }
-
-    void notUseSharedMemory()
-    {
-        this->use_sharedMemory=false;
-    }
-
     void test()
     {
         PRINT_DEBUG("cppRnn test\n");
     }
 
-public:
-    void forward(cppTensor<dtype>& outputs,  std::vector<cppTensor<dtype>>& x,  cppTensor<dtype>& hprev)
-    {
-        if (this->is_cuda_)
-        {
-            forward_gpu(outputs, x, hprev);
-        }
-        else
-        {
-            forward_cpu(outputs, x, hprev);
-        }
-
-        // outputs.data_=nullptr;
-        // hprev.data_=nullptr;
-        
-        for (int i = 0; i < x.size(); ++i)
-        {
-            // x[i].print();
-            x[i].data_=nullptr;
-            x[i].dev_data_=nullptr;
-        }
-    }
-
-
-    void cross_entropy_loss(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
-    {
-        if (this->is_cuda_)
-        {
-            cross_entropy_loss_gpu(dY, Y, loss, outputs, labels);
-        }
-        else
-        {
-            cross_entropy_loss_cpu(dY, Y, loss, outputs, labels);
-        }
-    }
-
-    void backward(cppTensor<dtype>& dY)
-    {
-        if (this->is_cuda_)
-        {
-            backward_gpu(dY);
-        }
-        else
-        {
-            backward_cpu(dY);
-        }
-    }
-
-    void optimizer()
-    {
-        if (this->is_cuda_)
-        {
-            optimizer_gpu();
-        }
-        else
-        {
-            optimizer_cpu();
-        }
-    }
-    
-private:
-    void optimizer_gpu()
+protected:
+    virtual void optimizer_gpu() override
     {
         cppTensor_Functions::clip_gpu(dU, -5.0, 5.0);
         cppTensor_Functions::clip_gpu(dW, -5.0, 5.0);
@@ -457,7 +379,7 @@ private:
         cppTensor_Functions::optimizer_gpu(fc_b, mfc_b, *dfc_b, -lr);
     }
 
-    void optimizer_cpu()
+    virtual void optimizer_cpu() override
     {
         cppTensor_Functions::clip_cpu(dU, -5.0, 5.0);
         cppTensor_Functions::clip_cpu(dW, -5.0, 5.0);
@@ -476,7 +398,7 @@ private:
         cppTensor_Functions::optimizer_cpu(fc_b, mfc_b, *dfc_b, -lr);
     }
 
-    void backward_gpu(cppTensor<dtype>& dY)
+    virtual void backward_gpu(cppTensor<dtype>& dY) override
     {
         dFC_W->zeros();
         dfc_b->zeros();
@@ -517,7 +439,7 @@ private:
         }
     }
 
-    void backward_cpu(cppTensor<dtype>& dY)
+    virtual void backward_cpu(cppTensor<dtype>& dY) override
     {
         dFC_W->zeros();
         dfc_b->zeros();
@@ -558,7 +480,7 @@ private:
         }
     }
 
-    void cross_entropy_loss_gpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
+    virtual void cross_entropy_loss_gpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
     {
         cppTensor_Functions::softmax_gpu(&dY, outputs);
         cppTensor_Functions::copy_gpu(&Y, dY);
@@ -568,7 +490,7 @@ private:
         cppTensor_Functions::deriv_softmax_gpu(dY, loss, Y, labels);
     }
 
-    void cross_entropy_loss_cpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
+    virtual void cross_entropy_loss_cpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
     {
         cppTensor_Functions::softmax_cpu(&dY, outputs);
         cppTensor_Functions::copy_cpu(&Y, dY);
@@ -578,7 +500,7 @@ private:
         cppTensor_Functions::deriv_softmax_cpu(dY, loss, Y, labels);
     }
 
-    void forward_gpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev)
+    virtual void forward_gpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
     {
         cppTensor_Functions::copy_gpu(S[-1], hprev);
 
@@ -598,7 +520,7 @@ private:
         cppTensor_Functions::add_gpu(outputs, outputs, *fc_b);
     }
 
-    void forward_cpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev)
+    virtual void forward_cpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
     {
         cppTensor_Functions::copy_cpu(S[-1], hprev);
         
@@ -620,9 +542,6 @@ private:
 
 private:
     double lr{0.0};
-    bool is_cuda_{false};
-    bool use_sharedMemory{false};
-
     size_t seq_length{0};
     size_t hidden_size{0};
 
