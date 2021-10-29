@@ -122,7 +122,7 @@ python test/gru/gpu_test.py (gpu version)
  * torchvision >= 0.2.1
 
 # References
- * [pytorch](https://github.com/pytorch/pytorch) \
- * [pytorch-cpp](https://github.com/prabhuomkar/pytorch-cpp) \
- * [numcpp](https://github.com/dpilger26/NumCpp) \
+ * [pytorch](https://github.com/pytorch/pytorch)
+ * [pytorch-cpp](https://github.com/prabhuomkar/pytorch-cpp)
+ * [numcpp](https://github.com/dpilger26/NumCpp)
  * [cuda](http://www.kocw.or.kr/home/cview.do?cid=9495e57150084864)
