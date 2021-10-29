@@ -13,9 +13,9 @@
     * cppTensor (**cpu, cuda version tensor 연산** matrix multiplication, activation function, optimizer 등 구현)
     * main.cpp
   * python (**pybind를 이용한 python extension 구현**)
-    * test (**neural network gpu, cpu, numpy version test**,  현재 RNN구현 완, 현재 코드 개선 및 실험 진행 중)
-      * rnn
-      * lstm
+    * test (**neural network gpu, cpu, numpy version test**)
+      * rnn (**현재 RNN구현 완**, 현재 코드 개선 및 실험 진행 중)
+      * lstm (**numpy version 구현 완**)
       * gru
     * setup.cpp
     * setup.py
