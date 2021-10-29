@@ -9,7 +9,7 @@
 
 * DeepLearning
   * cpp
-    * cppRnn.hpp (**cppTensor를 이용해 rnn구현**)
+    * cppNN (**cppNN를 상속받아 다양한 neural network 구현** 현재 RNN구현 완, 나머지는 뼈대만 구성)
     * cppTensor.hpp (**cppTensor기본 클래스**)
     * cppTensor_Functions.hpp (**cpu version** matrix multiplication, activation function, optimizer 등 구현)
     * cppTensor_gpu.cu (**gpu version** matrix multiplication, activation function, optimizer 등 구현)
