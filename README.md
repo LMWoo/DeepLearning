@@ -94,17 +94,17 @@ python setup.py install
 ```
 
 * rnn
-python test/rnn/np_test.py (numpy version)
-python test/rnn/cpu_test.py (cpu version)
+python test/rnn/np_test.py (numpy version) \
+python test/rnn/cpu_test.py (cpu version) \
 python test/rnn/gpu_test.py (gpu version)
 
 * lstm
-python test/lstm/np_test.py (numpy version)
-python test/lstm/cpu_test.py (cpu version)
+python test/lstm/np_test.py (numpy version) \
+python test/lstm/cpu_test.py (cpu version) \
 python test/lstm/gpu_test.py (gpu version)
 
 * gru
-python test/lstm/cpu_test.py (cpu version)
+python test/lstm/cpu_test.py (cpu version) \
 python test/lstm/gpu_test.py (gpu version)
 
 # Requirements
