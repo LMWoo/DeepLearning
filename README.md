@@ -23,6 +23,7 @@
 # Experiments
 
 * rnn
+
 |Hyper Parameters|value|
 |----|----|
 |seq_length|28|
