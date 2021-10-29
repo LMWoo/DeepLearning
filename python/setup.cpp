@@ -1,6 +1,7 @@
 #include <torch/extension.h>
 #include <cppTensor.hpp>
 #include <cppRnn.hpp>
+#include <cppLSTM.hpp>
 
 namespace pb11 = pybind11;
 
@@ -41,4 +42,16 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("backward", &CPPRNNDouble::backward)
         .def("optimizer", &CPPRNNDouble::optimizer)
         .def("test", &CPPRNNDouble::test);
+
+    using CPPLSTMDouble = cppLSTM<double>;
+    pb11::class_<CPPLSTMDouble>(m, "cppLSTM")
+        .def(pb11::init<>())
+        .def("cuda", &CPPLSTMDouble::cuda)
+        .def("cpu", &CPPLSTMDouble::cpu)
+        .def("useSharedMemory", &CPPLSTMDouble::useSharedMemory)
+        .def("notUseSharedMemory", &CPPLSTMDouble::notUseSharedMemory)
+        .def("forward", &CPPLSTMDouble::forward)
+        .def("cross_entropy_loss", &CPPLSTMDouble::cross_entropy_loss)
+        .def("backward", &CPPLSTMDouble::backward)
+        .def("optimizer", &CPPLSTMDouble::optimizer);
 }
