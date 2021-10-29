@@ -12,15 +12,13 @@
     * cppNN (**cppNN를 상속받아 다양한 neural network** 현재 RNN구현 완, 나머지는 뼈대만 구성)
     * cppTensor (**cpu, cuda version tensor 연산** matrix multiplication, activation function, optimizer 등 구현)
     * main.cpp
-  * python 
-    * npRnn.py (rnn numpy)
-    * npLSTM.py (lstm numpy)
+  * python (**pybind를 이용한 python extension 구현**)
+    * test (**neural network gpu, cpu, numpy version test**,  현재 RNN구현 완, 현재 코드 개선 및 실험 진행 중)
+      * rnn
+      * lstm
+      * gru
     * setup.cpp
     * setup.py
-    * np_test.py (rnn numpy version test)
-    * cpu_test.py (rnn cpu version test)
-    * gpu_test.py (rnn gpu version test **현재 코드 개선 및 실험 진행 중**)
-    
 
 # Experiments
 
@@ -93,10 +91,21 @@ python setup.py install
 ```
 cd python
 python setup.py install
-python np_test.py (numpy version)
-python cpu_test.py (cpp cpu version)
-python gpu_test.py (cpp gpu version)
 ```
+
+* rnn
+python test/rnn/np_test.py (numpy version)
+python test/rnn/cpu_test.py (cpu version)
+python test/rnn/gpu_test.py (gpu version)
+
+* lstm
+python test/lstm/np_test.py (numpy version)
+python test/lstm/cpu_test.py (cpu version)
+python test/lstm/gpu_test.py (gpu version)
+
+* gru
+python test/lstm/cpu_test.py (cpu version)
+python test/lstm/gpu_test.py (gpu version)
 
 # Requirements
  * python >= 3.6
@@ -106,7 +115,7 @@ python gpu_test.py (cpp gpu version)
  * torchvision >= 0.2.1
 
 # References
-[pytorch](https://github.com/pytorch/pytorch) \
-[pytorch-cpp](https://github.com/prabhuomkar/pytorch-cpp) \
-[numcpp](https://github.com/dpilger26/NumCpp) \
-[cuda](http://www.kocw.or.kr/home/cview.do?cid=9495e57150084864)
+ * [pytorch](https://github.com/pytorch/pytorch) \
+ * [pytorch-cpp](https://github.com/prabhuomkar/pytorch-cpp) \
+ * [numcpp](https://github.com/dpilger26/NumCpp) \
+ * [cuda](http://www.kocw.or.kr/home/cview.do?cid=9495e57150084864)

@@ -16,7 +16,7 @@ batch_size = 1
 num_epochs = 2
 learning_rate = 0.01
 
-data_path = "../../data/mnist"
+data_path = "../../../data/mnist"
 train_dataset = torchvision.datasets.MNIST(root=data_path, train=True, transform=transforms.ToTensor(), download=True)
 test_dataset = torchvision.datasets.MNIST(root=data_path, train=False, transform=transforms.ToTensor())
 
