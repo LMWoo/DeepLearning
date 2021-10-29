@@ -1,7 +1,8 @@
 #include <torch/extension.h>
 #include <cppTensor.hpp>
 #include <cppRnn.hpp>
-#include <cppLSTM.hpp>
+#include <cppNN/cppLSTM.hpp>
+#include <cppNN/cppGRU.hpp>
 
 namespace pb11 = pybind11;
 
@@ -54,4 +55,16 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("cross_entropy_loss", &CPPLSTMDouble::cross_entropy_loss)
         .def("backward", &CPPLSTMDouble::backward)
         .def("optimizer", &CPPLSTMDouble::optimizer);
+
+    using CPPGRUDouble = cppGRU<double>;
+    pb11::class_<CPPGRUDouble>(m, "cppGRU")
+        .def(pb11::init<>())
+        .def("cuda", &CPPGRUDouble::cuda)
+        .def("cpu", &CPPGRUDouble::cpu)
+        .def("useSharedMemory", &CPPGRUDouble::useSharedMemory)
+        .def("notUseSharedMemory", &CPPGRUDouble::notUseSharedMemory)
+        .def("forward", &CPPGRUDouble::forward)
+        .def("cross_entropy_loss", &CPPGRUDouble::cross_entropy_loss)
+        .def("backward", &CPPGRUDouble::backward)
+        .def("optimizer", &CPPGRUDouble::optimizer);
 }
