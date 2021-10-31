@@ -16,24 +16,19 @@ public:
         printf("~cppLSTM()\n");
     }
 protected:
-    virtual void cuda_child() override
+    virtual void cuda_impl() override
     {
-        printf("lstm cuda_child()\n");
+        printf("lstm cuda_impl()\n");
     }
 
-    virtual void cpu_child() override
+    virtual void cpu_impl() override
     {
-        printf("lstm cpu_child()\n");
+        printf("lstm cpu_impl()\n");
     }
 
-    virtual void optimizer_gpu() override
+    virtual void optimizer_impl() override
     {
-        printf("lstm optimizer_gpu\n");
-    }
-
-    virtual void optimizer_cpu() override
-    {
-        printf("lstm optimizer_cpu\n");
+        printf("lstm optimizer_impl\n");
     }
 
     virtual void backward_impl(const cppTensor<dtype>& dY) override
@@ -41,14 +36,9 @@ protected:
         printf("lstm backward_impl\n");
     }
 
-    virtual void cross_entropy_loss_gpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
+    virtual void cross_entropy_loss_impl(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
     {
-        printf("lstm cross_entropy_loss_gpu\n");
-    }
-
-    virtual void cross_entropy_loss_cpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
-    {
-        printf("lstm cross_entropy_loss_cpu\n");
+        printf("lstm cross_entropy_loss_impl\n");
     }
 
     virtual cppTensor<dtype> forward_impl(const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override

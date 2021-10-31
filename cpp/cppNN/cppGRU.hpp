@@ -16,39 +16,29 @@ public:
         printf("~cppGRU()\n");
     }
 protected:
-    virtual void cuda_child() override
+    virtual void cuda_impl() override
     {
-        printf("gru cuda_child()\n");
+        printf("gru cuda_impl()\n");
     }
 
-    virtual void cpu_child() override
+    virtual void cpu_impl() override
     {
-        printf("gru cpu_child()\n");
+        printf("gru cpu_impl()\n");
     }
 
-    virtual void optimizer_gpu() override
+    virtual void optimizer_impl() override
     {
-        printf("gru optimizer_gpu\n");
+        printf("gru optimizer_impl\n");
     }
 
-    virtual void optimizer_cpu() override
-    {
-        printf("gru optimizer_cpu\n");
-    }
-    
     virtual void backward_impl(const cppTensor<dtype>& dY) override
     {
         printf("gru backward_impl\n");
     }
 
-    virtual void cross_entropy_loss_gpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
+    virtual void cross_entropy_loss_impl(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
     {
-        printf("gru cross_entropy_loss_gpu\n");
-    }
-
-    virtual void cross_entropy_loss_cpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
-    {
-        printf("gru cross_entropy_loss_cpu\n");
+        printf("gru cross_entropy_loss_impl\n");
     }
 
     virtual cppTensor<dtype> forward_impl(const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override

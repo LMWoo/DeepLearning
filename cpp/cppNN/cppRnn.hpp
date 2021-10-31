@@ -81,12 +81,6 @@ public:
         this->dA = new cppTensor<dtype>(hidden_size, 1);
         this->dS = new cppTensor<dtype>(hidden_size, 1);
         this->dS_next = new cppTensor<dtype>(hidden_size, 1);
-        this->dU_matMul = new cppTensor<dtype>(hidden_size, input_size);
-        this->dW_matMul = new cppTensor<dtype>(hidden_size, hidden_size);
-        this->S_T = new cppTensor<dtype>(1, hidden_size);
-        this->V_T = new cppTensor<dtype>(hidden_size, hidden_size);
-        this->X_T = new cppTensor<dtype>(1, input_size);
-        this->W_T = new cppTensor<dtype>(hidden_size, hidden_size);
 
         for (int i = -1; i < seq_length; ++i)
         {
@@ -131,13 +125,7 @@ public:
         SAFE_DELETE(dA)
         SAFE_DELETE(dS)
         SAFE_DELETE(dS_next)
-        SAFE_DELETE(dU_matMul)
-        SAFE_DELETE(dW_matMul)
-        SAFE_DELETE(S_T)
-        SAFE_DELETE(V_T)
-        SAFE_DELETE(X_T)
-        SAFE_DELETE(W_T)
-
+        
         SAFE_DELETE(mU)
         SAFE_DELETE(mW)
         SAFE_DELETE(mV)
@@ -173,7 +161,7 @@ public:
         }
     }
 
-    virtual void cuda_child() override
+    virtual void cuda_impl() override
     {
         // for (int i = 0; i < params.size(); ++i)
         // {
@@ -218,13 +206,6 @@ public:
         dA->cuda();
         dS->cuda();
         dS_next->cuda();
-        dU_matMul->cuda();
-        dW_matMul->cuda();
-        S_T->cuda();
-        V_T->cuda();
-        X_T->cuda();
-        W_T->cuda();
-
 
         cppTensorTypeMapDoubleIter mapIter;
         for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
@@ -260,7 +241,7 @@ public:
         }
     }
 
-    virtual void cpu_child() override
+    virtual void cpu_impl() override
     {
         // for (int i = 0; i < params.size(); ++i)
         // {
@@ -305,12 +286,6 @@ public:
         dA->cpu();
         dS->cpu();
         dS_next->cpu();
-        dU_matMul->cpu();
-        dW_matMul->cpu();
-        S_T->cpu();
-        V_T->cpu();
-        X_T->cpu();
-        W_T->cpu();
 
         cppTensorTypeMapDoubleIter mapIter;
         for (mapIter = this->S.begin(); mapIter != this->S.end(); ++mapIter)
@@ -352,42 +327,45 @@ public:
     }
 
 protected:
-    virtual void optimizer_gpu() override
+
+    virtual void optimizer_impl() override
     {
-        cppTensor_Functions::clip_gpu(dU, -5.0, 5.0);
-        cppTensor_Functions::clip_gpu(dW, -5.0, 5.0);
-        cppTensor_Functions::clip_gpu(dV, -5.0, 5.0);
-        cppTensor_Functions::clip_gpu(db, -5.0, 5.0);
-        cppTensor_Functions::clip_gpu(dc, -5.0, 5.0);
-        cppTensor_Functions::clip_gpu(dFC_W, -5.0, 5.0);
-        cppTensor_Functions::clip_gpu(dfc_b, -5.0, 5.0);
+        if (this->is_cuda_)
+        {
+            cppTensor_Functions::clip_gpu(dU, -5.0, 5.0);
+            cppTensor_Functions::clip_gpu(dW, -5.0, 5.0);
+            cppTensor_Functions::clip_gpu(dV, -5.0, 5.0);
+            cppTensor_Functions::clip_gpu(db, -5.0, 5.0);
+            cppTensor_Functions::clip_gpu(dc, -5.0, 5.0);
+            cppTensor_Functions::clip_gpu(dFC_W, -5.0, 5.0);
+            cppTensor_Functions::clip_gpu(dfc_b, -5.0, 5.0);
         
-        cppTensor_Functions::optimizer_gpu(U, mU, *dU, -lr);
-        cppTensor_Functions::optimizer_gpu(W, mW, *dW, -lr);
-        cppTensor_Functions::optimizer_gpu(V, mV, *dV, -lr);
-        cppTensor_Functions::optimizer_gpu(b, mb, *db, -lr);
-        cppTensor_Functions::optimizer_gpu(c, mc, *dc, -lr);
-        cppTensor_Functions::optimizer_gpu(FC_W, mFC_W, *dFC_W, -lr);
-        cppTensor_Functions::optimizer_gpu(fc_b, mfc_b, *dfc_b, -lr);
-    }
+            cppTensor_Functions::optimizer_gpu(U, mU, *dU, -lr);
+            cppTensor_Functions::optimizer_gpu(W, mW, *dW, -lr);
+            cppTensor_Functions::optimizer_gpu(V, mV, *dV, -lr);
+            cppTensor_Functions::optimizer_gpu(b, mb, *db, -lr);
+            cppTensor_Functions::optimizer_gpu(c, mc, *dc, -lr);
+            cppTensor_Functions::optimizer_gpu(FC_W, mFC_W, *dFC_W, -lr);
+            cppTensor_Functions::optimizer_gpu(fc_b, mfc_b, *dfc_b, -lr);
+        }
+        else
+        {
+            cppTensor_Functions::clip_cpu(dU, -5.0, 5.0);
+            cppTensor_Functions::clip_cpu(dW, -5.0, 5.0);
+            cppTensor_Functions::clip_cpu(dV, -5.0, 5.0);
+            cppTensor_Functions::clip_cpu(db, -5.0, 5.0);
+            cppTensor_Functions::clip_cpu(dc, -5.0, 5.0);
+            cppTensor_Functions::clip_cpu(dFC_W, -5.0, 5.0);
+            cppTensor_Functions::clip_cpu(dfc_b, -5.0, 5.0);
 
-    virtual void optimizer_cpu() override
-    {
-        cppTensor_Functions::clip_cpu(dU, -5.0, 5.0);
-        cppTensor_Functions::clip_cpu(dW, -5.0, 5.0);
-        cppTensor_Functions::clip_cpu(dV, -5.0, 5.0);
-        cppTensor_Functions::clip_cpu(db, -5.0, 5.0);
-        cppTensor_Functions::clip_cpu(dc, -5.0, 5.0);
-        cppTensor_Functions::clip_cpu(dFC_W, -5.0, 5.0);
-        cppTensor_Functions::clip_cpu(dfc_b, -5.0, 5.0);
-
-        cppTensor_Functions::optimizer_cpu(U, mU, *dU, -lr);
-        cppTensor_Functions::optimizer_cpu(W, mW, *dW, -lr);
-        cppTensor_Functions::optimizer_cpu(V, mV, *dV, -lr);
-        cppTensor_Functions::optimizer_cpu(b, mb, *db, -lr);
-        cppTensor_Functions::optimizer_cpu(c, mc, *dc, -lr);
-        cppTensor_Functions::optimizer_cpu(FC_W, mFC_W, *dFC_W, -lr);
-        cppTensor_Functions::optimizer_cpu(fc_b, mfc_b, *dfc_b, -lr);
+            cppTensor_Functions::optimizer_cpu(U, mU, *dU, -lr);
+            cppTensor_Functions::optimizer_cpu(W, mW, *dW, -lr);
+            cppTensor_Functions::optimizer_cpu(V, mV, *dV, -lr);
+            cppTensor_Functions::optimizer_cpu(b, mb, *db, -lr);
+            cppTensor_Functions::optimizer_cpu(c, mc, *dc, -lr);
+            cppTensor_Functions::optimizer_cpu(FC_W, mFC_W, *dFC_W, -lr);
+            cppTensor_Functions::optimizer_cpu(fc_b, mfc_b, *dfc_b, -lr);
+        }
     }
 
     virtual void backward_impl(const cppTensor<dtype>& dY) override
@@ -421,24 +399,26 @@ protected:
         }
     }
 
-    virtual void cross_entropy_loss_gpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
+    virtual void cross_entropy_loss_impl(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
     {
-        cppTensor_Functions::softmax_gpu(&dY, outputs);
-        cppTensor_Functions::copy_gpu(&Y, dY);
+        if (this->is_cuda_)
+        {
+            cppTensor_Functions::softmax_gpu(&dY, outputs);
+            cppTensor_Functions::copy_gpu(&Y, dY);
 
-        cppTensor_Functions::log_gpu(&Y);
-        cppTensor_Functions::minus_gpu(&Y);
-        cppTensor_Functions::deriv_softmax_gpu(dY, loss, Y, labels);
-    }
-
-    virtual void cross_entropy_loss_cpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
-    {
-        cppTensor_Functions::softmax_cpu(&dY, outputs);
-        cppTensor_Functions::copy_cpu(&Y, dY);
+            cppTensor_Functions::log_gpu(&Y);
+            cppTensor_Functions::minus_gpu(&Y);
+            cppTensor_Functions::deriv_softmax_gpu(dY, loss, Y, labels);
+        }
+        else
+        {
+            cppTensor_Functions::softmax_cpu(&dY, outputs);
+            cppTensor_Functions::copy_cpu(&Y, dY);
         
-        cppTensor_Functions::log_cpu(&Y);
-        cppTensor_Functions::minus_cpu(&Y);
-        cppTensor_Functions::deriv_softmax_cpu(dY, loss, Y, labels);
+            cppTensor_Functions::log_cpu(&Y);
+            cppTensor_Functions::minus_cpu(&Y);
+            cppTensor_Functions::deriv_softmax_cpu(dY, loss, Y, labels);
+        }
     }
 
     virtual cppTensor<dtype> forward_impl(const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
@@ -498,13 +478,6 @@ private:
     cppTensorType* dA;
     cppTensorType* dS;
     cppTensorType* dS_next;
-    cppTensorType* dU_matMul;
-    cppTensorType* dW_matMul;
-    cppTensorType* S_T;
-    cppTensorType* V_T;
-    cppTensorType* X_T;
-    cppTensorType* W_T;
-    
 
     cppTensorTypeMap X;
     cppTensorTypeMap A;

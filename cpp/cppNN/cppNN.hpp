@@ -33,14 +33,14 @@ public:
     {
         is_cuda_=true;
 
-        cuda_child();
+        cuda_impl();
     }
 
     void cpu()
     {
         is_cuda_=false;
 
-        cpu_child();
+        cpu_impl();
     }
 
     void useSharedMemory()
@@ -61,14 +61,7 @@ public:
 
     void cross_entropy_loss(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
     {
-        if (this->is_cuda_)
-        {
-            cross_entropy_loss_gpu(dY, Y, loss, outputs, labels);
-        }
-        else
-        {
-            cross_entropy_loss_cpu(dY, Y, loss, outputs, labels);
-        }
+        cross_entropy_loss_impl(dY, Y, loss, outputs, labels);
     }
 
     void backward(cppTensor<dtype>& dY)
@@ -78,30 +71,19 @@ public:
 
     void optimizer()
     {
-        if (this->is_cuda_)
-        {
-            optimizer_gpu();
-        }
-        else
-        {
-            optimizer_cpu();
-        }
+        optimizer_impl();
     }
     
 protected:
-    virtual void cuda_child() = 0;
+    virtual void cuda_impl() = 0;
 
-    virtual void cpu_child() = 0;
+    virtual void cpu_impl() = 0;
 
-    virtual void optimizer_gpu() = 0;
-
-    virtual void optimizer_cpu() = 0;
+    virtual void optimizer_impl() = 0;
 
     virtual void backward_impl(const cppTensor<dtype>& dY) = 0;
 
-    virtual void cross_entropy_loss_gpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) = 0;
-
-    virtual void cross_entropy_loss_cpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) = 0;
+    virtual void cross_entropy_loss_impl(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) = 0;
 
     virtual cppTensor<dtype> forward_impl(const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) = 0;
 
