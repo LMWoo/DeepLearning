@@ -66,7 +66,7 @@ for epoch in range(num_epochs):
 
         cpu_outputs = cpu_model.forward(cpu_images, cpu_hprev)
         cpu_model.cross_entropy_loss(cpu_dY, cpu_Y, cpu_loss, cpu_outputs, cpu_labels)
-        cpu_model.backward(cpu_dY)
+        cpu_gradients = cpu_model.backward(cpu_dY)
         cpu_model.optimizer()
 
         cpu_iter_loss += np.sum(cpu_loss.numpy())

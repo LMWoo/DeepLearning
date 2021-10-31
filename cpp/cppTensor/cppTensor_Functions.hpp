@@ -667,6 +667,19 @@ namespace cppTensor_Functions
     }
 
     template<typename dtype>
+    void clip(cppTensor<dtype>* returnArray, const dtype& low, const dtype& high)
+    {
+        if (returnArray->is_cuda_)
+        {
+            clip_gpu(returnArray, low, high);
+        }
+        else
+        {
+            clip_cpu(returnArray, low, high);
+        }
+    }
+
+    template<typename dtype>
     void optimizer_gpu(cppTensor<dtype>* param, cppTensor<dtype>* mem, const cppTensor<dtype>& dparam, double lr)
     {
         std::string function_name = "void optimizer_gpu(cppTensor<dtype>*, cppTensor<dtype>*, const cppTensor<dtype>&, double)";
@@ -689,6 +702,19 @@ namespace cppTensor_Functions
         {
             mem->data_[i] += dparam.data_[i] * dparam.data_[i];
             param->data_[i] += (lr * dparam.data_[i]) / sqrt(mem->data_[i] + 1e-8);
+        }
+    }
+
+    template<typename dtype>
+    void optimizer(cppTensor<dtype>* param, cppTensor<dtype>* mem, const cppTensor<dtype>& dparam, double lr)
+    {
+        if ((param->is_cuda_ && mem->is_cuda_) && dparam.is_cuda_)
+        {
+            optimizer_gpu(param, mem, dparam, lr);
+        }
+        else
+        {
+            optimizer_cpu(param, mem, dparam, lr);
         }
     }
 }

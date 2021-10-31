@@ -9,7 +9,7 @@ import cpp as cpp
 
 seq_length = 28
 input_size = 28
-hidden_size = 256
+hidden_size = 128
 num_layers = 1
 num_classes = 10
 batch_size = 1
@@ -75,7 +75,7 @@ for epoch in range(num_epochs):
 
         gpu_outputs = gpu_model.forward(gpu_images, gpu_hprev)
         gpu_model.cross_entropy_loss(gpu_dY, gpu_Y, gpu_loss, gpu_outputs, gpu_labels)
-        gpu_model.backward(gpu_dY)
+        gpu_gradients = gpu_model.backward(gpu_dY)
         gpu_model.optimizer()
         
         gpu_loss.cpu()

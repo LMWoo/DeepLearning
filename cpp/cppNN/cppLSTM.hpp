@@ -31,9 +31,10 @@ protected:
         printf("lstm optimizer_impl\n");
     }
 
-    virtual void backward_impl(const cppTensor<dtype>& dY) override
+    virtual std::vector<cppTensor<dtype>> backward_impl(const cppTensor<dtype>& dY) override
     {
         printf("lstm backward_impl\n");
+        return std::vector<cppTensor<dtype>>({cppTensor<dtype>()});
     }
 
     virtual void cross_entropy_loss_impl(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override

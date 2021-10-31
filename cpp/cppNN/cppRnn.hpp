@@ -275,45 +275,24 @@ protected:
 
     virtual void optimizer_impl() override
     {
-        if (this->is_cuda_)
-        {
-            cppTensor_Functions::clip_gpu(this->dparams["dU"], -5.0, 5.0);
-            cppTensor_Functions::clip_gpu(this->dparams["dW"], -5.0, 5.0);
-            cppTensor_Functions::clip_gpu(this->dparams["dV"], -5.0, 5.0);
-            cppTensor_Functions::clip_gpu(this->dparams["db"], -5.0, 5.0);
-            cppTensor_Functions::clip_gpu(this->dparams["dc"], -5.0, 5.0);
-            cppTensor_Functions::clip_gpu(this->dparams["dFC_W"], -5.0, 5.0);
-            cppTensor_Functions::clip_gpu(this->dparams["dfc_b"], -5.0, 5.0);
+        clip(this->dparams["dU"], -5.0, 5.0);
+        clip(this->dparams["dW"], -5.0, 5.0);
+        clip(this->dparams["dV"], -5.0, 5.0);
+        clip(this->dparams["db"], -5.0, 5.0);
+        clip(this->dparams["dc"], -5.0, 5.0);
+        clip(this->dparams["dFC_W"], -5.0, 5.0);
+        clip(this->dparams["dfc_b"], -5.0, 5.0);
         
-            cppTensor_Functions::optimizer_gpu(this->params["U"], this->mem["mU"], *this->dparams["dU"], -lr);
-            cppTensor_Functions::optimizer_gpu(this->params["W"], this->mem["mW"], *this->dparams["dW"], -lr);
-            cppTensor_Functions::optimizer_gpu(this->params["V"], this->mem["mV"], *this->dparams["dV"], -lr);
-            cppTensor_Functions::optimizer_gpu(this->params["b"], this->mem["mb"], *this->dparams["db"], -lr);
-            cppTensor_Functions::optimizer_gpu(this->params["c"], this->mem["mc"], *this->dparams["dc"], -lr);
-            cppTensor_Functions::optimizer_gpu(this->params["FC_W"], this->mem["mFC_W"], *this->dparams["dFC_W"], -lr);
-            cppTensor_Functions::optimizer_gpu(this->params["fc_b"], this->mem["mfc_b"], *this->dparams["dfc_b"], -lr);
-        }
-        else
-        {
-            cppTensor_Functions::clip_cpu(this->dparams["dU"], -5.0, 5.0);
-            cppTensor_Functions::clip_cpu(this->dparams["dW"], -5.0, 5.0);
-            cppTensor_Functions::clip_cpu(this->dparams["dV"], -5.0, 5.0);
-            cppTensor_Functions::clip_cpu(this->dparams["db"], -5.0, 5.0);
-            cppTensor_Functions::clip_cpu(this->dparams["dc"], -5.0, 5.0);
-            cppTensor_Functions::clip_cpu(this->dparams["dFC_W"], -5.0, 5.0);
-            cppTensor_Functions::clip_cpu(this->dparams["dfc_b"], -5.0, 5.0);
-        
-            cppTensor_Functions::optimizer_cpu(this->params["U"], this->mem["mU"], *this->dparams["dU"], -lr);
-            cppTensor_Functions::optimizer_cpu(this->params["W"], this->mem["mW"], *this->dparams["dW"], -lr);
-            cppTensor_Functions::optimizer_cpu(this->params["V"], this->mem["mV"], *this->dparams["dV"], -lr);
-            cppTensor_Functions::optimizer_cpu(this->params["b"], this->mem["mb"], *this->dparams["db"], -lr);
-            cppTensor_Functions::optimizer_cpu(this->params["c"], this->mem["mc"], *this->dparams["dc"], -lr);
-            cppTensor_Functions::optimizer_cpu(this->params["FC_W"], this->mem["mFC_W"], *this->dparams["dFC_W"], -lr);
-            cppTensor_Functions::optimizer_cpu(this->params["fc_b"], this->mem["mfc_b"], *this->dparams["dfc_b"], -lr);
-        }
+        optimizer(this->params["U"], this->mem["mU"], *this->dparams["dU"], -lr);
+        optimizer(this->params["W"], this->mem["mW"], *this->dparams["dW"], -lr);
+        optimizer(this->params["V"], this->mem["mV"], *this->dparams["dV"], -lr);
+        optimizer(this->params["b"], this->mem["mb"], *this->dparams["db"], -lr);
+        optimizer(this->params["c"], this->mem["mc"], *this->dparams["dc"], -lr);
+        optimizer(this->params["FC_W"], this->mem["mFC_W"], *this->dparams["dFC_W"], -lr);
+        optimizer(this->params["fc_b"], this->mem["mfc_b"], *this->dparams["dfc_b"], -lr);
     }
 
-    virtual void backward_impl(const cppTensor<dtype>& dY) override
+    virtual std::vector<cppTensor<dtype>> backward_impl(const cppTensor<dtype>& dY) override
     {
         this->dparams["dFC_W"]->zeros();
         this->dparams["dfc_b"]->zeros();
@@ -335,7 +314,7 @@ protected:
 
         for (int t = seq_length - 1; t >= 0; --t)
         {
-            *dS = matMul(transpose(*this->dparams["dV"]), *dO, this->use_sharedMemory) + *dS_next;
+            *dS = matMul(transpose(*this->params["V"]), *dO, this->use_sharedMemory) + *dS_next;
             *dA = deriv_tanh(*S[t]) * (*dS);
             
             *this->dparams["dU"] = *this->dparams["dU"] + matMul(*dA, transpose(*X[t]), this->use_sharedMemory);
@@ -343,6 +322,10 @@ protected:
             *this->dparams["db"] = *this->dparams["db"] + *dA;
             *dS_next = matMul(transpose(*this->params["W"]), *dA, this->use_sharedMemory);
         }
+
+        return std::vector<cppTensor<dtype>>(
+            {*this->dparams["dU"], *this->dparams["dW"], *this->dparams["dV"], 
+            *this->dparams["db"], *this->dparams["dc"], *this->dparams["dFC_W"], *this->dparams["dfc_b"]});
     }
 
     virtual void cross_entropy_loss_impl(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override

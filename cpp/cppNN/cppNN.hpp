@@ -64,9 +64,9 @@ public:
         cross_entropy_loss_impl(dY, Y, loss, outputs, labels);
     }
 
-    void backward(cppTensor<dtype>& dY)
+    std::vector<cppTensor<dtype>> backward(cppTensor<dtype>& dY)
     {
-        backward_impl(dY);
+        return backward_impl(dY);
     }
 
     void optimizer()
@@ -81,7 +81,7 @@ protected:
 
     virtual void optimizer_impl() = 0;
 
-    virtual void backward_impl(const cppTensor<dtype>& dY) = 0;
+    virtual std::vector<cppTensor<dtype>> backward_impl(const cppTensor<dtype>& dY) = 0;
 
     virtual void cross_entropy_loss_impl(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) = 0;
 
