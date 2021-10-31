@@ -56,13 +56,9 @@ protected:
         printf("lstm cross_entropy_loss_cpu\n");
     }
 
-    virtual void forward_gpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
+    virtual cppTensor<dtype> forward_impl(const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
     {
-        printf("lstm forward_gpu\n");
-    }
-
-    virtual void forward_cpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
-    {
-        printf("lstm forward_cpu\n");
+        printf("lstm forward_impl\n");
+        return cppTensor<dtype>();
     }
 };

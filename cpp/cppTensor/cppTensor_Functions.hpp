@@ -75,6 +75,32 @@ namespace cppTensor_Functions
         }
     }
 
+    template<typename dtype>
+    cppTensor<dtype> transpose(const cppTensor<dtype>& rhs)
+    {
+        std::string function_name = "cppTensor<dtype> transpose(const cppTensor<dtype>&)";
+        
+        cppTensor<dtype> returnArray(rhs.shape_.cols, rhs.shape_.rows);
+
+        if (rhs.is_cuda_)
+        {
+            cppTensor_Utils::null_check(function_name, "rhs.dev_data_", rhs.dev_data_);
+
+            returnArray.cuda();
+
+            transpose_gpu(returnArray, rhs);
+        }
+        else
+        {
+            cppTensor_Utils::null_check(function_name, "rhs.data_", rhs.data_);
+
+            transpose_cpu(&returnArray, rhs);
+        }
+
+        return returnArray;
+    }
+
+
     template<typename dtype> 
     void matMul_gpu(cppTensor<dtype>& returnArray, const cppTensor<dtype>& lhs, const cppTensor<dtype>& rhs, bool useSharedMemory)
     {
@@ -191,6 +217,39 @@ namespace cppTensor_Functions
     }
 
     template<typename dtype>
+    cppTensor<dtype> operator+(const cppTensor<dtype>& lhs, const cppTensor<dtype>& rhs)
+    {
+        std::string function_name = "cppTensor<dtype> operator+(const cppTensor<dtype>&, const cppTensor<dtype>&)";
+
+        if (lhs.shape_.rows != rhs.shape_.rows || lhs.shape_.cols != rhs.shape_.cols)
+        {
+            cppTensor_Utils::exception_print(function_name, "no match lhs, rhs shape");
+            return cppTensor<dtype>();
+        }
+
+        cppTensor<dtype> returnArray(lhs.shape_.rows, lhs.shape_.cols);
+
+        if (lhs.is_cuda_ && rhs.is_cuda_)
+        {
+            cppTensor_Utils::null_check(function_name, "rhs.dev_data_", rhs.dev_data_);
+            cppTensor_Utils::null_check(function_name, "lhs.dev_data_", lhs.dev_data_);
+
+            returnArray.cuda();
+
+            add_gpu(returnArray, lhs, rhs);
+        }
+        else
+        {
+            cppTensor_Utils::null_check(function_name, "rhs.data_", rhs.data_);
+            cppTensor_Utils::null_check(function_name, "lhs.data_", lhs.data_);
+
+            add_cpu(&returnArray, lhs, rhs);
+        }
+
+        return returnArray;
+    }
+
+    template<typename dtype>
     void tanh_gpu(cppTensor<dtype>* returnArray, const cppTensor<dtype>& otherArray)
     {
         std::string function_name = "void tanh_gpu(cppTensor<dtype>*, const cppTensor<dtype>&)";
@@ -222,6 +281,31 @@ namespace cppTensor_Functions
             {
                 return std::tanh(inValue);
             });
+    }
+
+    template<typename dtype>
+    cppTensor<dtype> tanh(const cppTensor<dtype>& rhs)
+    {
+        std::string function_name = "cppTensor<dtype> tanh(const cppTensor<dtype>&)";
+
+        cppTensor<dtype> returnArray(rhs.shape_.rows, rhs.shape_.cols);
+
+        if (rhs.is_cuda_)
+        {
+            cppTensor_Utils::null_check(function_name, "rhs.dev_data_", rhs.dev_data_);
+
+            returnArray.cuda();
+
+            tanh_gpu(&returnArray, rhs);
+        }
+        else
+        {
+            cppTensor_Utils::null_check(function_name, "rhs.data_", rhs.data_);
+
+            tanh_cpu(&returnArray, rhs);
+        }
+
+        return returnArray;
     }
 
     template<typename dtype>

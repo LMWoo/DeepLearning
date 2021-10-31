@@ -54,16 +54,9 @@ public:
     }
 
 public:
-    void forward(cppTensor<dtype>& outputs,  std::vector<cppTensor<dtype>>& x,  cppTensor<dtype>& hprev)
+    cppTensor<dtype> forward(std::vector<cppTensor<dtype>>& x,  cppTensor<dtype>& hprev)
     {
-        if (this->is_cuda_)
-        {
-            forward_gpu(outputs, x, hprev);
-        }
-        else
-        {
-            forward_cpu(outputs, x, hprev);
-        }
+        return forward_impl(x, hprev);
     }
 
     void cross_entropy_loss(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
@@ -119,9 +112,7 @@ protected:
 
     virtual void cross_entropy_loss_cpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) = 0;
 
-    virtual void forward_gpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) = 0;
-
-    virtual void forward_cpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) = 0;
+    virtual cppTensor<dtype> forward_impl(const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) = 0;
 
 protected:
     bool is_cuda_{false};

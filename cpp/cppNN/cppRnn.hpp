@@ -100,12 +100,12 @@ public:
             this->X[i] = new cppTensor<dtype>(input_size, 1);
         }
 
-        for (int i = 0; i < seq_length + 2; ++i)
+        for (int i = 0; i < seq_length; ++i)
         {
             this->A[i] = new cppTensor<dtype>(hidden_size, 1);
         }
 
-        for (int i = 0; i < seq_length + 1; ++i)
+        for (int i = 0; i < seq_length; ++i)
         {
             this->O[i] = new cppTensor<dtype>(hidden_size, 1);
         }
@@ -500,40 +500,26 @@ protected:
         cppTensor_Functions::deriv_softmax_cpu(dY, loss, Y, labels);
     }
 
-    virtual void forward_gpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
+    virtual cppTensor<dtype> forward_impl(const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
     {
-        cppTensor_Functions::copy_gpu(S[-1], hprev);
-
-        for (int t = 0; t < seq_length; ++t)
+        if (hprev.is_cuda_)
         {
-            cppTensor_Functions::transpose_gpu(*X[t], x[t]);
-            cppTensor_Functions::add_gpu(*A[t], matMul(*U, *X[t], this->use_sharedMemory), matMul(*W, *S[t - 1], this->use_sharedMemory));
-            cppTensor_Functions::add_gpu(*A[t], *A[t], *b);
-            cppTensor_Functions::tanh_gpu(S[t], *A[t]);
-            cppTensor_Functions::matMul_gpu(*O[seq_length], *V, *S[t], this->use_sharedMemory);
-            cppTensor_Functions::add_gpu(*O[t], *O[seq_length], *c);
+            copy_gpu(S[-1], hprev);
         }
-
-        cppTensor_Functions::matMul_gpu(outputs, *FC_W, *O[seq_length-1], this->use_sharedMemory);
-        cppTensor_Functions::add_gpu(outputs, outputs, *fc_b);
-    }
-
-    virtual void forward_cpu(cppTensor<dtype>& outputs, const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
-    {
-        cppTensor_Functions::copy_cpu(S[-1], hprev);
+        else
+        {
+            copy_cpu(S[-1], hprev);
+        }
         
         for (int t = 0; t < seq_length; ++t)
         {
-            cppTensor_Functions::transpose_cpu(X[t], x[t]);
-            cppTensor_Functions::add_cpu(A[t], matMul(*U, *X[t], this->use_sharedMemory), matMul(*W, *S[t - 1], this->use_sharedMemory));
-            cppTensor_Functions::add_cpu(A[t], *A[t], *b);
-            cppTensor_Functions::tanh_cpu(S[t], *A[t]);
-            cppTensor_Functions::matMul_cpu(O[seq_length], *V, *S[t]);
-            cppTensor_Functions::add_cpu(O[t], *O[seq_length], *c);
+            *X[t] = transpose(x[t]);
+            *A[t] = matMul(*U, *X[t], this->use_sharedMemory) + matMul(*W, *S[t - 1], this->use_sharedMemory) + *b;
+            *S[t] = tanh(*A[t]);
+            *O[t] = matMul(*V, *S[t], this->use_sharedMemory) + *c;
         }
 
-        cppTensor_Functions::matMul_cpu(&outputs, *FC_W, *O[seq_length-1]);
-        cppTensor_Functions::add_cpu(&outputs, outputs, *fc_b);
+        return matMul(*FC_W, *O[seq_length-1], this->use_sharedMemory) + *fc_b;
     }
 
 private:

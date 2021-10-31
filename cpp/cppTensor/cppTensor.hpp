@@ -92,7 +92,6 @@ public:
 
     cppTensor(const cppTensor<dtype>& rhs)
     {
-        copy_counter++;
         this->shape_ = shape(rhs.shape_.rows, rhs.shape_.cols);
         newArray();
 
@@ -109,7 +108,6 @@ public:
     
     cppTensor<dtype>& operator=(const cppTensor<dtype>& rhs)
     {
-        copy_counter++;
         this->shape_ = shape(rhs.shape_.rows, rhs.shape_.cols);
         newArray();
 
@@ -129,7 +127,8 @@ public:
 
     cppTensor(cppTensor<dtype>&& rhs) noexcept
     {
-        reference_counter++;
+        deleteArray();
+        
         this->data_ = rhs.data_;
         this->dev_data_ = rhs.dev_data_;
         this->shape_ = shape(rhs.shape_.rows, rhs.shape_.cols);
@@ -141,7 +140,8 @@ public:
 
     cppTensor<dtype>& operator=(cppTensor<dtype>&& rhs) noexcept
     {
-        reference_counter++;
+        deleteArray();
+
         this->data_ = rhs.data_;
         this->dev_data_ = rhs.dev_data_;
         this->shape_ = shape(rhs.shape_);

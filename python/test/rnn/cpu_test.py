@@ -60,12 +60,11 @@ for epoch in range(num_epochs):
         cpu_hprev = cpp.cppTensor(train_hprev)
         cpu_labels = cpp.cppTensor(train_labels)
 
-        cpu_outputs = cpp.cppTensor(np.zeros((num_classes, 1)))
         cpu_Y = cpp.cppTensor(np.zeros((num_classes, 1)))
         cpu_dY = cpp.cppTensor(np.zeros((num_classes, 1)))
         cpu_loss = cpp.cppTensor(np.zeros((num_classes, 1)))
 
-        cpu_model.forward(cpu_outputs, cpu_images, cpu_hprev)
+        cpu_outputs = cpu_model.forward(cpu_images, cpu_hprev)
         cpu_model.cross_entropy_loss(cpu_dY, cpu_Y, cpu_loss, cpu_outputs, cpu_labels)
         cpu_model.backward(cpu_dY)
         cpu_model.optimizer()
