@@ -83,8 +83,6 @@ public:
         this->dS_next = new cppTensor<dtype>(hidden_size, 1);
         this->dU_matMul = new cppTensor<dtype>(hidden_size, input_size);
         this->dW_matMul = new cppTensor<dtype>(hidden_size, hidden_size);
-        this->FC_W_T = new cppTensor<dtype>(hidden_size, num_classes);
-        this->O_T = new cppTensor<dtype>(1, hidden_size);
         this->S_T = new cppTensor<dtype>(1, hidden_size);
         this->V_T = new cppTensor<dtype>(hidden_size, hidden_size);
         this->X_T = new cppTensor<dtype>(1, input_size);
@@ -135,8 +133,6 @@ public:
         SAFE_DELETE(dS_next)
         SAFE_DELETE(dU_matMul)
         SAFE_DELETE(dW_matMul)
-        SAFE_DELETE(FC_W_T);
-        SAFE_DELETE(O_T)
         SAFE_DELETE(S_T)
         SAFE_DELETE(V_T)
         SAFE_DELETE(X_T)
@@ -224,8 +220,6 @@ public:
         dS_next->cuda();
         dU_matMul->cuda();
         dW_matMul->cuda();
-        FC_W_T->cuda();
-        O_T->cuda();
         S_T->cuda();
         V_T->cuda();
         X_T->cuda();
@@ -313,8 +307,6 @@ public:
         dS_next->cpu();
         dU_matMul->cpu();
         dW_matMul->cpu();
-        FC_W_T->cpu();
-        O_T->cpu();
         S_T->cpu();
         V_T->cpu();
         X_T->cpu();
@@ -398,7 +390,7 @@ protected:
         cppTensor_Functions::optimizer_cpu(fc_b, mfc_b, *dfc_b, -lr);
     }
 
-    virtual void backward_gpu(cppTensor<dtype>& dY) override
+    virtual void backward_impl(const cppTensor<dtype>& dY) override
     {
         dFC_W->zeros();
         dfc_b->zeros();
@@ -409,74 +401,23 @@ protected:
         dc->zeros();
         dS_next->zeros();
         
-        cppTensor_Functions::transpose_gpu(*O_T, *O[seq_length - 1]);
-        cppTensor_Functions::matMul_gpu(*dFC_W, dY, *O_T, this->use_sharedMemory);
-        cppTensor_Functions::copy_gpu(dfc_b, dY);
+        *dFC_W = matMul(dY, transpose(*O[seq_length - 1]), this->use_sharedMemory);
+        copy(dfc_b, dY);
 
-        cppTensor_Functions::transpose_gpu(*FC_W_T, *FC_W);
-        cppTensor_Functions::matMul_gpu(*dO, *FC_W_T, dY, this->use_sharedMemory);
+        *dO = matMul(transpose(*FC_W), dY, this->use_sharedMemory);
 
-        cppTensor_Functions::transpose_gpu(*S_T, *S[seq_length - 1]);
-        cppTensor_Functions::matMul_gpu(*dV, *dO, *S_T, this->use_sharedMemory);
-        cppTensor_Functions::copy_gpu(dc, *dO);
+        *dV = matMul(*dO, transpose(*S[seq_length - 1]), this->use_sharedMemory);
+        copy(dc, *dO);
 
         for (int t = seq_length - 1; t >= 0; --t)
         {
-            cppTensor_Functions::transpose_gpu(*V_T, *V);
-            cppTensor_Functions::matMul_gpu(*dS, *V_T, *dO, this->use_sharedMemory);
-            cppTensor_Functions::add_gpu(*dS, *dS, *dS_next);
-            cppTensor_Functions::deriv_tanh_gpu(dA, *S[t]);
-            cppTensor_Functions::mul_gpu(dA, *dA, *dS);
-            cppTensor_Functions::transpose_gpu(*X_T, *X[t]);
-            cppTensor_Functions::matMul_gpu(*dU_matMul, *dA, *X_T, this->use_sharedMemory);
-            cppTensor_Functions::add_gpu(*dU, *dU, *dU_matMul);
-            cppTensor_Functions::transpose_gpu(*S_T, *S[t - 1]);
-            cppTensor_Functions::matMul_gpu(*dW_matMul, *dA, *S_T, this->use_sharedMemory);
-            cppTensor_Functions::add_gpu(*dW, *dW, *dW_matMul);
-            cppTensor_Functions::add_gpu(*db, *db, *dA);
-            cppTensor_Functions::transpose_gpu(*W_T, *W);
-            cppTensor_Functions::matMul_gpu(*dS_next, *W_T, *dA, this->use_sharedMemory);
-        }
-    }
-
-    virtual void backward_cpu(cppTensor<dtype>& dY) override
-    {
-        dFC_W->zeros();
-        dfc_b->zeros();
-        dU->zeros();
-        dW->zeros();
-        dV->zeros();
-        db->zeros();
-        dc->zeros();
-        dS_next->zeros();
-
-        cppTensor_Functions::transpose_cpu(O_T, *O[seq_length - 1]);
-        cppTensor_Functions::matMul_cpu(dFC_W, dY, *O_T);
-        cppTensor_Functions::copy_cpu(dfc_b, dY);
-
-        cppTensor_Functions::transpose_cpu(FC_W_T, *FC_W);
-        cppTensor_Functions::matMul_cpu(dO, *FC_W_T, dY);
-
-        cppTensor_Functions::transpose_cpu(S_T, *S[seq_length - 1]);
-        cppTensor_Functions::matMul_cpu(dV, *dO, *S_T);
-        cppTensor_Functions::copy_cpu(dc, *dO);
-
-        for (int t = seq_length - 1; t >= 0; --t)
-        {
-            cppTensor_Functions::transpose_cpu(V_T, *V);
-            cppTensor_Functions::matMul_cpu(dS, *V_T, *dO);
-            cppTensor_Functions::add_cpu(dS, *dS, *dS_next);
-            cppTensor_Functions::deriv_tanh_cpu(dA, *S[t]);
-            cppTensor_Functions::mul_cpu(dA, *dA, *dS);
-            cppTensor_Functions::transpose_cpu(X_T, *X[t]);
-            cppTensor_Functions::matMul_cpu(dU_matMul, *dA, *X_T);
-            cppTensor_Functions::add_cpu(dU, *dU, *dU_matMul);
-            cppTensor_Functions::transpose_cpu(S_T, *S[t - 1]);
-            cppTensor_Functions::matMul_cpu(dW_matMul, *dA, *S_T);
-            cppTensor_Functions::add_cpu(dW, *dW, *dW_matMul);
-            cppTensor_Functions::add_cpu(db, *db, *dA);
-            cppTensor_Functions::transpose_cpu(W_T, *W);
-            cppTensor_Functions::matMul_cpu(dS_next, *W_T, *dA);
+            *dS = matMul(transpose(*V), *dO, this->use_sharedMemory) + *dS_next;
+            *dA = deriv_tanh(*S[t]) * (*dS);
+            
+            *dU = *dU + matMul(*dA, transpose(*X[t]), this->use_sharedMemory);
+            *dW = *dW + matMul(*dA, transpose(*S[t - 1]), this->use_sharedMemory);
+            *db = *db + *dA;
+            *dS_next = matMul(transpose(*W), *dA, this->use_sharedMemory);
         }
     }
 
@@ -502,14 +443,7 @@ protected:
 
     virtual cppTensor<dtype> forward_impl(const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
     {
-        if (hprev.is_cuda_)
-        {
-            copy_gpu(S[-1], hprev);
-        }
-        else
-        {
-            copy_cpu(S[-1], hprev);
-        }
+        copy(S[-1], hprev);
         
         for (int t = 0; t < seq_length; ++t)
         {
@@ -566,8 +500,6 @@ private:
     cppTensorType* dS_next;
     cppTensorType* dU_matMul;
     cppTensorType* dW_matMul;
-    cppTensorType* FC_W_T;
-    cppTensorType* O_T;
     cppTensorType* S_T;
     cppTensorType* V_T;
     cppTensorType* X_T;

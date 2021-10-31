@@ -36,14 +36,9 @@ protected:
         printf("lstm optimizer_cpu\n");
     }
 
-    virtual void backward_gpu(cppTensor<dtype>& dY) override
+    virtual void backward_impl(const cppTensor<dtype>& dY) override
     {
-        printf("lstm backward_gpu\n");
-    }
-    
-    virtual void backward_cpu(cppTensor<dtype>& dY) override
-    {
-        printf("lstm backward_cpu\n");
+        printf("lstm backward_impl\n");
     }
 
     virtual void cross_entropy_loss_gpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override

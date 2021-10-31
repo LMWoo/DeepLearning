@@ -73,14 +73,7 @@ public:
 
     void backward(cppTensor<dtype>& dY)
     {
-        if (this->is_cuda_)
-        {
-            backward_gpu(dY);
-        }
-        else
-        {
-            backward_cpu(dY);
-        }
+        backward_impl(dY);
     }
 
     void optimizer()
@@ -104,9 +97,7 @@ protected:
 
     virtual void optimizer_cpu() = 0;
 
-    virtual void backward_gpu(cppTensor<dtype>& dY) = 0;
-    
-    virtual void backward_cpu(cppTensor<dtype>& dY) = 0;
+    virtual void backward_impl(const cppTensor<dtype>& dY) = 0;
 
     virtual void cross_entropy_loss_gpu(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) = 0;
 
