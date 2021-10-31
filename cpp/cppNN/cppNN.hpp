@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <tuple>
 
+using namespace cppTensor_Functions;
+
 template<typename dtype>
 class cppNN
 {
@@ -62,18 +64,7 @@ public:
         {
             forward_cpu(outputs, x, hprev);
         }
-
-        // outputs.data_=nullptr;
-        // hprev.data_=nullptr;
-        
-        for (int i = 0; i < x.size(); ++i)
-        {
-            // x[i].print();
-            x[i].data_=nullptr;
-            x[i].dev_data_=nullptr;
-        }
     }
-
 
     void cross_entropy_loss(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
     {

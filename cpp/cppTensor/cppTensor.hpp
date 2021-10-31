@@ -42,7 +42,7 @@ private:
             printf("shape rows %d cols %d\n", rows, cols);
         }
         shape() = default;
-
+        
         shape(size_t rows, size_t cols)
         {
             this->rows = rows;
@@ -88,6 +88,69 @@ public:
         shape_(shape(rows, cols))
     {
         newArray();
+    }
+
+    cppTensor(const cppTensor<dtype>& rhs)
+    {
+        copy_counter++;
+        this->shape_ = shape(rhs.shape_.rows, rhs.shape_.cols);
+        newArray();
+
+        if (rhs.is_cuda_)
+        {
+            this->cuda();
+            cppTensor_gpu::copy_gpu_to_gpu(this->shape_.size() * sizeof(double), this->dev_data_, rhs.dev_data_);
+        }
+        else
+        {
+            std::copy(rhs.data_, rhs.data_ + rhs.shape_.size(), this->data_);
+        }
+    }
+    
+    cppTensor<dtype>& operator=(const cppTensor<dtype>& rhs)
+    {
+        copy_counter++;
+        this->shape_ = shape(rhs.shape_.rows, rhs.shape_.cols);
+        newArray();
+
+        if (rhs.is_cuda_)
+        {
+            this->cuda();
+            cppTensor_gpu::copy_gpu_to_gpu(this->shape_.size() * sizeof(double), this->dev_data_, rhs.dev_data_);
+        }
+        else
+        {
+            std::copy(rhs.data_, rhs.data_ + rhs.shape_.size(), this->data_);
+        }
+
+        return *this;
+    }
+
+
+    cppTensor(cppTensor<dtype>&& rhs) noexcept
+    {
+        reference_counter++;
+        this->data_ = rhs.data_;
+        this->dev_data_ = rhs.dev_data_;
+        this->shape_ = shape(rhs.shape_.rows, rhs.shape_.cols);
+        this->is_cuda_= rhs.is_cuda_;
+
+        rhs.data_ = nullptr;
+        rhs.dev_data_ = nullptr;
+    }
+
+    cppTensor<dtype>& operator=(cppTensor<dtype>&& rhs) noexcept
+    {
+        reference_counter++;
+        this->data_ = rhs.data_;
+        this->dev_data_ = rhs.dev_data_;
+        this->shape_ = shape(rhs.shape_);
+        this->is_cuda_= rhs.is_cuda_;
+
+        rhs.data_ = nullptr;
+        rhs.dev_data_ = nullptr;
+
+        return *this;
     }
 
     cppTensor(const numpyArray& numpyInput)

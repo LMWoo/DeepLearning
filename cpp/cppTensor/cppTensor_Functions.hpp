@@ -75,7 +75,6 @@ namespace cppTensor_Functions
         }
     }
 
-
     template<typename dtype> 
     void matMul_gpu(cppTensor<dtype>& returnArray, const cppTensor<dtype>& lhs, const cppTensor<dtype>& rhs, bool useSharedMemory)
     {
@@ -98,7 +97,7 @@ namespace cppTensor_Functions
     void matMul_cpu(cppTensor<dtype>* returnArray, const cppTensor<dtype>& lhs, const cppTensor<dtype>& rhs)
     {
         std::string function_name = "void matMul_cpu(cppTensor<dtype>&, const cppTensor<dtype>&, const cppTensor<dtype>&)";
-        cppTensor_Utils::null_check(function_name, "returnArray->data_", returnArray->data_);
+        cppTensor_Utils::null_check(function_name, "returnArray.data_", returnArray->data_);
         cppTensor_Utils::null_check(function_name, "lhs.data_", lhs.data_);
         cppTensor_Utils::null_check(function_name, "rhs.data_", rhs.data_);
 
@@ -119,9 +118,42 @@ namespace cppTensor_Functions
                     sum += lhs(i, k) * rhs(k, j);
                 }
 
-                (*returnArray)(i, j) = sum;
+                returnArray->data_[i * returnArray->shape_.cols + j] = sum;
             }
         }
+    }
+
+    template<typename dtype>
+    cppTensor<dtype> matMul(const cppTensor<dtype>& lhs, const cppTensor<dtype>& rhs, bool useSharedMemory)
+    {
+        std::string function_name = "cppTensor<dtype> matMul(const cppTensor<dtype>&, const cppTensor<dtype>&, bool)";
+
+        if (lhs.shape_.cols != rhs.shape_.rows)
+        {
+            cppTensor_Utils::exception_print(function_name, "no match lhs, rhs shape");
+            return cppTensor<dtype>();
+        }
+
+        cppTensor<dtype> returnArray(lhs.shape_.rows, rhs.shape_.cols);
+
+        if (lhs.is_cuda_ && rhs.is_cuda_)
+        {
+            cppTensor_Utils::null_check(function_name, "rhs.dev_data_", rhs.dev_data_);
+            cppTensor_Utils::null_check(function_name, "lhs.dev_data_", lhs.dev_data_);
+
+            returnArray.cuda();
+
+            matMul_gpu(returnArray, lhs, rhs, useSharedMemory);
+        }
+        else
+        {
+            cppTensor_Utils::null_check(function_name, "rhs.data_", rhs.data_);
+            cppTensor_Utils::null_check(function_name, "lhs.data_", lhs.data_);
+
+            matMul_cpu(&returnArray, lhs, rhs);
+        }
+
+        return returnArray;
     }
 
     template<typename dtype>
