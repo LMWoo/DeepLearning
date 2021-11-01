@@ -133,6 +133,24 @@ namespace cppTensor_Functions
     }
 
     template<typename dtype>
+    void transpose_matMul_gpu(cppTensor<dtype>& returnArray, const cppTensor<dtype>& lhs, const cppTensor<dtype>& rhs)
+    {
+        std::string function_name = "void transpose_matMul_gpu(cppTensor<dtype>&, const cppTensor<dtype>&, const cppTensor<dtype>&)";
+        cppTensor_Utils::null_check(function_name, "returnArray.dev_data_", returnArray.dev_data_);
+        cppTensor_Utils::null_check(function_name, "lhs.dev_data_", lhs.dev_data_);
+        cppTensor_Utils::null_check(function_name, "rhs.dev_data_", rhs.dev_data_);
+
+        if (lhs.shape_.cols != rhs.shape_.cols)
+        {
+            cppTensor_Utils::exception_print(function_name, "no match lhs, rhs shape");
+            return;
+        }
+
+        cppTensor_gpu::transpose_matMul_gpu(returnArray.dev_data_, lhs.dev_data_, rhs.dev_data_,
+            lhs.shape_.rows, lhs.shape_.cols, rhs.shape_.rows, rhs.shape_.cols);
+    }
+
+    template<typename dtype>
     void matMul_cpu(cppTensor<dtype>* returnArray, const cppTensor<dtype>& lhs, const cppTensor<dtype>& rhs)
     {
         std::string function_name = "void matMul_cpu(cppTensor<dtype>&, const cppTensor<dtype>&, const cppTensor<dtype>&)";

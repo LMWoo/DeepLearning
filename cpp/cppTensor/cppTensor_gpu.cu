@@ -236,6 +236,43 @@ namespace cppTensor_gpu
         }
     }
 
+    __global__ void transpose_matMul_(double *dev_out, const double* dev_lhs, const double* dev_rhs, 
+        const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols)
+    {
+        size_t x = blockIdx.x * blockDim.x + threadIdx.x;
+        size_t y = blockIdx.y * blockDim.y + threadIdx.y;
+        if (x >= rhs_rows || y >= lhs_rows)
+        {
+            return;
+        }
+
+        size_t i = y * rhs_rows + x;
+
+        double sum = 0.0;
+
+        for (size_t k = 0; k < lhs_cols; ++k)
+        {
+            sum += dev_lhs[y * lhs_cols + k] * dev_rhs[x * rhs_cols + k];
+        }
+
+        dev_out[i] = sum;
+    }
+
+    void transpose_matMul_gpu(double* dev_out, const double* dev_lhs, const double* dev_rhs,
+        const size_t lhs_rows, const size_t lhs_cols, const size_t rhs_rows, const size_t rhs_cols)
+    {
+        int blockDimY = lhs_rows / TILE_WIDTH;
+        int blockDimX = rhs_cols / TILE_WIDTH;
+
+        blockDimY += lhs_rows % TILE_WIDTH ? 1 : 0;
+        blockDimX += rhs_cols % TILE_WIDTH ? 1 : 0;
+
+        dim3 dimGrid(blockDimX, blockDimY, 1);
+        dim3 dimThread(TILE_WIDTH, TILE_WIDTH, 1);   
+
+        transpose_matMul_<<<dimGrid, dimThread>>>(dev_out, dev_lhs, dev_rhs, lhs_rows, lhs_cols, rhs_rows, rhs_cols);
+    }
+
     __global__ void add_(double* dev_out, const double* dev_lhs, const double* dev_rhs, const size_t size)
     {
         int i = blockIdx.x * blockDim.x + threadIdx.x;

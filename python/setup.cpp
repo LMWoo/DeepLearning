@@ -29,6 +29,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
     m.def("transpose_gpu", &cppTensor_Functions::transpose_gpu<double>);
     m.def("matMul_cpu", &cppTensor_Functions::matMul_cpu<double>);
     m.def("matMul_gpu", &cppTensor_Functions::matMul_gpu<double>);
+    m.def("transpose_matMul_gpu", &cppTensor_Functions::transpose_matMul_gpu<double>);
 
     using CPPRNNDouble = cppRnn<double>;
     pb11::class_<CPPRNNDouble>(m, "cppRnn")
