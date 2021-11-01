@@ -43,6 +43,7 @@
 # Note
 
 * [CUDA](note/CUDA.pdf)
+* [DeepLearning](note/DeepLearning.pdf)
 
 # Installation
 
