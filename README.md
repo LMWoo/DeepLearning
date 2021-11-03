@@ -22,6 +22,11 @@
 
 # Experiments
 
+## Hardware information
+* cpu - Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz
+* gpu - GeForce GTX 1650 Ti 1.49 GHz, VRAM 4GB, shared memroy per block 48kb
+
+## network
 * rnn
 
 |Hyper Parameters|value|
@@ -34,7 +39,7 @@
 
 |hardware|Accuracy|Speed (s / 1000 images)|
 |----|----|----|
-|cpu|95.00 %|20.47|
+|cpu (|95.00 %|20.47|
 |gpu (TILED_WIDTH = 32, not use sharedMemory) |94.95 %|10.89|
 |gpu (TILED_WIDTH = 8, not use sharedMemory) |94.08 %|4.47|
 |gpu (TILED_WIDTH = 8, use sharedMemory) |94.08 %|4.87|
