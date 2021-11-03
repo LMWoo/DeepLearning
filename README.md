@@ -37,9 +37,9 @@
 |hidden_size|256|
 |learning_rate|0.01|
 
-|hardware|Accuracy|Speed (s / 1000 images)|
+|condition|Accuracy|Speed (s / 1000 images)|
 |----|----|----|
-|cpu (|95.00 %|20.47|
+|cpu |95.00 %|20.47|
 |gpu (TILED_WIDTH = 32, not use sharedMemory) |94.95 %|10.89|
 |gpu (TILED_WIDTH = 8, not use sharedMemory) |94.08 %|4.47|
 |gpu (TILED_WIDTH = 8, use sharedMemory) |94.08 %|4.87|
