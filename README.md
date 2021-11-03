@@ -15,7 +15,7 @@
   * python (pybind11 사용)
     * test
       * rnn (numpy, cpu, gpu 구현 완)
-      * lstm (numpy 구현 )
+      * lstm (numpy 구현 완)
       * gru
     * setup.cpp
     * setup.py
