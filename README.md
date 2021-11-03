@@ -9,13 +9,13 @@
 
 * DeepLearning
   * cpp
-    * cppNN (**cppNN를 상속받아 다양한 neural network** 현재 RNN구현 완, 나머지는 뼈대만 구성)
-    * cppTensor (**cpu, cuda version tensor 연산** matrix multiplication, activation function, optimizer 등)
+    * cppNN (** 현재 RNN구현 완 lstm 예정 **)
+    * cppTensor (** matrix multiply, add, transpose, activation functions, ... **)
     * main.cpp
-  * python (**pybind를 이용한 python extension 구현**)
-    * test (**neural network gpu, cpu, numpy version test**)
-      * rnn (**모든 version 구현 완**, 현재 코드 개선 및 실험 진행 중)
-      * lstm (**numpy version 구현 완**)
+  * python (** pybind11 사용 **)
+    * test
+      * rnn
+      * lstm
       * gru
     * setup.cpp
     * setup.py
