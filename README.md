@@ -9,10 +9,10 @@
 
 * DeepLearning
   * cpp
-    * cppNN (** 현재 RNN구현 완 lstm 예정 **)
-    * cppTensor (** matrix multiply, add, transpose, activation functions, ... **)
+    * cppNN (현재 RNN구현 완 lstm 예정)
+    * cppTensor (tensor matrix multiply, add, transpose, activation functions..)
     * main.cpp
-  * python (** pybind11 사용 **)
+  * python (pybind11 사용)
     * test
       * rnn
       * lstm
