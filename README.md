@@ -20,6 +20,23 @@
     * setup.cpp
     * setup.py
 
+# cppTensor Guide
+
+## Basic
+|numpy|cppTensor|
+|----|----|
+|x = np.array((2, 3))|x = cppTensor<double>(2, 3)|
+|x.zeros()|x.zeros()|
+|x.ones()|x.ones()|
+
+## Calculation
+|numpy|cppTensor|
+|----|----|
+|out = x @ y|out = matMul<double>(x, y)|
+|out = x + y|out = add<double>(x, y)|
+|out = x.T|out = x.transpose()|
+
+ 
 # Experiments
 
 ## Hardware information
