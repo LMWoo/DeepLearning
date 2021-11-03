@@ -52,11 +52,18 @@
  
 # Experiments
 
-## Hardware information
+## Environments
+### Hardware information
+
 * cpu - Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz
 * gpu - GeForce GTX 1650 Ti 1.49 GHz, VRAM 4GB, shared memory 48kb(per block), warp size 32, Memory Bus Width 128bit
 
+### Datasets
+
+* MNIST
+
 ## RNN Results
+
 |Hyper Parameters|value|
 |----|----|
 |seq_length|28|
@@ -68,9 +75,8 @@
 |condition|Accuracy|Speed (s / 1000 images)|
 |----|----|----|
 |cpu |95.00 %|20.47|
-|gpu (TILED_WIDTH = 32, not use sharedMemory) |94.95 %|10.89|
-|gpu (TILED_WIDTH = 8, not use sharedMemory) |94.08 %|4.47|
-|gpu (TILED_WIDTH = 8, use sharedMemory) |94.08 %|4.87|
+|gpu (not use sharedMemory) |94.08 %|10.89|
+|gpu (use sharedMemory) |94.08 %|4.87|
 
 # Note
 
