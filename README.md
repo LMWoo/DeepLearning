@@ -25,17 +25,19 @@
 ## Basic
 |numpy|cppTensor|
 |----|----|
-|x = np.array((2, 3))|x = cppTensor<double>(2, 3)|
+|x = np.array((2, 3))|x = cpp.cppTensor(2, 3)|
+||y = cpp.cppTensor(numpy array)|
 |x.zeros()|x.zeros()|
 |x.ones()|x.ones()|
+|y = x.T|y = cpp.transpose(x)|
 
 ## Calculation
-|numpy|cppTensor(c++)|
+|numpy|cppTensor|
 |----|----|
-|out = x @ y|out = matMul<double>(x, y)|
-|out = x + y|out = add<double>(x, y)|
-|out = np.tanh(x)|out = tanh<double>(x)|
-|out = np.exp(x)|out = exp<double>(x)|
+|out = x @ y|out = cpp.matMul<double>(x, y)|
+|out = x + y|out = cpp.add<double>(x, y)|
+|out = np.tanh(x)|out = cpp.tanh<double>(x)|
+|out = np.exp(x)|out = cpp.exp<double>(x)|
  
  # cppRNN Guide
 |pytorch|cppRNN(python)|
