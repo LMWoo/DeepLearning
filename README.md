@@ -5,7 +5,7 @@
  2. pytorch의 extension기능을 이용하여 python에서도 이용할 수 있게한다.
  3. 최근 많이 이용되는 PyTorch를 참고하여, PyTorch의 동작원리를 이해한다.
 
-# Project Structure
+# Project Progress
 
 * DeepLearning
   * cpp
