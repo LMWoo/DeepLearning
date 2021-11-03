@@ -30,7 +30,7 @@
 |x.ones()|x.ones()|
 
 ## Calculation
-|numpy|cppTensor|
+|numpy|cppTensor(c++)|
 |----|----|
 |out = x @ y|out = matMul<double>(x, y)|
 |out = x + y|out = add<double>(x, y)|
@@ -38,26 +38,15 @@
 |out = np.exp(x)|out = exp<double>(x)|
  
  # cppRNN Guide
-|pytorch|cppRNN|
+|pytorch|cppRNN(python)|
 |----|----|
-|x = np.array((2, 3))|x = cppTensor<double>(2, 3)|
-|x.zeros()|x.zeros()|
-|x.ones()|x.ones()|
-
-## Basic
-|numpy|cppTensor|
-|----|----|
-|x = np.array((2, 3))|x = cppTensor<double>(2, 3)|
-|x.zeros()|x.zeros()|
-|x.ones()|x.ones()|
-
-## Calculation
-|numpy|cppTensor|
-|----|----|
-|out = x @ y|out = matMul<double>(x, y)|
-|out = x + y|out = add<double>(x, y)|
-|out = x.T|out = x.transpose()|
-
+|rnn = nn.RNN(input_size=n_class, hidden_size=n_hidden)|rnn = cpp.cppRnn(..., input_size, hidden_size, num_classes)|
+|criterion = nn.CrossEntropyLoss()||
+|optimizer = optim.Adam(model.parameters(), lr=0.01)||
+|outputs = rnn.forward(x, hprev)|outputs = rnn.forward(x, hprev)|
+|loss = criterion(outputs, targets)|dy, loss = rnn.cross_entropy_loss(outputs)|
+|gradients = rnn.backward(dy)|gradients = rnn.backward(dy)|
+|optimizer.step()|rnn.optimizer(gradients)|
  
 # Experiments
 
