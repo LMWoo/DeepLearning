@@ -26,9 +26,7 @@
 * cpu - Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz
 * gpu - GeForce GTX 1650 Ti 1.49 GHz, VRAM 4GB, shared memory per block 48kb
 
-## network
-* rnn
-
+## RNN Results
 |Hyper Parameters|value|
 |----|----|
 |seq_length|28|
