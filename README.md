@@ -42,7 +42,7 @@
  # cppRNN Guide
 |pytorch|cppRNN(python)|
 |----|----|
-|rnn = nn.RNN(input_size=n_class, hidden_size=n_hidden)|rnn = cpp.cppRnn(..., input_size, hidden_size, num_classes)|
+|rnn = nn.RNN(input_size, hidden_size)|rnn = cpp.cppRnn(..., input_size, hidden_size, num_classes)|
 |criterion = nn.CrossEntropyLoss()||
 |optimizer = optim.Adam(model.parameters(), lr=0.01)||
 |outputs = rnn.forward(x, hprev)|outputs = rnn.forward(x, hprev)|
