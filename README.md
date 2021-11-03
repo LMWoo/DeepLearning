@@ -40,15 +40,15 @@
 |out = np.exp(x)|out = cpp.exp<double>(x)|
  
  # cppRNN Guide
-|pytorch|cppRNN(python)|
+|pytorch|cppRNN|
 |----|----|
-|rnn = nn.RNN(input_size, hidden_size)|rnn = cpp.cppRnn(..., input_size, hidden_size, num_classes)|
+|model = nn.RNN(input_size, hidden_size)|model = cpp.cppRnn(..., input_size, hidden_size, num_classes)|
 |criterion = nn.CrossEntropyLoss()||
 |optimizer = optim.Adam(model.parameters(), lr=0.01)||
-|outputs = rnn.forward(x, hprev)|outputs = rnn.forward(x, hprev)|
-|loss = criterion(outputs, targets)|dy, loss = rnn.cross_entropy_loss(outputs)|
-|gradients = rnn.backward(dy)|gradients = rnn.backward(dy)|
-|optimizer.step()|rnn.optimizer(gradients)|
+|outputs = model.forward(x, hprev)|outputs = model.forward(x, hprev)|
+|loss = criterion(outputs, targets)|dy, loss = model.cross_entropy_loss(outputs)|
+|gradients = model.backward(dy)|gradients = model.backward(dy)|
+|optimizer.step()|model.optimizer(gradients)|
  
 # Experiments
 
