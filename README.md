@@ -34,10 +34,10 @@
 ## Calculation
 |numpy|cppTensor|
 |----|----|
-|out = x @ y|out = cpp.matMul<double>(x, y)|
-|out = x + y|out = cpp.add<double>(x, y)|
-|out = np.tanh(x)|out = cpp.tanh<double>(x)|
-|out = np.exp(x)|out = cpp.exp<double>(x)|
+|out = x @ y|out = cpp.matMul(x, y)|
+|out = x + y|out = cpp.add(x, y)|
+|out = np.tanh(x)|out = cpp.tanh(x)|
+|out = np.exp(x)|out = cpp.exp(x)|
  
  # cppRNN Guide
 |pytorch|cppRNN|
