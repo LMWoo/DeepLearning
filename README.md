@@ -56,7 +56,15 @@
 ### Hardware information
 
 * cpu - Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz
-* gpu - GeForce GTX 1650 Ti 1.49 GHz, VRAM 4GB, shared memory 48kb(per block), warp size 32, Memory Bus Width 128bit
+* gpu
+|GeForce GTX 1650 Ti 1.49 GHz|
+|----|----|
+|VRAM|4GB|
+|shared memory|48kb(per block)|
+|warp size|32|
+|Memory Bus Width|128bit|
+|Multiprocessors|16|
+|CUDA Cores|64(per MP)|
 
 ### Datasets
 
