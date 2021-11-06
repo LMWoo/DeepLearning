@@ -90,6 +90,18 @@ public:
         newArray();
     }
 
+    cppTensor(size_t rows, size_t cols, bool is_cuda) :
+        shape_(shape(rows, cols))
+    {
+        if (is_cuda)
+        {
+            this->shape_ = shape(rows, cols);
+            this->is_cuda_ = is_cuda;
+            this->dev_data_ = cppTensor_gpu::gpu_malloc(shape_.size() * sizeof(double));
+            this->zeros();
+        }
+    }
+
     cppTensor(const cppTensor<dtype>& rhs)
     {
         this->shape_ = shape(rhs.shape_.rows, rhs.shape_.cols);
@@ -232,7 +244,7 @@ public:
     {
         if (is_cuda_)
         {
-            cppTensor_gpu::zeros_gpu(this->dev_data_, this->shape_.size());
+            cppTensor_gpu::zeros_gpu(this->dev_data_, sizeof(double) * this->shape_.size());
         }
         else
         {

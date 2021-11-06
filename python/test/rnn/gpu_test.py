@@ -61,21 +61,30 @@ for epoch in range(num_epochs):
         gpu_hprev = cpp.cppTensor(train_hprev)
         gpu_labels = cpp.cppTensor(train_labels)
 
-        gpu_Y = cpp.cppTensor(np.zeros((num_classes, 1)))
-        gpu_dY = cpp.cppTensor(np.zeros((num_classes, 1)))
-        gpu_loss = cpp.cppTensor(np.zeros((num_classes, 1)))
+        gpu_Y = cpp.cppTensor(num_classes, 1, True)
+        gpu_dY = cpp.cppTensor(num_classes, 1, True)
+        gpu_loss = cpp.cppTensor(num_classes, 1, True)
 
         [gpu_images[j].cuda() for j in range(len(gpu_images))]
         gpu_hprev.cuda()
         gpu_labels.cuda()
         
-        gpu_Y.cuda()
-        gpu_dY.cuda()
-        gpu_loss.cuda()
+        # gpu_Y.cuda()
+        # gpu_dY.cuda()
+        # gpu_loss.cuda()
 
         gpu_outputs = gpu_model.forward(gpu_images, gpu_hprev)
         gpu_model.cross_entropy_loss(gpu_dY, gpu_Y, gpu_loss, gpu_outputs, gpu_labels)
         gpu_gradients = gpu_model.backward(gpu_dY)
+        # idx = 4
+        # stride = 7
+        # gpu_gradients[idx].cpu()
+        # gpu_gradients[idx + stride].cpu()
+
+        # print(gpu_gradients[idx].numpy())
+        # print(gpu_gradients[idx + stride].numpy())
+
+        # break
         gpu_model.optimizer()
         
         gpu_loss.cpu()
@@ -86,35 +95,37 @@ for epoch in range(num_epochs):
             print("elased time {}".format(time.time() - start_time))
             start_time = time.time()
             gpu_iter_loss = 0
+#    break
 
-gpu_correct = 0
-gpu_total = 0
 
-def softmax(x):
-    e = np.exp(x)
-    return e / np.sum(e)
+# gpu_correct = 0
+# gpu_total = 0
 
-def predict(outputs):
-    return np.argmax(softmax(outputs), 0)
+# def softmax(x):
+#     e = np.exp(x)
+#     return e / np.sum(e)
 
-gpu_model.cpu()
+# def predict(outputs):
+#     return np.argmax(softmax(outputs), 0)
 
-for test_images, test_labels in test_loader:
-    np_images = test_images.reshape(seq_length, batch_size, input_size).detach().numpy()
-    np_hprev = np.zeros((hidden_size, 1))
-    labels = test_labels.detach().numpy()
+# gpu_model.cpu()
 
-    gpu_images = [cpp.cppTensor(np_images[j]) for j in range(len(np_images))]
-    gpu_hprev = cpp.cppTensor(np_hprev)
-    gpu_outputs = cpp.cppTensor(np.zeros((num_classes, 1)))
+# for test_images, test_labels in test_loader:
+#     np_images = test_images.reshape(seq_length, batch_size, input_size).detach().numpy()
+#     np_hprev = np.zeros((hidden_size, 1))
+#     labels = test_labels.detach().numpy()
+
+#     gpu_images = [cpp.cppTensor(np_images[j]) for j in range(len(np_images))]
+#     gpu_hprev = cpp.cppTensor(np_hprev)
+#     gpu_outputs = cpp.cppTensor(np.zeros((num_classes, 1)))
     
-    gpu_model.forward(gpu_outputs, gpu_images, gpu_hprev)
-    gpu_pred = predict(gpu_outputs.numpy())
+#     gpu_model.forward(gpu_outputs, gpu_images, gpu_hprev)
+#     gpu_pred = predict(gpu_outputs.numpy())
 
-    gpu_total += labels.shape[0]
-    gpu_correct += (gpu_pred == labels).sum().item()
+#     gpu_total += labels.shape[0]
+#     gpu_correct += (gpu_pred == labels).sum().item()
 
-print('gpu Accuracy of the model on the 10000 test images: {} %'.format(100 * gpu_correct / gpu_total))
+# print('gpu Accuracy of the model on the 10000 test images: {} %'.format(100 * gpu_correct / gpu_total))
 
 # add test
 # x = cpp.cppTensor(np.ones((128, 130)))

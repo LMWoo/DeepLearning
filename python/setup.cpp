@@ -12,6 +12,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
     pb11::class_<cppTensorDouble>(m, "cppTensor")
         .def(pb11::init<>())
         .def(pb11::init<size_t, size_t>())
+        .def(pb11::init<size_t, size_t, bool>())
         .def(pb11::init<cppTensorDouble::numpyArray>())
         .def("cuda", &cppTensorDouble::cuda)
         .def("cpu", &cppTensorDouble::cpu)
@@ -29,6 +30,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
     m.def("transpose_gpu", &cppTensor_Functions::transpose_gpu<double>);
     m.def("matMul_cpu", &cppTensor_Functions::matMul_cpu<double>);
     m.def("matMul_gpu", &cppTensor_Functions::matMul_gpu<double>);
+    m.def("transpose_matMul", &cppTensor_Functions::transpose_matMul<double>);
     m.def("transpose_matMul_gpu", &cppTensor_Functions::transpose_matMul_gpu<double>);
 
     using CPPRNNDouble = cppRnn<double>;

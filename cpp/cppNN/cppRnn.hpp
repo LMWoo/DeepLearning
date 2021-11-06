@@ -37,12 +37,11 @@ public:
 
         copy(this->params["FC_W"], FC_W);
 
-        this->dparams["dU"] = new cppTensor<dtype>(hidden_size, input_size);
-        this->dparams["dW"] = new cppTensor<dtype>(hidden_size, hidden_size);
-        this->dparams["dV"] = new cppTensor<dtype>(hidden_size, hidden_size);
-        this->dparams["db"] = new cppTensor<dtype>(hidden_size, 1);
-        this->dparams["dc"] = new cppTensor<dtype>(hidden_size, 1);
-
+        this->dparams["dU"]    = new cppTensor<dtype>(hidden_size, input_size);
+        this->dparams["dW"]    = new cppTensor<dtype>(hidden_size, hidden_size);
+        this->dparams["dV"]    = new cppTensor<dtype>(hidden_size, hidden_size);
+        this->dparams["db"]    = new cppTensor<dtype>(hidden_size, 1);
+        this->dparams["dc"]    = new cppTensor<dtype>(hidden_size, 1);
         this->dparams["dFC_W"] = new cppTensor<dtype>(num_classes, hidden_size);
         this->dparams["dfc_b"] = new cppTensor<dtype>(num_classes, 1);
 
@@ -324,10 +323,6 @@ protected:
 
     virtual std::vector<cppTensor<dtype>> backward_impl(const cppTensor<dtype>& dY) override
     {
-        if (this->is_cuda_)
-        {
-            return backward_impl_gpu(dY);
-        }
         this->dparams["dFC_W"]->zeros();
         this->dparams["dfc_b"]->zeros();
         this->dparams["dU"]->zeros();
@@ -335,15 +330,14 @@ protected:
         this->dparams["dV"]->zeros();
         this->dparams["db"]->zeros();
         this->dparams["dc"]->zeros();
-
         dS_next->zeros();
-        
-        *this->dparams["dFC_W"] = matMul(dY, transpose(*O[seq_length - 1]), this->use_sharedMemory);
-        copy(this->dparams["dfc_b"] , dY);
+
+        *this->dparams["dFC_W"] = transpose_matMul(dY, *O[seq_length - 1]);
+        copy(this->dparams["dfc_b"], dY);
 
         *dO = matMul(transpose(*this->params["FC_W"]), dY, this->use_sharedMemory);
 
-        *this->dparams["dV"] = matMul(*dO, transpose(*S[seq_length - 1]), this->use_sharedMemory);
+        *this->dparams["dV"] = transpose_matMul(*dO, *S[seq_length - 1]);
         copy(this->dparams["dc"], *dO);
 
         for (int t = seq_length - 1; t >= 0; --t)
@@ -351,55 +345,11 @@ protected:
             *dS = matMul(transpose(*this->params["V"]), *dO, this->use_sharedMemory) + *dS_next;
             *dA = deriv_tanh(*S[t]) * (*dS);
             
-            *this->dparams["dU"] = *this->dparams["dU"] + matMul(*dA, transpose(*X[t]), this->use_sharedMemory);
-            *this->dparams["dW"] = *this->dparams["dW"] + matMul(*dA, transpose(*S[t - 1]), this->use_sharedMemory);
+            *this->dparams["dU"] = *this->dparams["dU"] + transpose_matMul(*dA, *X[t]);
+            *this->dparams["dW"] = *this->dparams["dW"] + transpose_matMul(*dA, *S[t - 1]);
             *this->dparams["db"] = *this->dparams["db"] + *dA;
+
             *dS_next = matMul(transpose(*this->params["W"]), *dA, this->use_sharedMemory);
-        }
-
-        return std::vector<cppTensor<dtype>>(
-            {*this->dparams["dU"], *this->dparams["dW"], *this->dparams["dV"], 
-            *this->dparams["db"], *this->dparams["dc"], *this->dparams["dFC_W"], *this->dparams["dfc_b"]});
-    }
-
-    std::vector<cppTensor<dtype>> backward_impl_gpu(const cppTensor<dtype>& dY)
-    {
-        this->dparams["dFC_W"]->zeros();
-        this->dparams["dfc_b"]->zeros();
-        this->dparams["dU"]->zeros();
-        this->dparams["dW"]->zeros();
-        this->dparams["dV"]->zeros();
-        this->dparams["db"]->zeros();
-        this->dparams["dc"]->zeros();
-        dS_next->zeros();
-
-        cppTensor_Functions::transpose_gpu(*this->cache["O_T"], *O[seq_length - 1]);
-        cppTensor_Functions::matMul_gpu(*this->dparams["dFC_W"], dY, *this->cache["O_T"], this->use_sharedMemory);
-        cppTensor_Functions::copy_gpu(this->dparams["dfc_b"], dY);
-
-        cppTensor_Functions::transpose_gpu(*this->cache["FC_W_T"], *this->params["FC_W"]);
-        cppTensor_Functions::matMul_gpu(*dO, *this->cache["FC_W_T"], dY, this->use_sharedMemory);
-
-        cppTensor_Functions::transpose_gpu(*this->cache["S_T"], *S[seq_length - 1]);
-        cppTensor_Functions::matMul_gpu(*this->dparams["dV"], *dO, *this->cache["S_T"], this->use_sharedMemory);
-        cppTensor_Functions::copy_gpu(this->dparams["dc"], *dO);
-
-        for (int t = seq_length - 1; t >= 0; --t)
-        {
-            cppTensor_Functions::transpose_gpu(*this->cache["V_T"], *this->params["V"]);
-            cppTensor_Functions::matMul_gpu(*dS, *this->cache["V_T"], *dO, this->use_sharedMemory);
-            cppTensor_Functions::add_gpu(*dS, *dS, *dS_next);
-            cppTensor_Functions::deriv_tanh_gpu(dA, *S[t]);
-            cppTensor_Functions::mul_gpu(dA, *dA, *dS);
-            cppTensor_Functions::transpose_gpu(*this->cache["X_T"], *X[t]);
-            cppTensor_Functions::matMul_gpu(*this->cache["dU_dot"], *dA, *this->cache["X_T"], this->use_sharedMemory);
-            cppTensor_Functions::add_gpu(*this->dparams["dU"], *this->dparams["dU"], *this->cache["dU_dot"]);
-            cppTensor_Functions::transpose_gpu(*this->cache["S_T"], *S[t - 1]);
-            cppTensor_Functions::matMul_gpu(*this->cache["dW_dot"], *dA, *this->cache["S_T"], this->use_sharedMemory);
-            cppTensor_Functions::add_gpu(*this->dparams["dW"], *this->dparams["dW"], *this->cache["dW_dot"]);
-            cppTensor_Functions::add_gpu(*this->dparams["db"], *this->dparams["db"], *dA);
-            cppTensor_Functions::transpose_gpu(*this->cache["W_T"], *this->params["W"]);
-            cppTensor_Functions::matMul_gpu(*dS_next, *this->cache["W_T"], *dA, this->use_sharedMemory);
         }
 
         return std::vector<cppTensor<dtype>>(
