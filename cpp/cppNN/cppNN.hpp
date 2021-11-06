@@ -61,7 +61,7 @@ public:
         return forward_impl(x, hprev);
     }
 
-    virtual mapStrCppTensor parameters()
+    mapStrCppTensor parameters()
     {
         return parameters_impl();
     }
@@ -71,9 +71,9 @@ public:
         cross_entropy_loss_impl(dY, Y, loss, outputs, labels);
     }
 
-    std::vector<cppTensor<dtype>> backward(cppTensor<dtype>& dY)
+    void backward(cppTensor<dtype>& dY)
     {
-        return backward_impl(dY);
+        backward_impl(dY);
     }
 
 protected:
@@ -83,7 +83,7 @@ protected:
 
     virtual mapStrCppTensor parameters_impl() = 0;
 
-    virtual std::vector<cppTensor<dtype>> backward_impl(const cppTensor<dtype>& dY) = 0;
+    virtual void backward_impl(const cppTensor<dtype>& dY) = 0;
 
     virtual void cross_entropy_loss_impl(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) = 0;
 

@@ -37,6 +37,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
     using CPPAdagradDouble = cppAdagrad<double>;
     pb11::class_<CPPAdagradDouble>(m, "cppAdagrad")
         .def(pb11::init<std::unordered_map<std::string, cppTensor<double>*>, double>())
+        .def("zero_grad", &CPPAdagradDouble::zero_grad)
         .def("step", &CPPAdagradDouble::step)
         .def("test", &CPPAdagradDouble::test);
 

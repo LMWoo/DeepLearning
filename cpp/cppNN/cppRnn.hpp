@@ -68,6 +68,14 @@ public:
         this->rParams["dFC_W"] = new cppTensor<dtype>(num_classes, hidden_size);
         this->rParams["dfc_b"] = new cppTensor<dtype>(num_classes, 1);
 
+        this->mem["mU"]    = new cppTensor<dtype>(hidden_size, input_size);
+        this->mem["mW"]    = new cppTensor<dtype>(hidden_size, hidden_size);
+        this->mem["mV"]    = new cppTensor<dtype>(hidden_size, hidden_size);
+        this->mem["mb"]    = new cppTensor<dtype>(hidden_size, 1);
+        this->mem["mc"]    = new cppTensor<dtype>(hidden_size, 1);
+        this->mem["mFC_W"] = new cppTensor<dtype>(num_classes, hidden_size);
+        this->mem["mfc_b"] = new cppTensor<dtype>(num_classes, 1);
+
         this->dO = new cppTensor<dtype>(hidden_size, 1);
         this->dA = new cppTensor<dtype>(hidden_size, 1);
         this->dS = new cppTensor<dtype>(hidden_size, 1);
@@ -101,6 +109,8 @@ public:
         {
             this->O[i] = new cppTensor<dtype>(hidden_size, 1);
         }
+
+        
     }
 
     ~cppRnn()
@@ -110,19 +120,10 @@ public:
         SAFE_DELETE(dS)
         SAFE_DELETE(dS_next)
 
-        // params.clear();
-        // dparams.clear();
-        // mem.clear();
-
         mapIntCppTensorIter mapIntIter;
         mapStrCppTensorIter mapStrIter;
 
         for (mapStrIter = this->params.begin(); mapStrIter != this->params.end(); ++mapStrIter)
-        {
-            SAFE_DELETE(mapStrIter->second)
-        }
-
-        for (mapStrIter = this->mem.begin(); mapStrIter != this->mem.end(); ++mapStrIter)
         {
             SAFE_DELETE(mapStrIter->second)
         }
@@ -315,8 +316,8 @@ protected:
     {
         for (auto iter = this->params.begin(); iter != this->params.end(); ++iter)
         {
-            this->rParams[iter->first]->shape_.rows = this->rParams[iter->first]->shape_.rows;
-            this->rParams[iter->first]->shape_.cols = this->rParams[iter->first]->shape_.cols;
+            this->rParams[iter->first]->shape_.rows = this->params[iter->first]->shape_.rows;
+            this->rParams[iter->first]->shape_.cols = this->params[iter->first]->shape_.cols;
 
             if (this->is_cuda_)
             {
@@ -333,23 +334,16 @@ protected:
         return this->rParams;
     }
 
-    virtual std::vector<cppTensor<dtype>> backward_impl(const cppTensor<dtype>& dY) override
+    virtual void backward_impl(const cppTensor<dtype>& dY) override
     {
-        this->params["dFC_W"]->zeros();
-        this->params["dfc_b"]->zeros();
-        this->params["dU"]->zeros();
-        this->params["dW"]->zeros();
-        this->params["dV"]->zeros();
-        this->params["db"]->zeros();
-        this->params["dc"]->zeros();
         dS_next->zeros();
 
-        *this->params["dFC_W"] = transpose_matMul(dY, *O[seq_length - 1]);
+        copy(this->params["dFC_W"], transpose_matMul(dY, *O[seq_length - 1]));
         copy(this->params["dfc_b"], dY);
 
         *dO = matMul(transpose(*this->params["FC_W"]), dY, this->use_sharedMemory);
 
-        *this->params["dV"] = transpose_matMul(*dO, *S[seq_length - 1]);
+        copy(this->params["dV"], transpose_matMul(*dO, *S[seq_length - 1]));
         copy(this->params["dc"], *dO);
 
         for (int t = seq_length - 1; t >= 0; --t)
@@ -357,16 +351,12 @@ protected:
             *dS = matMul(transpose(*this->params["V"]), *dO, this->use_sharedMemory) + *dS_next;
             *dA = deriv_tanh(*S[t]) * (*dS);
             
-            *this->params["dU"] = *this->params["dU"] + transpose_matMul(*dA, *X[t]);
-            *this->params["dW"] = *this->params["dW"] + transpose_matMul(*dA, *S[t - 1]);
-            *this->params["db"] = *this->params["db"] + *dA;
+            copy(this->params["dU"], *this->params["dU"] + transpose_matMul(*dA, *X[t]));
+            copy(this->params["dW"], *this->params["dW"] + transpose_matMul(*dA, *S[t - 1]));
+            copy(this->params["db"], *this->params["db"] + *dA);
 
             *dS_next = matMul(transpose(*this->params["W"]), *dA, this->use_sharedMemory);
         }
-
-        return std::vector<cppTensor<dtype>>(
-            {*this->params["dU"], *this->params["dW"], *this->params["dV"], 
-            *this->params["db"], *this->params["dc"], *this->params["dFC_W"], *this->params["dfc_b"]});
     }
 
     virtual void cross_entropy_loss_impl(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override

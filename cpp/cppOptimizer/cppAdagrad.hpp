@@ -15,20 +15,20 @@ public:
     using mapStrCppTensorIter = std::unordered_map<std::string, cppTensor<double>*>::iterator;
 
 public:
-    cppAdagrad(mapStrCppTensor params, double lr)
+    cppAdagrad(mapStrCppTensor in_params, double lr)
     {   
         this->lr = lr;
-        for (auto iter = params.begin(); iter != params.end(); ++iter)
+        for (auto iter = in_params.begin(); iter != in_params.end(); ++iter)
         {
-            size_t rows = params[iter->first]->shape_.rows;
-            size_t cols = params[iter->first]->shape_.cols;
+            size_t rows = in_params[iter->first]->shape_.rows;
+            size_t cols = in_params[iter->first]->shape_.cols;
             if (iter->first.c_str()[0] != 'd')
             {
                 std::string key = "m" + iter->first;
-                if (params[iter->first]->is_cuda_)
+                if (in_params[iter->first]->is_cuda_)
                 {
-                    this->mem[key] = new cppTensor<dtype>(rows, cols, true);
-                    this->mem[key]->zeros();
+                    this->mem[key] = new cppTensor<dtype>(rows, cols);
+                    this->mem[key]->cuda();
                 }
                 else
                 {
@@ -39,15 +39,15 @@ public:
             this->params[iter->first]->is_owner_ = false;
             this->params[iter->first]->shape_.rows = rows;
             this->params[iter->first]->shape_.cols = cols;
-            this->params[iter->first]->is_cuda_ = params[iter->first]->is_cuda_;
+            this->params[iter->first]->is_cuda_ = in_params[iter->first]->is_cuda_;
 
             if (params[iter->first]->is_cuda_)
             {
-                this->params[iter->first]->dev_data_ = params[iter->first]->dev_data_;
+                this->params[iter->first]->dev_data_ = in_params[iter->first]->dev_data_;
             }
             else
             {
-                this->params[iter->first]->data_ = params[iter->first]->data_;
+                this->params[iter->first]->data_ = in_params[iter->first]->data_;
             }
         }
     }
@@ -68,7 +68,13 @@ public:
 protected:
     virtual void zero_grad_impl()
     {
-        
+        this->params["dFC_W"]->zeros();
+        this->params["dfc_b"]->zeros();
+        this->params["dU"]->zeros();
+        this->params["dW"]->zeros();
+        this->params["dV"]->zeros();
+        this->params["db"]->zeros();
+        this->params["dc"]->zeros();
     }
 
     virtual void step_impl()
@@ -81,13 +87,13 @@ protected:
         clip(this->params["dFC_W"], -5.0, 5.0);
         clip(this->params["dfc_b"], -5.0, 5.0);
         
-        optimizer(this->params["U"], this->mem["mU"], *this->params["dU"], lr);
-        optimizer(this->params["W"], this->mem["mW"], *this->params["dW"], lr);
-        optimizer(this->params["V"], this->mem["mV"], *this->params["dV"], lr);
-        optimizer(this->params["b"], this->mem["mb"], *this->params["db"], lr);
-        optimizer(this->params["c"], this->mem["mc"], *this->params["dc"], lr);
-        optimizer(this->params["FC_W"], this->mem["mFC_W"], *this->params["dFC_W"], lr);
-        optimizer(this->params["fc_b"], this->mem["mfc_b"], *this->params["dfc_b"], lr);
+        optimizer(this->params["U"], this->mem["mU"], *this->params["dU"], -lr);
+        optimizer(this->params["W"], this->mem["mW"], *this->params["dW"], -lr);
+        optimizer(this->params["V"], this->mem["mV"], *this->params["dV"], -lr);
+        optimizer(this->params["b"], this->mem["mb"], *this->params["db"], -lr);
+        optimizer(this->params["c"], this->mem["mc"], *this->params["dc"], -lr);
+        optimizer(this->params["FC_W"], this->mem["mFC_W"], *this->params["dFC_W"], -lr);
+        optimizer(this->params["fc_b"], this->mem["mfc_b"], *this->params["dfc_b"], -lr);
     }
 
 private:

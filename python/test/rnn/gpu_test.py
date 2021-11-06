@@ -79,7 +79,8 @@ for epoch in range(num_epochs):
 
         gpu_outputs = gpu_model.forward(gpu_images, gpu_hprev)
         gpu_model.cross_entropy_loss(gpu_dY, gpu_Y, gpu_loss, gpu_outputs, gpu_labels)
-        gpu_gradients = gpu_model.backward(gpu_dY)
+        optimizer.zero_grad()
+        gpu_model.backward(gpu_dY)
         optimizer.step()
         
         gpu_loss.cpu()
