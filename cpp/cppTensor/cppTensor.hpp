@@ -54,6 +54,7 @@ public:
     dtype* dev_data_{nullptr};
     shape shape_;
     bool is_cuda_{false};
+    bool is_owner_{true};
 
 private:
     void newArray()
@@ -75,10 +76,13 @@ private:
     {
         print_pointer("deleteArray()");
 
-        cppTensor_gpu::cpu_free(data_);
-        data_=nullptr;
-        cppTensor_gpu::gpu_free(dev_data_);
-        dev_data_=nullptr;
+        if (this->is_owner_)
+        {
+            cppTensor_gpu::cpu_free(data_);
+            data_=nullptr;
+            cppTensor_gpu::gpu_free(dev_data_);
+            dev_data_=nullptr;
+        }
     }
 
 public:

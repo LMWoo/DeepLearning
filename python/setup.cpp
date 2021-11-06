@@ -3,6 +3,7 @@
 #include <cppNN/cppRnn.hpp>
 #include <cppNN/cppLSTM.hpp>
 #include <cppNN/cppGRU.hpp>
+#include <cppOptimizer/cppAdagrad.hpp>
 
 namespace pb11 = pybind11;
 
@@ -33,6 +34,12 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
     m.def("transpose_matMul", &cppTensor_Functions::transpose_matMul<double>);
     m.def("transpose_matMul_gpu", &cppTensor_Functions::transpose_matMul_gpu<double>);
 
+    using CPPAdagradDouble = cppAdagrad<double>;
+    pb11::class_<CPPAdagradDouble>(m, "cppAdagrad")
+        .def(pb11::init<std::unordered_map<std::string, cppTensor<double>*>, double>())
+        .def("step", &CPPAdagradDouble::step)
+        .def("test", &CPPAdagradDouble::test);
+
     using CPPRNNDouble = cppRnn<double>;
     pb11::class_<CPPRNNDouble>(m, "cppRnn")
         .def(pb11::init<double, const CPPRNNDouble::cppTensorType&, const CPPRNNDouble::cppTensorType&, const CPPRNNDouble::cppTensorType&, const CPPRNNDouble::cppTensorType&, 
@@ -42,9 +49,9 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("useSharedMemory", &CPPRNNDouble::useSharedMemory)
         .def("notUseSharedMemory", &CPPRNNDouble::notUseSharedMemory)
         .def("forward", &CPPRNNDouble::forward)
+        .def("parameters", &CPPRNNDouble::parameters)
         .def("cross_entropy_loss", &CPPRNNDouble::cross_entropy_loss)
         .def("backward", &CPPRNNDouble::backward)
-        .def("optimizer", &CPPRNNDouble::optimizer)
         .def("test", &CPPRNNDouble::test);
 
     using CPPLSTMDouble = cppLSTM<double>;
@@ -56,8 +63,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("notUseSharedMemory", &CPPLSTMDouble::notUseSharedMemory)
         .def("forward", &CPPLSTMDouble::forward)
         .def("cross_entropy_loss", &CPPLSTMDouble::cross_entropy_loss)
-        .def("backward", &CPPLSTMDouble::backward)
-        .def("optimizer", &CPPLSTMDouble::optimizer);
+        .def("backward", &CPPLSTMDouble::backward);
 
     using CPPGRUDouble = cppGRU<double>;
     pb11::class_<CPPGRUDouble>(m, "cppGRU")
@@ -68,6 +74,5 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("notUseSharedMemory", &CPPGRUDouble::notUseSharedMemory)
         .def("forward", &CPPGRUDouble::forward)
         .def("cross_entropy_loss", &CPPGRUDouble::cross_entropy_loss)
-        .def("backward", &CPPGRUDouble::backward)
-        .def("optimizer", &CPPGRUDouble::optimizer);
+        .def("backward", &CPPGRUDouble::backward);
 }

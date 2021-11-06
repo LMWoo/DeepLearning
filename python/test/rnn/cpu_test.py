@@ -49,6 +49,8 @@ FC_W = cpp.cppTensor(np_FC_W)
 print("start train cpu hidden_size {}".format(hidden_size))
 
 cpu_model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
+optimizer = cpp.cppAdagrad(cpu_model.parameters(), learning_rate)
+
 start_time = time.time()
 for epoch in range(num_epochs):
     for i, (train_images, train_labels) in enumerate(train_loader):
@@ -67,8 +69,7 @@ for epoch in range(num_epochs):
         cpu_outputs = cpu_model.forward(cpu_images, cpu_hprev)
         cpu_model.cross_entropy_loss(cpu_dY, cpu_Y, cpu_loss, cpu_outputs, cpu_labels)
         cpu_gradients = cpu_model.backward(cpu_dY)
-        cpu_model.optimizer()
-
+        optimizer.step()
         cpu_iter_loss += np.sum(cpu_loss.numpy())
 
         if (i + 1) % interval == 0:
@@ -77,29 +78,29 @@ for epoch in range(num_epochs):
             start_time = time.time()
             cpu_iter_loss = 0
 
-cpu_correct = 0
-cpu_total = 0
+# cpu_correct = 0
+# cpu_total = 0
 
-def softmax(x):
-    e = np.exp(x)
-    return e / np.sum(e)
+# def softmax(x):
+#     e = np.exp(x)
+#     return e / np.sum(e)
 
-def predict(outputs):
-    return np.argmax(softmax(outputs), 0)
+# def predict(outputs):
+#     return np.argmax(softmax(outputs), 0)
 
-for test_images, test_labels in test_loader:
-    np_images = test_images.reshape(seq_length, batch_size, input_size).detach().numpy()
-    np_hprev = np.zeros((hidden_size, 1))
-    labels = test_labels.detach().numpy()
+# for test_images, test_labels in test_loader:
+#     np_images = test_images.reshape(seq_length, batch_size, input_size).detach().numpy()
+#     np_hprev = np.zeros((hidden_size, 1))
+#     labels = test_labels.detach().numpy()
 
-    cpu_images = [cpp.cppTensor(np_images[j]) for j in range(len(np_images))]
-    cpu_hprev = cpp.cppTensor(np_hprev)
-    cpu_outputs = cpp.cppTensor(np.zeros((num_classes, 1)))
+#     cpu_images = [cpp.cppTensor(np_images[j]) for j in range(len(np_images))]
+#     cpu_hprev = cpp.cppTensor(np_hprev)
+#     cpu_outputs = cpp.cppTensor(np.zeros((num_classes, 1)))
 
-    cpu_model.forward(cpu_outputs, cpu_images, cpu_hprev)
-    cpu_pred = predict(cpu_outputs.numpy())
+#     cpu_model.forward(cpu_outputs, cpu_images, cpu_hprev)
+#     cpu_pred = predict(cpu_outputs.numpy())
 
-    cpu_total += labels.shape[0]
-    cpu_correct += (cpu_pred == labels).sum().item()
+#     cpu_total += labels.shape[0]
+#     cpu_correct += (cpu_pred == labels).sum().item()
 
-print('cpu Accuracy of the model on the 10000 test images: {} %'.format(100 * cpu_correct / cpu_total))
+# print('cpu Accuracy of the model on the 10000 test images: {} %'.format(100 * cpu_correct / cpu_total))

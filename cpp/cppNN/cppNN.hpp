@@ -15,8 +15,10 @@ public:
     using numpyArray = pybind11::array_t<dtype, pybind11::array::c_style>;
     using numpyArrayGeneric = pybind11::array;
     using cppTensorType = cppTensor<dtype>;
-    using cppTensorTypeMap = std::unordered_map<int, cppTensor<dtype>*>;
-    using cppTensorTypeMapDoubleIter = std::unordered_map<int, cppTensor<double>*>::iterator;
+    using mapIntCppTensor = std::unordered_map<int, cppTensor<dtype>*>;
+    using mapStrCppTensor = std::unordered_map<std::string, cppTensor<dtype>*>;
+    using mapIntCppTensorIter = std::unordered_map<int, cppTensor<double>*>::iterator;
+    using mapStrCppTensorIter = std::unordered_map<std::string, cppTensor<double>*>::iterator;
 
 public:
     cppNN()
@@ -59,6 +61,11 @@ public:
         return forward_impl(x, hprev);
     }
 
+    virtual mapStrCppTensor parameters()
+    {
+        return parameters_impl();
+    }
+
     void cross_entropy_loss(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels)
     {
         cross_entropy_loss_impl(dY, Y, loss, outputs, labels);
@@ -69,17 +76,12 @@ public:
         return backward_impl(dY);
     }
 
-    void optimizer()
-    {
-        optimizer_impl();
-    }
-    
 protected:
     virtual void cuda_impl() = 0;
 
     virtual void cpu_impl() = 0;
 
-    virtual void optimizer_impl() = 0;
+    virtual mapStrCppTensor parameters_impl() = 0;
 
     virtual std::vector<cppTensor<dtype>> backward_impl(const cppTensor<dtype>& dY) = 0;
 
