@@ -64,6 +64,9 @@ for epoch in range(num_epochs):
         gpu_Y = cpp.cppTensor(num_classes, 1, True)
         gpu_dY = cpp.cppTensor(num_classes, 1, True)
         gpu_loss = cpp.cppTensor(num_classes, 1, True)
+        gpu_Y.zeros()
+        gpu_dY.zeros()
+        gpu_loss.zeros()
 
         [gpu_images[j].cuda() for j in range(len(gpu_images))]
         gpu_hprev.cuda()

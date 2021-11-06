@@ -381,16 +381,12 @@ protected:
 
     virtual cppTensor<dtype> forward_impl(const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
     {
-        if (this->is_cuda_)
-        {
-            return forward_impl_gpu(x, hprev);
-        }
         copy(S[-1], hprev);
         
         for (int t = 0; t < seq_length; ++t)
         {
             *X[t] = transpose(x[t]);
-            *A[t] = matMul(*this->params["U"], *X[t], this->use_sharedMemory) + matMul(*this->params["W"], *S[t - 1], this->use_sharedMemory) + *this->params["b"];
+            *A[t] = transpose_matMul(*this->params["U"], x[t]) + matMul(*this->params["W"], *S[t - 1], this->use_sharedMemory) + *this->params["b"];
             *S[t] = tanh(*A[t]);
             *O[t] = matMul(*this->params["V"], *S[t], this->use_sharedMemory) + *this->params["c"];
         }
@@ -398,24 +394,6 @@ protected:
         return matMul(*this->params["FC_W"], *O[seq_length-1], this->use_sharedMemory) + *this->params["fc_b"];
     }
 
-    cppTensor<dtype> forward_impl_gpu(const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev)
-    {
-        cppTensor_Functions::copy_gpu(S[-1], hprev);
-
-        for (int t = 0; t < seq_length; ++t)
-        {
-            cppTensor_Functions::transpose_gpu(*X[t], x[t]);
-            cppTensor_Functions::matMul_gpu(*A[seq_length], *this->params["U"], *X[t], this->use_sharedMemory);
-            cppTensor_Functions::matMul_gpu(*A[seq_length + 1], *this->params["W"], *S[t - 1], this->use_sharedMemory);
-            cppTensor_Functions::add_gpu(*A[t], *A[seq_length], *A[seq_length + 1]);
-            cppTensor_Functions::add_gpu(*A[t], *A[t], *this->params["b"]);
-            cppTensor_Functions::tanh_gpu(S[t], *A[t]);
-            cppTensor_Functions::matMul_gpu(*O[seq_length], *this->params["V"], *S[t], this->use_sharedMemory);
-            cppTensor_Functions::add_gpu(*O[t], *O[seq_length], *this->params["c"]);
-        }
-
-        return matMul(*this->params["FC_W"], *O[seq_length-1], this->use_sharedMemory) + *this->params["fc_b"];
-    }
 private:
     double lr{0.0};
     size_t seq_length{0};

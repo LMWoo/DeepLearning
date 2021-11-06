@@ -98,7 +98,6 @@ public:
             this->shape_ = shape(rows, cols);
             this->is_cuda_ = is_cuda;
             this->dev_data_ = cppTensor_gpu::gpu_malloc(shape_.size() * sizeof(double));
-            this->zeros();
         }
     }
 
