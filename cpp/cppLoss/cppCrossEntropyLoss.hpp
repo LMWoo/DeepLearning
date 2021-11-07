@@ -22,62 +22,67 @@ public:
 
     ~cppCrossEntropyLoss()
     {
-        SAFE_DELETE(this->loss)
-        SAFE_DELETE(this->Y)
-        SAFE_DELETE(this->dY)
+        SAFE_DELETE(this->loss_)
+        SAFE_DELETE(this->Y_)
+        SAFE_DELETE(this->dY_)
+    }
+
+    cppTensor<dtype>& dY()
+    {
+        return *dY_;
     }
 
 protected:
     virtual const cppTensor<dtype>& operator_impl(const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
     {
-        if (this->loss == nullptr && this->Y == nullptr && this->dY == nullptr)
+        if (this->loss_ == nullptr && this->Y_ == nullptr && this->dY_ == nullptr)
         {
             if (outputs.is_cuda_ && labels.is_cuda_)
             {
-                this->loss = new cppTensor<dtype>(outputs.shape_.rows, outputs.shape_.cols, true);
-                this->Y = new cppTensor<dtype>(outputs.shape_.rows, outputs.shape_.cols, true);
-                this->dY = new cppTensor<dtype>(outputs.shape_.rows, outputs.shape_.cols, true);
+                this->loss_ = new cppTensor<dtype>(outputs.shape_.rows, outputs.shape_.cols, true);
+                this->Y_ = new cppTensor<dtype>(outputs.shape_.rows, outputs.shape_.cols, true);
+                this->dY_ = new cppTensor<dtype>(outputs.shape_.rows, outputs.shape_.cols, true);
             }
             else
             {
-                this->loss = new cppTensor<dtype>(outputs.shape_.rows, outputs.shape_.cols);
-                this->Y = new cppTensor<dtype>(outputs.shape_.rows, outputs.shape_.cols);
-                this->dY = new cppTensor<dtype>(outputs.shape_.rows, outputs.shape_.cols);
+                this->loss_ = new cppTensor<dtype>(outputs.shape_.rows, outputs.shape_.cols);
+                this->Y_ = new cppTensor<dtype>(outputs.shape_.rows, outputs.shape_.cols);
+                this->dY_ = new cppTensor<dtype>(outputs.shape_.rows, outputs.shape_.cols);
             }
         }
-        this->loss->zeros();
-        this->Y->zeros();
-        this->dY->zeros();
+        this->loss_->zeros();
+        this->Y_->zeros();
+        this->dY_->zeros();
 
         if (outputs.is_cuda_ && labels.is_cuda_)
         {
-            cppTensor_Functions::softmax_gpu(dY, outputs);
-            cppTensor_Functions::copy_gpu(Y, *dY);
+            cppTensor_Functions::softmax_gpu(dY_, outputs);
+            cppTensor_Functions::copy_gpu(Y_, *dY_);
 
-            cppTensor_Functions::log_gpu(Y);
-            cppTensor_Functions::minus_gpu(Y);
-            cppTensor_Functions::deriv_softmax_gpu(*dY, *loss, *Y, labels);
+            cppTensor_Functions::log_gpu(Y_);
+            cppTensor_Functions::minus_gpu(Y_);
+            cppTensor_Functions::deriv_softmax_gpu(*dY_, *loss_, *Y_, labels);
         }
         else
         {
-            cppTensor_Functions::softmax_cpu(dY, outputs);
-            cppTensor_Functions::copy_cpu(Y, *dY);
+            cppTensor_Functions::softmax_cpu(dY_, outputs);
+            cppTensor_Functions::copy_cpu(Y_, *dY_);
         
-            cppTensor_Functions::log_cpu(Y);
-            cppTensor_Functions::minus_cpu(Y);
-            cppTensor_Functions::deriv_softmax_cpu(*dY, *loss, *Y, labels);
+            cppTensor_Functions::log_cpu(Y_);
+            cppTensor_Functions::minus_cpu(Y_);
+            cppTensor_Functions::deriv_softmax_cpu(*dY_, *loss_, *Y_, labels);
         }
         //loss->is_owner_=false;
-        return *loss;
+        return *loss_;
     }
 
-    virtual void backward_impl(cppLinear<dtype>& fc, cppRnn<dtype>& rnn) override
+    virtual void backward_impl() override
     {
-        cppTensor<dtype> O = fc.backward(*dY);
-        rnn.backward(O);
+        
     }
+
 private:
-    cppTensor<dtype>* dY{nullptr};
-    cppTensor<dtype>* Y{nullptr};
-    cppTensor<dtype>* loss{nullptr};
+    cppTensor<dtype>* dY_{nullptr};
+    cppTensor<dtype>* Y_{nullptr};
+    cppTensor<dtype>* loss_{nullptr};
 };

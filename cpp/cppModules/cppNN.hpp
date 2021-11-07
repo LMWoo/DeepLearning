@@ -80,7 +80,6 @@ public:
     {
         return backward_impl(dY);
     }
-
 protected:
     virtual void cuda_impl() = 0;
 

@@ -18,4 +18,10 @@ class cppModule(object):
                 out.append(self.__dict__[key])
 
         return out
+
+    def backward(self, dY):
+        out = dY
+        for m in reversed(self.modules()):
+            out = m.backward(out)
+
     

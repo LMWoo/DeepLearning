@@ -86,7 +86,7 @@ for epoch in range(num_epochs):
         loss = criterion(gpu_outputs, gpu_labels)
         
         optimizer.zero_grad()
-        criterion.backward(gpu_model.modules()[1], gpu_model.modules()[0])
+        gpu_model.backward(criterion.dY())
         optimizer.step()
         
         loss.cpu()

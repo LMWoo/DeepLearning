@@ -37,11 +37,12 @@ public:
         return operator_impl(outputs, labels);
     }
     
-    void backward(cppLinear<dtype>& fc, cppRnn<dtype>& rnn)
+    void backward()
     {
-        backward_impl(fc, rnn);
+        backward_impl();
     }
+    
 protected:
     virtual const cppTensor<dtype>& operator_impl(const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) = 0;
-    virtual void backward_impl(cppLinear<dtype>& fc, cppRnn<dtype>& rnn) = 0;
+    virtual void backward_impl() = 0;
 };

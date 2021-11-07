@@ -82,7 +82,7 @@ for epoch in range(num_epochs):
         loss = criterion(cpu_outputs, cpu_labels)
         
         optimizer.zero_grad()
-        criterion.backward(cpu_model.modules()[1], cpu_model.modules()[0])
+        cpu_model.backward(criterion.dY())
         optimizer.step()
 
         cpu_iter_loss += np.sum(loss.numpy())

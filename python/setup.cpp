@@ -50,6 +50,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
             {
                 return self(outputs, labels);
             })
+        .def("dY", &CPPCrossEntropyLossDouble::dY)
         .def("backward", &CPPCrossEntropyLossDouble::backward);
 
     using CPPRNNDouble = cppRnn<double>;
