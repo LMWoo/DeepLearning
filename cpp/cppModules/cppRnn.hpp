@@ -15,10 +15,9 @@ public:
     using mapStrCppTensorIter = std::unordered_map<std::string, cppTensor<double>*>::iterator;
 
 public:
-    cppRnn(double lr, const cppTensorType& U, const cppTensorType& W, const cppTensorType& V, const cppTensorType& FC_W,
-        int seq_length, int input_size, int hidden_size, int num_classes)
+    cppRnn(const cppTensorType& U, const cppTensorType& W, const cppTensorType& V,
+        int seq_length, int input_size, int hidden_size)
     {
-        this->lr = lr;
         this->seq_length = seq_length;
         this->hidden_size = hidden_size;
         
@@ -28,55 +27,38 @@ public:
         this->params["b"] = new cppTensor<dtype>(hidden_size, 1);
         this->params["c"] = new cppTensor<dtype>(hidden_size, 1);
 
-        this->params["FC_W"] = new cppTensor<dtype>(num_classes, hidden_size);
-        this->params["fc_b"] = new cppTensor<dtype>(num_classes, 1);
-
         this->rParams["U"] = new cppTensor<dtype>(hidden_size, input_size);
         this->rParams["W"] = new cppTensor<dtype>(hidden_size, hidden_size);
         this->rParams["V"] = new cppTensor<dtype>(hidden_size, hidden_size);
         this->rParams["b"] = new cppTensor<dtype>(hidden_size, 1);
         this->rParams["c"] = new cppTensor<dtype>(hidden_size, 1);
 
-        this->rParams["FC_W"] = new cppTensor<dtype>(num_classes, hidden_size);
-        this->rParams["fc_b"] = new cppTensor<dtype>(num_classes, 1);
-
         copy(this->params["U"], U);
         copy(this->params["W"], W);
         copy(this->params["V"], V);
 
-        copy(this->params["FC_W"], FC_W);
-
         copy(this->rParams["U"], U);
         copy(this->rParams["W"], W);
         copy(this->rParams["V"], V);
-
-        copy(this->rParams["FC_W"], FC_W);
 
         this->params["dU"]    = new cppTensor<dtype>(hidden_size, input_size);
         this->params["dW"]    = new cppTensor<dtype>(hidden_size, hidden_size);
         this->params["dV"]    = new cppTensor<dtype>(hidden_size, hidden_size);
         this->params["db"]    = new cppTensor<dtype>(hidden_size, 1);
         this->params["dc"]    = new cppTensor<dtype>(hidden_size, 1);
-        this->params["dFC_W"] = new cppTensor<dtype>(num_classes, hidden_size);
-        this->params["dfc_b"] = new cppTensor<dtype>(num_classes, 1);
 
         this->rParams["dU"]    = new cppTensor<dtype>(hidden_size, input_size);
         this->rParams["dW"]    = new cppTensor<dtype>(hidden_size, hidden_size);
         this->rParams["dV"]    = new cppTensor<dtype>(hidden_size, hidden_size);
         this->rParams["db"]    = new cppTensor<dtype>(hidden_size, 1);
         this->rParams["dc"]    = new cppTensor<dtype>(hidden_size, 1);
-        this->rParams["dFC_W"] = new cppTensor<dtype>(num_classes, hidden_size);
-        this->rParams["dfc_b"] = new cppTensor<dtype>(num_classes, 1);
 
         this->mem["mU"]    = new cppTensor<dtype>(hidden_size, input_size);
         this->mem["mW"]    = new cppTensor<dtype>(hidden_size, hidden_size);
         this->mem["mV"]    = new cppTensor<dtype>(hidden_size, hidden_size);
         this->mem["mb"]    = new cppTensor<dtype>(hidden_size, 1);
         this->mem["mc"]    = new cppTensor<dtype>(hidden_size, 1);
-        this->mem["mFC_W"] = new cppTensor<dtype>(num_classes, hidden_size);
-        this->mem["mfc_b"] = new cppTensor<dtype>(num_classes, 1);
 
-        this->dO = new cppTensor<dtype>(hidden_size, 1);
         this->dA = new cppTensor<dtype>(hidden_size, 1);
         this->dS = new cppTensor<dtype>(hidden_size, 1);
         this->dS_next = new cppTensor<dtype>(hidden_size, 1);
@@ -91,12 +73,12 @@ public:
             this->X[i] = new cppTensor<dtype>(input_size, 1);
         }
 
-        for (int i = 0; i < seq_length + 2; ++i)
+        for (int i = 0; i < seq_length; ++i)
         {
             this->A[i] = new cppTensor<dtype>(hidden_size, 1);
         }
 
-        for (int i = 0; i < seq_length + 1; ++i)
+        for (int i = 0; i < seq_length; ++i)
         {
             this->O[i] = new cppTensor<dtype>(hidden_size, 1);
         }
@@ -106,7 +88,6 @@ public:
 
     ~cppRnn()
     {
-        SAFE_DELETE(dO)
         SAFE_DELETE(dA)
         SAFE_DELETE(dS)
         SAFE_DELETE(dS_next)
@@ -142,8 +123,6 @@ public:
 
     virtual void cuda_impl() override
     {
-
-        dO->cuda();
         dA->cuda();
         dS->cuda();
         dS_next->cuda();
@@ -210,7 +189,6 @@ public:
 
     virtual void cpu_impl() override
     {
-        dO->cpu();
         dA->cpu();
         dS->cpu();
         dS_next->cpu();
@@ -317,24 +295,24 @@ protected:
             *O[t] = matMul(*this->params["V"], *S[t], this->use_sharedMemory) + *this->params["c"];
         }
 
-        return matMul(*this->params["FC_W"], *O[seq_length-1], this->use_sharedMemory) + *this->params["fc_b"];
+        return *O[seq_length - 1];
     }
 
-    virtual void backward_impl(const cppTensor<dtype>& dY) override
+    virtual cppTensor<dtype> forward_impl(const cppTensor<dtype>& x) override
+    {
+        return cppTensor<dtype>();
+    }
+
+    virtual cppTensor<dtype> backward_impl(cppTensor<dtype>& dO) override
     {
         dS_next->zeros();
 
-        copy(this->params["dFC_W"], transpose_matMul(dY, *O[seq_length - 1]));
-        copy(this->params["dfc_b"], dY);
-
-        *dO = matMul(transpose(*this->params["FC_W"]), dY, this->use_sharedMemory);
-
-        copy(this->params["dV"], transpose_matMul(*dO, *S[seq_length - 1]));
-        copy(this->params["dc"], *dO);
+        copy(this->params["dV"], transpose_matMul(dO, *S[seq_length - 1]));
+        copy(this->params["dc"], dO);
 
         for (int t = seq_length - 1; t >= 0; --t)
         {
-            *dS = matMul(transpose(*this->params["V"]), *dO, this->use_sharedMemory) + *dS_next;
+            *dS = matMul(transpose(*this->params["V"]), dO, this->use_sharedMemory) + *dS_next;
             *dA = deriv_tanh(*S[t]) * (*dS);
             
             copy(this->params["dU"], *this->params["dU"] + transpose_matMul(*dA, *X[t]));
@@ -343,14 +321,14 @@ protected:
 
             *dS_next = matMul(transpose(*this->params["W"]), *dA, this->use_sharedMemory);
         }
+        
+        return cppTensor<dtype>();
     }
 
 private:
-    double lr{0.0};
     size_t seq_length{0};
     size_t hidden_size{0};
 
-    cppTensorType* dO;
     cppTensorType* dA;
     cppTensorType* dS;
     cppTensorType* dS_next;

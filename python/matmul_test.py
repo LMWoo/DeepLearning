@@ -5,6 +5,7 @@ import torchvision.transforms as transforms
 import time
 import numpy as np
 import cpp as cpp
+from cppModule import cppModule
 
 seq_length = 28
 input_size = 28
@@ -45,30 +46,23 @@ W = cpp.cppTensor(np_W.reshape(hidden_size, hidden_size))
 V = cpp.cppTensor(np_V.reshape(hidden_size, hidden_size))
 FC_W = cpp.cppTensor(np_FC_W)
 
-class cppModule(object):
-    def __init__(self):
-        pass
-
-    def parameters(self):
-        return self.__dict__["rnn"].parameters()
-
-    def modules(self):
-        return self.__dict__["rnn"]
-    
 class RNN(cppModule):
     def __init__(self, input_size, hidden_size):
         super(RNN, self).__init__() 
 
         self.hidden_size = hidden_size
-        self.rnn = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
-        self.rnn.cuda()
+        self.rnn1 = cpp.cppRnn(U, W, V, seq_length, input_size, hidden_size)
+        self.rnn1.cuda()
+        self.fc = cpp.cppLinear(FC_W, num_classes, hidden_size)
+        self.fc.cuda()
 
     def forward(self, x):
         hprev = np.zeros((self.hidden_size, 1))
         hprev = cpp.cppTensor(hprev)
         hprev.cuda()
 
-        return self.rnn.forward(x, hprev)
+        out = self.rnn1.forward(x, hprev)
+        return self.fc.forward(out)
 
 gpu_model = RNN(input_size, hidden_size)
 optimizer = cpp.cppAdagrad(gpu_model.parameters(), learning_rate)
@@ -89,13 +83,14 @@ for epoch in range(num_epochs):
         
         gpu_outputs = gpu_model.forward(gpu_images)
         loss = criterion(gpu_outputs, gpu_labels)
+        
         optimizer.zero_grad()
-        criterion.backward(gpu_model.modules())
+        criterion.backward(gpu_model.modules()[1], gpu_model.modules()[0])
         optimizer.step()
         
         loss.cpu()
         gpu_iter_loss += np.sum(loss.numpy())
-
+        
         if (i + 1) % interval == 0:
             print("gpu epoch {}/{} iter {}/{} loss {:.4f}".format(epoch + 1, num_epochs, i + 1, total_step, gpu_iter_loss / interval))
             print("elased time {}".format(time.time() - start_time))

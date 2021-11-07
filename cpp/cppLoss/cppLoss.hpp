@@ -4,6 +4,7 @@
 #include "cppTensor/cppTensor_Utils.hpp"
 #include "cppTensor/cppTensor_Functions.hpp"
 #include "cppModules/cppRnn.hpp"
+#include "cppModules/cppLinear.hpp"
 
 using namespace cppTensor_Functions;
 
@@ -36,11 +37,11 @@ public:
         return operator_impl(outputs, labels);
     }
     
-    void backward(cppRnn<dtype>& model)
+    void backward(cppLinear<dtype>& fc, cppRnn<dtype>& rnn)
     {
-        backward_impl(model);
+        backward_impl(fc, rnn);
     }
 protected:
     virtual const cppTensor<dtype>& operator_impl(const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) = 0;
-    virtual void backward_impl(cppRnn<dtype>& model) = 0;
+    virtual void backward_impl(cppLinear<dtype>& fc, cppRnn<dtype>& rnn) = 0;
 };

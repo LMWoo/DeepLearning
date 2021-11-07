@@ -3,6 +3,7 @@
 #include <cppModules/cppRnn.hpp>
 #include <cppModules/cppLSTM.hpp>
 #include <cppModules/cppGRU.hpp>
+#include <cppModules/cppLinear.hpp>
 #include <cppOptimizer/cppAdagrad.hpp>
 #include <cppLoss/cppCrossEntropyLoss.hpp>
 
@@ -37,7 +38,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
 
     using CPPAdagradDouble = cppAdagrad<double>;
     pb11::class_<CPPAdagradDouble>(m, "cppAdagrad")
-        .def(pb11::init<std::unordered_map<std::string, cppTensor<double>*>, double>())
+        .def(pb11::init<CPPAdagradDouble::mapModuleParameters, double>())
         .def("zero_grad", &CPPAdagradDouble::zero_grad)
         .def("step", &CPPAdagradDouble::step)
         .def("test", &CPPAdagradDouble::test);
@@ -53,16 +54,27 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
 
     using CPPRNNDouble = cppRnn<double>;
     pb11::class_<CPPRNNDouble>(m, "cppRnn")
-        .def(pb11::init<double, const CPPRNNDouble::cppTensorType&, const CPPRNNDouble::cppTensorType&, const CPPRNNDouble::cppTensorType&, const CPPRNNDouble::cppTensorType&, 
-            int, int, int, int>())
+        .def(pb11::init<const CPPRNNDouble::cppTensorType&, const CPPRNNDouble::cppTensorType&, const CPPRNNDouble::cppTensorType&, 
+            int, int, int>())
         .def("cuda", &CPPRNNDouble::cuda)
         .def("cpu", &CPPRNNDouble::cpu)
         .def("useSharedMemory", &CPPRNNDouble::useSharedMemory)
         .def("notUseSharedMemory", &CPPRNNDouble::notUseSharedMemory)
-        .def("forward", &CPPRNNDouble::forward)
+        .def("forward", pb11::overload_cast<std::vector<cppTensorDouble>&, cppTensorDouble&>(&CPPRNNDouble::forward))
         .def("parameters", &CPPRNNDouble::parameters)
         .def("backward", &CPPRNNDouble::backward)
         .def("test", &CPPRNNDouble::test);
+
+    using CPPLinearDouble = cppLinear<double>;
+    pb11::class_<CPPLinearDouble>(m, "cppLinear")
+        .def(pb11::init<const CPPRNNDouble::cppTensorType&, int, int>())
+        .def("cuda", &CPPLinearDouble::cuda)
+        .def("cpu", &CPPLinearDouble::cpu)
+        .def("useSharedMemory", &CPPLinearDouble::useSharedMemory)
+        .def("notUseSharedMemory", &CPPLinearDouble::notUseSharedMemory)
+        .def("forward", pb11::overload_cast<cppTensorDouble&>(&CPPLinearDouble::forward))
+        .def("parameters", &CPPLinearDouble::parameters)
+        .def("backward", &CPPLinearDouble::backward);
 
     using CPPLSTMDouble = cppLSTM<double>;
     pb11::class_<CPPLSTMDouble>(m, "cppLSTM")
@@ -71,7 +83,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("cpu", &CPPLSTMDouble::cpu)
         .def("useSharedMemory", &CPPLSTMDouble::useSharedMemory)
         .def("notUseSharedMemory", &CPPLSTMDouble::notUseSharedMemory)
-        .def("forward", &CPPLSTMDouble::forward)
+        .def("forward", pb11::overload_cast<std::vector<cppTensorDouble>&, cppTensorDouble&>(&CPPLSTMDouble::forward))
         .def("backward", &CPPLSTMDouble::backward);
 
     using CPPGRUDouble = cppGRU<double>;
@@ -81,6 +93,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("cpu", &CPPGRUDouble::cpu)
         .def("useSharedMemory", &CPPGRUDouble::useSharedMemory)
         .def("notUseSharedMemory", &CPPGRUDouble::notUseSharedMemory)
-        .def("forward", &CPPGRUDouble::forward)
+        .def("forward", pb11::overload_cast<std::vector<cppTensorDouble>&, cppTensorDouble&>(&CPPGRUDouble::forward))
         .def("backward", &CPPGRUDouble::backward);
 }

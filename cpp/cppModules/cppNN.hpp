@@ -61,14 +61,24 @@ public:
         return forward_impl(x, hprev);
     }
 
+    cppTensor<dtype> forward(cppTensor<dtype>& x)
+    {
+        return forward_impl(x);
+    }
+
+    void forward()
+    {
+        printf("forward()\n");
+    }
+
     mapStrCppTensor parameters()
     {
         return parameters_impl();
     }
 
-    void backward(cppTensor<dtype>& dY)
+    cppTensor<dtype> backward(cppTensor<dtype>& dY)
     {
-        backward_impl(dY);
+        return backward_impl(dY);
     }
 
 protected:
@@ -78,9 +88,11 @@ protected:
 
     virtual mapStrCppTensor parameters_impl() = 0;
 
-    virtual void backward_impl(const cppTensor<dtype>& dY) = 0;
+    virtual cppTensor<dtype> backward_impl(cppTensor<dtype>& dY) = 0;
 
     virtual cppTensor<dtype> forward_impl(const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) = 0;
+
+    virtual cppTensor<dtype> forward_impl(const cppTensor<dtype>& x) = 0;
 
 protected:
     bool is_cuda_{false};

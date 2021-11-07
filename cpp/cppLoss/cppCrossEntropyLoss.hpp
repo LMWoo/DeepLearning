@@ -71,9 +71,10 @@ protected:
         return *loss;
     }
 
-    virtual void backward_impl(cppRnn<dtype>& model) override
+    virtual void backward_impl(cppLinear<dtype>& fc, cppRnn<dtype>& rnn) override
     {
-        model.backward(*dY);
+        cppTensor<dtype> O = fc.backward(*dY);
+        rnn.backward(O);
     }
 private:
     cppTensor<dtype>* dY{nullptr};

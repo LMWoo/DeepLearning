@@ -39,14 +39,19 @@ protected:
         return mapStrCppTensor();
     }
 
-    virtual void backward_impl(const cppTensor<dtype>& dY) override
+    virtual cppTensor<dtype> backward_impl(cppTensor<dtype>& dY) override
     {
-        printf("lstm backward_impl\n");
+        return cppTensor<dtype>();
     }
 
     virtual cppTensor<dtype> forward_impl(const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
     {
         printf("lstm forward_impl\n");
+        return cppTensor<dtype>();
+    }
+
+    virtual cppTensor<dtype> forward_impl(const cppTensor<dtype>& x) override
+    {
         return cppTensor<dtype>();
     }
 };

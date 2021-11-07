@@ -6,48 +6,50 @@ template<typename dtype>
 class cppAdagrad : public cppOptimizer<dtype>
 {
 public:
-    using numpyArray = pybind11::array_t<dtype, pybind11::array::c_style>;
-    using numpyArrayGeneric = pybind11::array;
-    using cppTensorType = cppTensor<dtype>;
-    using mapIntCppTensor = std::unordered_map<int, cppTensor<dtype>*>;
-    using mapStrCppTensor = std::unordered_map<std::string, cppTensor<dtype>*>;
-    using mapIntCppTensorIter = std::unordered_map<int, cppTensor<double>*>::iterator;
-    using mapStrCppTensorIter = std::unordered_map<std::string, cppTensor<double>*>::iterator;
+    using mapParameters = std::unordered_map<std::string, cppTensor<dtype>*>;
+    using mapModuleParameters = std::unordered_map<std::string, mapParameters>;
 
 public:
-    cppAdagrad(mapStrCppTensor in_params, double lr)
+    cppAdagrad(mapModuleParameters in_params, double lr)
     {   
         this->lr = lr;
-        for (auto iter = in_params.begin(); iter != in_params.end(); ++iter)
+        for (auto key = in_params.begin(); key != in_params.end(); ++key)
         {
-            size_t rows = in_params[iter->first]->shape_.rows;
-            size_t cols = in_params[iter->first]->shape_.cols;
-            if (iter->first.c_str()[0] != 'd')
+            std::string module_name = key->first;
+            for (auto iter = in_params[module_name].begin(); iter != in_params[module_name].end(); ++iter)
             {
-                std::string key = "m" + iter->first;
-                if (in_params[iter->first]->is_cuda_)
+                std::string param_name = iter->first;
+                size_t rows = in_params[key->first][iter->first]->shape_.rows;
+                size_t cols = in_params[key->first][iter->first]->shape_.cols;
+
+                if (param_name.c_str()[0] == 'd')
                 {
-                    this->mem[key] = new cppTensor<dtype>(rows, cols);
-                    this->mem[key]->cuda();
+                    param_name = param_name.substr(1, param_name.length());
+
+                    this->dParams[module_name][param_name] = new cppTensor<dtype>();
+                    this->dParams[module_name][param_name]->is_owner_ = false;
+                    this->dParams[module_name][param_name]->shape_.rows = rows;
+                    this->dParams[module_name][param_name]->shape_.cols = cols;
+                    this->dParams[module_name][param_name]->is_cuda_ = in_params[key->first][iter->first]->is_cuda_;
+                    this->dParams[module_name][param_name]->dev_data_ = in_params[key->first][iter->first]->dev_data_;
+                    this->dParams[module_name][param_name]->data_ = in_params[key->first][iter->first]->data_;
                 }
                 else
                 {
-                    this->mem[key] = new cppTensor<dtype>(rows, cols);
-                }
-            }
-            this->params[iter->first] = new cppTensor<dtype>();
-            this->params[iter->first]->is_owner_ = false;
-            this->params[iter->first]->shape_.rows = rows;
-            this->params[iter->first]->shape_.cols = cols;
-            this->params[iter->first]->is_cuda_ = in_params[iter->first]->is_cuda_;
+                    this->mem[module_name][param_name] = new cppTensor<dtype>(rows, cols);
+                    if (in_params[key->first][iter->first]->is_cuda_)
+                    {
+                        this->mem[module_name][param_name]->cuda();
+                    }
 
-            if (params[iter->first]->is_cuda_)
-            {
-                this->params[iter->first]->dev_data_ = in_params[iter->first]->dev_data_;
-            }
-            else
-            {
-                this->params[iter->first]->data_ = in_params[iter->first]->data_;
+                    this->params[module_name][param_name] = new cppTensor<dtype>();
+                    this->params[module_name][param_name]->is_owner_ = false;
+                    this->params[module_name][param_name]->shape_.rows = rows;
+                    this->params[module_name][param_name]->shape_.cols = cols;
+                    this->params[module_name][param_name]->is_cuda_ = in_params[key->first][iter->first]->is_cuda_;
+                    this->params[module_name][param_name]->dev_data_ = in_params[key->first][iter->first]->dev_data_;
+                    this->params[module_name][param_name]->data_ = in_params[key->first][iter->first]->data_;
+                }
             }
         }
     }
@@ -68,37 +70,62 @@ public:
 protected:
     virtual void zero_grad_impl()
     {
-        this->params["dFC_W"]->zeros();
-        this->params["dfc_b"]->zeros();
-        this->params["dU"]->zeros();
-        this->params["dW"]->zeros();
-        this->params["dV"]->zeros();
-        this->params["db"]->zeros();
-        this->params["dc"]->zeros();
+        for (auto key = this->dParams.begin(); key != this->dParams.end(); ++key)
+        {
+            std::string module_name = key->first;
+            for (auto iter = this->dParams[module_name].begin(); iter != this->dParams[module_name].end(); ++iter)
+            {
+                std::string param_name = iter->first;
+                this->dParams[module_name][param_name]->zeros();
+            }
+        }
     }
 
     virtual void step_impl()
-    {
-        clip(this->params["dU"], -5.0, 5.0);
-        clip(this->params["dW"], -5.0, 5.0);
-        clip(this->params["dV"], -5.0, 5.0);
-        clip(this->params["db"], -5.0, 5.0);
-        clip(this->params["dc"], -5.0, 5.0);
-        clip(this->params["dFC_W"], -5.0, 5.0);
-        clip(this->params["dfc_b"], -5.0, 5.0);
+    {   
+        for (auto key = this->dParams.begin(); key != this->dParams.end(); ++key)
+        {
+            std::string module_name = key->first;
+            for (auto iter = this->dParams[module_name].begin(); iter != this->dParams[module_name].end(); ++iter)
+            {
+                std::string param_name = iter->first;
+                clip(this->dParams[module_name][param_name], -5.0, 5.0);
+            }
+        }
+
+        for (auto key = this->dParams.begin(); key != this->dParams.end(); ++key)
+        {
+            std::string module_name = key->first;
+            for (auto iter = this->dParams[module_name].begin(); iter != this->dParams[module_name].end(); ++iter)
+            {
+                std::string param_name = iter->first;
+                clip(this->dParams[module_name][param_name], -5.0, 5.0);
+
+                optimizer(this->params[module_name][param_name], this->mem[module_name][param_name], *this->dParams[module_name][param_name], -lr);
+            }
+        }
+
+        // clip(this->params["dU"], -5.0, 5.0);
+        // clip(this->params["dW"], -5.0, 5.0);
+        // clip(this->params["dV"], -5.0, 5.0);
+        // clip(this->params["db"], -5.0, 5.0);
+        // clip(this->params["dc"], -5.0, 5.0);
+        // clip(this->params["dFC_W"], -5.0, 5.0);
+        // clip(this->params["dfc_b"], -5.0, 5.0);
         
-        optimizer(this->params["U"], this->mem["mU"], *this->params["dU"], -lr);
-        optimizer(this->params["W"], this->mem["mW"], *this->params["dW"], -lr);
-        optimizer(this->params["V"], this->mem["mV"], *this->params["dV"], -lr);
-        optimizer(this->params["b"], this->mem["mb"], *this->params["db"], -lr);
-        optimizer(this->params["c"], this->mem["mc"], *this->params["dc"], -lr);
-        optimizer(this->params["FC_W"], this->mem["mFC_W"], *this->params["dFC_W"], -lr);
-        optimizer(this->params["fc_b"], this->mem["mfc_b"], *this->params["dfc_b"], -lr);
+        // optimizer(this->params["U"], this->mem["mU"], *this->params["dU"], -lr);
+        // optimizer(this->params["W"], this->mem["mW"], *this->params["dW"], -lr);
+        // optimizer(this->params["V"], this->mem["mV"], *this->params["dV"], -lr);
+        // optimizer(this->params["b"], this->mem["mb"], *this->params["db"], -lr);
+        // optimizer(this->params["c"], this->mem["mc"], *this->params["dc"], -lr);
+        // optimizer(this->params["FC_W"], this->mem["mFC_W"], *this->params["dFC_W"], -lr);
+        // optimizer(this->params["fc_b"], this->mem["mfc_b"], *this->params["dfc_b"], -lr);
     }
 
 private:
-    mapStrCppTensor params;
-    mapStrCppTensor mem;
+    mapModuleParameters params;
+    mapModuleParameters dParams;
+    mapModuleParameters mem;
 
     double lr{0.0};
 };
