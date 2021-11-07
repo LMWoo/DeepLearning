@@ -4,7 +4,6 @@ import torchvision
 import torchvision.transforms as transforms
 import time
 import numpy as np
-from npRnn import npRnn
 import cpp as cpp
 
 seq_length = 28
@@ -46,8 +45,28 @@ W = cpp.cppTensor(np_W.reshape(hidden_size, hidden_size))
 V = cpp.cppTensor(np_V.reshape(hidden_size, hidden_size))
 FC_W = cpp.cppTensor(np_FC_W)
 
-gpu_model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
-gpu_model.cuda()
+class RNN(cpp.cppModule):
+    def __init__(self, input_size, hidden_size):
+        super().__init__() 
+
+        self.hidden_size = hidden_size
+        self.rnn = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
+        self.rnn.cuda()
+
+    def forward(self, x):
+        hprev = np.zeros((self.hidden_size, 1))
+        hprev = cpp.cppTensor(hprev)
+        hprev.cuda()
+
+        return self.rnn.forward(x, hprev)
+    
+    def parameters(self):
+        return self.rnn.parameters()
+
+    def modules(self):
+        return self.rnn
+
+gpu_model = RNN(input_size, hidden_size)
 optimizer = cpp.cppAdagrad(gpu_model.parameters(), learning_rate)
 criterion = cpp.cppCrossEntropyLoss()
 start_time = time.time()
@@ -57,20 +76,17 @@ for epoch in range(num_epochs):
     for i, (train_images, train_labels) in enumerate(train_loader):
         train_images = train_images.reshape(seq_length, batch_size, input_size).detach().numpy()
         train_labels = train_labels.detach().numpy()
-        train_hprev = np.zeros((hidden_size, 1))
 
         gpu_images = [cpp.cppTensor(train_images[j]) for j in range(len(train_images))]
-        gpu_hprev = cpp.cppTensor(train_hprev)
         gpu_labels = cpp.cppTensor(train_labels)
 
         [gpu_images[j].cuda() for j in range(len(gpu_images))]
-        gpu_hprev.cuda()
         gpu_labels.cuda()
         
-        gpu_outputs = gpu_model.forward(gpu_images, gpu_hprev)
+        gpu_outputs = gpu_model.forward(gpu_images)
         loss = criterion(gpu_outputs, gpu_labels)
         optimizer.zero_grad()
-        criterion.backward(gpu_model)
+        criterion.backward(gpu_model.modules())
         optimizer.step()
         
         loss.cpu()
