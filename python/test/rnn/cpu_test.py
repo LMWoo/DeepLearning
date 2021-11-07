@@ -4,8 +4,8 @@ import torchvision
 import torchvision.transforms as transforms
 import time
 import numpy as np
-from npRnn import npRnn
 import cpp as cpp
+from cppModule import cppModule
 
 seq_length = 28
 input_size = 28
@@ -46,13 +46,28 @@ W = cpp.cppTensor(np_W.reshape(hidden_size, hidden_size))
 V = cpp.cppTensor(np_V.reshape(hidden_size, hidden_size))
 FC_W = cpp.cppTensor(np_FC_W)
 
-print("start train cpu hidden_size {}".format(hidden_size))
+class RNN(cppModule):
+    def __init__(self, input_size, hidden_size):
+        super(RNN, self).__init__() 
 
-cpu_model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
+        self.hidden_size = hidden_size
+        self.rnn1 = cpp.cppRnn(U, W, V, seq_length, input_size, hidden_size)
+        self.fc = cpp.cppLinear(FC_W, num_classes, hidden_size)
+
+    def forward(self, x):
+        hprev = np.zeros((self.hidden_size, 1))
+        hprev = cpp.cppTensor(hprev)
+
+        out = self.rnn1.forward(x, hprev)
+        return self.fc.forward(out)
+
+cpu_model = RNN(input_size, hidden_size)
 optimizer = cpp.cppAdagrad(cpu_model.parameters(), learning_rate)
 criterion = cpp.cppCrossEntropyLoss()
 
+print("start train cpu hidden_size {}".format(hidden_size))
 start_time = time.time()
+
 for epoch in range(num_epochs):
     for i, (train_images, train_labels) in enumerate(train_loader):
         train_images = train_images.reshape(seq_length, batch_size, input_size).detach().numpy()
@@ -63,10 +78,11 @@ for epoch in range(num_epochs):
         cpu_hprev = cpp.cppTensor(train_hprev)
         cpu_labels = cpp.cppTensor(train_labels)
 
-        gpu_outputs = cpu_model.forward(cpu_images, cpu_hprev)
-        loss = criterion(gpu_outputs, cpu_labels)
+        cpu_outputs = cpu_model.forward(cpu_images)
+        loss = criterion(cpu_outputs, cpu_labels)
+        
         optimizer.zero_grad()
-        criterion.backward(cpu_model)
+        criterion.backward(cpu_model.modules()[1], cpu_model.modules()[0])
         optimizer.step()
 
         cpu_iter_loss += np.sum(loss.numpy())
