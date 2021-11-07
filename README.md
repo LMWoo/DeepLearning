@@ -9,7 +9,9 @@
 
 * DeepLearning
   * cpp
-    * cppNN (RNN 구현 완)
+    * cppModules (Rnn, Linear 구현 완)
+    * cppLoss (CrossEntropyLoss 구현 완)
+    * cppOptimizer (Adagrad 구현 완)
     * cppTensor (tensor matrix multiply, add, transpose, activation functions..)
     * main.cpp
   * python (pybind11 사용)
@@ -38,17 +40,60 @@
 |out = x + y|out = cpp.add(x, y)|
 |out = np.tanh(x)|out = cpp.tanh(x)|
 |out = np.exp(x)|out = cpp.exp(x)|
- 
- # cppRNN Guide
-|pytorch|cppRNN|
-|----|----|
-|model = nn.RNN(input_size, hidden_size)|model = cpp.cppRnn(..., input_size, hidden_size, num_classes)|
-|criterion = nn.CrossEntropyLoss()||
-|optimizer = optim.Adam(model.parameters(), lr=0.01)||
-|outputs = model.forward(x, hprev)|outputs = model.forward(x, hprev)|
-|loss = criterion(outputs, targets)|dy, loss = model.cross_entropy_loss(outputs)|
-|gradients = model.backward(dy)|gradients = model.backward(dy)|
-|optimizer.step()|model.optimizer(gradients)|
+
+# cppModule Guide
+
+## pytorch module version
+```
+class RNN(nn.Module):
+  def __init__(...):
+    self.rnn = nn.RNN(...)
+    self.fc = nn.Linear(...)
+
+  def forward(...):
+    out = self.rnn(...)
+    return self.fc(out)
+
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr)
+
+model = RNN(...)
+
+outputs = model(...)
+loss = criterion(outputs, labels)
+
+optimizer.zero_grad()
+loss.backward()
+optimizer.step()
+```
+
+## cppModule version
+```
+
+# module example
+class RNN(nn.Module):
+  def __init__(...):
+    self.rnn = cpp.cppRnn(...)
+    self.fc = cpp.cppLinear(...)
+
+  def forward(...):
+    out = self.rnn.forward(...)
+    return self.fc.forward(out)
+
+model = RNN(...)
+
+criterion = cpp.CrossEntropyLoss()
+optimizer = cpp.cppAdagrad(model.parameters(), learning_rate)
+
+# train example
+outputs = model.forward(...)
+loss = criterion(outputs, labels)
+
+optimizer.zero_grad()
+criterion.backward(...)
+optimizer.step()
+
+```
  
 # Experiments
 
