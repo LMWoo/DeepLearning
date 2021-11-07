@@ -44,11 +44,6 @@ protected:
         printf("gru backward_impl\n");
     }
 
-    virtual void cross_entropy_loss_impl(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
-    {
-        printf("gru cross_entropy_loss_impl\n");
-    }
-
     virtual cppTensor<dtype> forward_impl(const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
     {
         printf("gru forward_impl\n");

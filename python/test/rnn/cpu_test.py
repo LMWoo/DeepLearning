@@ -50,6 +50,7 @@ print("start train cpu hidden_size {}".format(hidden_size))
 
 cpu_model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
 optimizer = cpp.cppAdagrad(cpu_model.parameters(), learning_rate)
+criterion = cpp.cppCrossEntropyLoss()
 
 start_time = time.time()
 for epoch in range(num_epochs):
@@ -62,16 +63,13 @@ for epoch in range(num_epochs):
         cpu_hprev = cpp.cppTensor(train_hprev)
         cpu_labels = cpp.cppTensor(train_labels)
 
-        cpu_Y = cpp.cppTensor(np.zeros((num_classes, 1)))
-        cpu_dY = cpp.cppTensor(np.zeros((num_classes, 1)))
-        cpu_loss = cpp.cppTensor(np.zeros((num_classes, 1)))
-
-        cpu_outputs = cpu_model.forward(cpu_images, cpu_hprev)
-        cpu_model.cross_entropy_loss(cpu_dY, cpu_Y, cpu_loss, cpu_outputs, cpu_labels)
+        gpu_outputs = cpu_model.forward(cpu_images, cpu_hprev)
+        loss = criterion(gpu_outputs, cpu_labels)
         optimizer.zero_grad()
-        cpu_model.backward(cpu_dY)
+        criterion.backward(cpu_model)
         optimizer.step()
-        cpu_iter_loss += np.sum(cpu_loss.numpy())
+
+        cpu_iter_loss += np.sum(loss.numpy())
 
         if (i + 1) % interval == 0:
             print("cpu epoch {}/{} iter {}/{} loss {:.4f}".format(epoch + 1, num_epochs, i + 1, total_step, cpu_iter_loss / interval))

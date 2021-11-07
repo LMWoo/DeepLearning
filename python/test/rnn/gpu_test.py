@@ -49,6 +49,7 @@ FC_W = cpp.cppTensor(np_FC_W)
 gpu_model = cpp.cppRnn(learning_rate, U, W, V, FC_W, seq_length, input_size, hidden_size, num_classes)
 gpu_model.cuda()
 optimizer = cpp.cppAdagrad(gpu_model.parameters(), learning_rate)
+criterion = cpp.cppCrossEntropyLoss()
 start_time = time.time()
 
 print("start train gpu hidden_size {}".format(hidden_size))
@@ -62,36 +63,24 @@ for epoch in range(num_epochs):
         gpu_hprev = cpp.cppTensor(train_hprev)
         gpu_labels = cpp.cppTensor(train_labels)
 
-        gpu_Y = cpp.cppTensor(num_classes, 1, True)
-        gpu_dY = cpp.cppTensor(num_classes, 1, True)
-        gpu_loss = cpp.cppTensor(num_classes, 1, True)
-        gpu_Y.zeros()
-        gpu_dY.zeros()
-        gpu_loss.zeros()
-
         [gpu_images[j].cuda() for j in range(len(gpu_images))]
         gpu_hprev.cuda()
         gpu_labels.cuda()
         
-        # gpu_Y.cuda()
-        # gpu_dY.cuda()
-        # gpu_loss.cuda()
-
         gpu_outputs = gpu_model.forward(gpu_images, gpu_hprev)
-        gpu_model.cross_entropy_loss(gpu_dY, gpu_Y, gpu_loss, gpu_outputs, gpu_labels)
+        loss = criterion(gpu_outputs, gpu_labels)
         optimizer.zero_grad()
-        gpu_model.backward(gpu_dY)
+        criterion.backward(gpu_model)
         optimizer.step()
         
-        gpu_loss.cpu()
-        gpu_iter_loss += np.sum(gpu_loss.numpy())
+        loss.cpu()
+        gpu_iter_loss += np.sum(loss.numpy())
 
         if (i + 1) % interval == 0:
             print("gpu epoch {}/{} iter {}/{} loss {:.4f}".format(epoch + 1, num_epochs, i + 1, total_step, gpu_iter_loss / interval))
             print("elased time {}".format(time.time() - start_time))
             start_time = time.time()
             gpu_iter_loss = 0
-
 
 # gpu_correct = 0
 # gpu_total = 0

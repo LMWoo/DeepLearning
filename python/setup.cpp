@@ -4,6 +4,7 @@
 #include <cppNN/cppLSTM.hpp>
 #include <cppNN/cppGRU.hpp>
 #include <cppOptimizer/cppAdagrad.hpp>
+#include <cppLoss/cppCrossEntropyLoss.hpp>
 
 namespace pb11 = pybind11;
 
@@ -41,6 +42,15 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("step", &CPPAdagradDouble::step)
         .def("test", &CPPAdagradDouble::test);
 
+    using CPPCrossEntropyLossDouble = cppCrossEntropyLoss<double>;
+    pb11::class_<CPPCrossEntropyLossDouble>(m, "cppCrossEntropyLoss")
+        .def(pb11::init<>())
+        .def("__call__", [](CPPCrossEntropyLossDouble& self, const cppTensor<double>& outputs, const cppTensor<double>& labels)
+            {
+                return self(outputs, labels);
+            })
+        .def("backward", &CPPCrossEntropyLossDouble::backward);
+
     using CPPRNNDouble = cppRnn<double>;
     pb11::class_<CPPRNNDouble>(m, "cppRnn")
         .def(pb11::init<double, const CPPRNNDouble::cppTensorType&, const CPPRNNDouble::cppTensorType&, const CPPRNNDouble::cppTensorType&, const CPPRNNDouble::cppTensorType&, 
@@ -51,7 +61,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("notUseSharedMemory", &CPPRNNDouble::notUseSharedMemory)
         .def("forward", &CPPRNNDouble::forward)
         .def("parameters", &CPPRNNDouble::parameters)
-        .def("cross_entropy_loss", &CPPRNNDouble::cross_entropy_loss)
         .def("backward", &CPPRNNDouble::backward)
         .def("test", &CPPRNNDouble::test);
 
@@ -63,7 +72,6 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("useSharedMemory", &CPPLSTMDouble::useSharedMemory)
         .def("notUseSharedMemory", &CPPLSTMDouble::notUseSharedMemory)
         .def("forward", &CPPLSTMDouble::forward)
-        .def("cross_entropy_loss", &CPPLSTMDouble::cross_entropy_loss)
         .def("backward", &CPPLSTMDouble::backward);
 
     using CPPGRUDouble = cppGRU<double>;
@@ -74,6 +82,5 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("useSharedMemory", &CPPGRUDouble::useSharedMemory)
         .def("notUseSharedMemory", &CPPGRUDouble::notUseSharedMemory)
         .def("forward", &CPPGRUDouble::forward)
-        .def("cross_entropy_loss", &CPPGRUDouble::cross_entropy_loss)
         .def("backward", &CPPGRUDouble::backward);
 }

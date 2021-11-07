@@ -345,27 +345,6 @@ protected:
         }
     }
 
-    virtual void cross_entropy_loss_impl(cppTensor<dtype>& dY, cppTensor<dtype>& Y, cppTensor<dtype>& loss, const cppTensor<dtype>& outputs, const cppTensor<dtype>& labels) override
-    {
-        if (this->is_cuda_)
-        {
-            cppTensor_Functions::softmax_gpu(&dY, outputs);
-            cppTensor_Functions::copy_gpu(&Y, dY);
-
-            cppTensor_Functions::log_gpu(&Y);
-            cppTensor_Functions::minus_gpu(&Y);
-            cppTensor_Functions::deriv_softmax_gpu(dY, loss, Y, labels);
-        }
-        else
-        {
-            cppTensor_Functions::softmax_cpu(&dY, outputs);
-            cppTensor_Functions::copy_cpu(&Y, dY);
-        
-            cppTensor_Functions::log_cpu(&Y);
-            cppTensor_Functions::minus_cpu(&Y);
-            cppTensor_Functions::deriv_softmax_cpu(dY, loss, Y, labels);
-        }
-    }
 private:
     double lr{0.0};
     size_t seq_length{0};
