@@ -1,8 +1,8 @@
 #include <torch/extension.h>
 #include <cppTensor/cppTensor.hpp>
-#include <cppNN/cppRnn.hpp>
-#include <cppNN/cppLSTM.hpp>
-#include <cppNN/cppGRU.hpp>
+#include <cppModules/cppRnn.hpp>
+#include <cppModules/cppLSTM.hpp>
+#include <cppModules/cppGRU.hpp>
 #include <cppOptimizer/cppAdagrad.hpp>
 #include <cppLoss/cppCrossEntropyLoss.hpp>
 

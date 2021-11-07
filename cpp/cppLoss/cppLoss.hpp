@@ -3,7 +3,7 @@
 #include "cppTensor/cppTensor.hpp"
 #include "cppTensor/cppTensor_Utils.hpp"
 #include "cppTensor/cppTensor_Functions.hpp"
-#include "cppNN/cppRnn.hpp"
+#include "cppModules/cppRnn.hpp"
 
 using namespace cppTensor_Functions;
 
