@@ -81,15 +81,6 @@ public:
         this->dS = new cppTensor<dtype>(hidden_size, 1);
         this->dS_next = new cppTensor<dtype>(hidden_size, 1);
 
-        this->cache["dU_dot"] = new cppTensor<dtype>(hidden_size, input_size);
-        this->cache["dW_dot"] = new cppTensor<dtype>(hidden_size, hidden_size);
-        this->cache["FC_W_T"] = new cppTensor<dtype>(hidden_size, num_classes);
-        this->cache["O_T"] = new cppTensor<dtype>(1, hidden_size);
-        this->cache["S_T"] = new cppTensor<dtype>(1, hidden_size);
-        this->cache["V_T"] = new cppTensor<dtype>(hidden_size, hidden_size);
-        this->cache["X_T"] = new cppTensor<dtype>(1, input_size);
-        this->cache["W_T"] = new cppTensor<dtype>(hidden_size, hidden_size);
-
         for (int i = -1; i < seq_length; ++i)
         {
             this->S[i] = new cppTensor<dtype>(hidden_size, 1);
@@ -124,11 +115,6 @@ public:
         mapStrCppTensorIter mapStrIter;
 
         for (mapStrIter = this->params.begin(); mapStrIter != this->params.end(); ++mapStrIter)
-        {
-            SAFE_DELETE(mapStrIter->second)
-        }
-
-        for (mapStrIter = this->cache.begin(); mapStrIter != this->cache.end(); ++mapStrIter)
         {
             SAFE_DELETE(mapStrIter->second)
         }
@@ -182,14 +168,6 @@ public:
         }
 
         for (mapStrIter = this->mem.begin(); mapStrIter != this->mem.end(); ++mapStrIter)
-        {
-            if (mapStrIter->second)
-            {
-                mapStrIter->second->cuda();
-            }
-        }
-
-        for (mapStrIter = this->cache.begin(); mapStrIter != this->cache.end(); ++mapStrIter)
         {
             if (mapStrIter->second)
             {
@@ -265,14 +243,6 @@ public:
             }
         }
 
-        for (mapStrIter = this->cache.begin(); mapStrIter != this->cache.end(); ++mapStrIter)
-        {
-            if (mapStrIter->second)
-            {
-                mapStrIter->second->cpu();
-            }
-        }
-
         for (mapIntIter = this->S.begin(); mapIntIter != this->S.end(); ++mapIntIter)
         {
             if (mapIntIter->second)
@@ -334,6 +304,22 @@ protected:
         return this->rParams;
     }
 
+
+    virtual cppTensor<dtype> forward_impl(const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
+    {
+        copy(S[-1], hprev);
+
+        for (int t = 0; t < seq_length; ++t)
+        {
+            *X[t] = transpose(x[t]);
+            *A[t] = transpose_matMul(*this->params["U"], x[t]) + matMul(*this->params["W"], *S[t - 1], this->use_sharedMemory) + *this->params["b"];
+            *S[t] = tanh(*A[t]);
+            *O[t] = matMul(*this->params["V"], *S[t], this->use_sharedMemory) + *this->params["c"];
+        }
+
+        return matMul(*this->params["FC_W"], *O[seq_length-1], this->use_sharedMemory) + *this->params["fc_b"];
+    }
+
     virtual void backward_impl(const cppTensor<dtype>& dY) override
     {
         dS_next->zeros();
@@ -380,22 +366,6 @@ protected:
             cppTensor_Functions::deriv_softmax_cpu(dY, loss, Y, labels);
         }
     }
-
-    virtual cppTensor<dtype> forward_impl(const std::vector<cppTensor<dtype>>& x, const cppTensor<dtype>& hprev) override
-    {
-        copy(S[-1], hprev);
-
-        for (int t = 0; t < seq_length; ++t)
-        {
-            *X[t] = transpose(x[t]);
-            *A[t] = transpose_matMul(*this->params["U"], x[t]) + matMul(*this->params["W"], *S[t - 1], this->use_sharedMemory) + *this->params["b"];
-            *S[t] = tanh(*A[t]);
-            *O[t] = matMul(*this->params["V"], *S[t], this->use_sharedMemory) + *this->params["c"];
-        }
-
-        return matMul(*this->params["FC_W"], *O[seq_length-1], this->use_sharedMemory) + *this->params["fc_b"];
-    }
-
 private:
     double lr{0.0};
     size_t seq_length{0};
@@ -409,7 +379,6 @@ private:
     mapStrCppTensor params;
     mapStrCppTensor rParams;
     mapStrCppTensor mem;
-    mapStrCppTensor cache;
 
     mapIntCppTensor X;
     mapIntCppTensor A;
