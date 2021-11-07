@@ -71,7 +71,7 @@ optimizer.step()
 ```
 
 # module example
-class RNN(nn.Module):
+class RNN(cppModule):
   def __init__(...):
     self.rnn = cpp.cppRnn(...)
     self.fc = cpp.cppLinear(...)
@@ -129,8 +129,7 @@ optimizer.step()
 |condition|Accuracy|Speed (s / 1000 images)|
 |----|----|----|
 |cpu |95.00 %|20.47|
-|gpu (not use sharedMemory) |95.08 %|10.89|
-|gpu (use sharedMemory) |94.08 %|6.87|
+|gpu |94.08 %|6.87|
 
 # Note
 
