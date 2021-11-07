@@ -65,7 +65,7 @@ public:
 
     void test()
     {
-        printf("adgrad test\n");
+        printf("adagrad test\n");
     }
 protected:
     virtual void zero_grad_impl()
@@ -104,22 +104,6 @@ protected:
                 optimizer(this->params[module_name][param_name], this->mem[module_name][param_name], *this->dParams[module_name][param_name], -lr);
             }
         }
-
-        // clip(this->params["dU"], -5.0, 5.0);
-        // clip(this->params["dW"], -5.0, 5.0);
-        // clip(this->params["dV"], -5.0, 5.0);
-        // clip(this->params["db"], -5.0, 5.0);
-        // clip(this->params["dc"], -5.0, 5.0);
-        // clip(this->params["dFC_W"], -5.0, 5.0);
-        // clip(this->params["dfc_b"], -5.0, 5.0);
-        
-        // optimizer(this->params["U"], this->mem["mU"], *this->params["dU"], -lr);
-        // optimizer(this->params["W"], this->mem["mW"], *this->params["dW"], -lr);
-        // optimizer(this->params["V"], this->mem["mV"], *this->params["dV"], -lr);
-        // optimizer(this->params["b"], this->mem["mb"], *this->params["db"], -lr);
-        // optimizer(this->params["c"], this->mem["mc"], *this->params["dc"], -lr);
-        // optimizer(this->params["FC_W"], this->mem["mFC_W"], *this->params["dFC_W"], -lr);
-        // optimizer(this->params["fc_b"], this->mem["mfc_b"], *this->params["dfc_b"], -lr);
     }
 
 private:
