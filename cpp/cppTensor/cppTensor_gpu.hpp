@@ -22,7 +22,7 @@
 
 namespace cppTensor_Vec3_gpu
 {
-    void permute_gpu(double* out_dev_data, const double* in_dev_data, const int* out_shape, const int* in_shape);
+    void permute_gpu(double* out_dev_data, const double* in_dev_data, int* out_shape, int* in_shape, int* out_zyx);
 }
 
 namespace cppTensor_gpu

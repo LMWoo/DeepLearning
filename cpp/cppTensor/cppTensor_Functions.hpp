@@ -14,16 +14,18 @@
 namespace cppTensor_Vec3_Functions
 {
     template<typename dtype>
-    void permute_gpu(cppTensor_Vec3<dtype>& returnArray, cppTensor_Vec3<dtype>& otherArray, std::vector<int>& new_shape)
+    void permute_gpu(cppTensor_Vec3<dtype>& returnArray, cppTensor_Vec3<dtype>& otherArray, std::vector<int>& out_zyx)
     {
         std::string function_name = "void permute_gpu(cppTensor_Vec3<dtype>&, cppTensor_Vec3<dtype>&, std::vector<int>&)";
         
         int in_shape[3] = {otherArray.shape_[0], otherArray.shape_[1], otherArray.shape_[2]};
-        cppTensor_Vec3_gpu::permute_gpu(returnArray.dev_data_, otherArray.dev_data_, &new_shape[0], in_shape);
+        int out_shape[3] = {returnArray.shape_[0], returnArray.shape_[1], returnArray.shape_[2]};
+
+        cppTensor_Vec3_gpu::permute_gpu(returnArray.dev_data_, otherArray.dev_data_, out_shape, in_shape, &out_zyx[0]);
     }
 
     template<typename dtype>
-    void permute_cpu(cppTensor_Vec3<dtype>& returnArray, cppTensor_Vec3<dtype>& otherArray, std::vector<int>& new_shape)
+    void permute_cpu(cppTensor_Vec3<dtype>& returnArray, cppTensor_Vec3<dtype>& otherArray, std::vector<int>& out_zyx)
     {
         std::string function_name = "void permute_cpu(cppTensor_Vec3<dtype>&, cppTensor_Vec3<dtype>&, std::vector<int>&)";
         
@@ -34,17 +36,17 @@ namespace cppTensor_Vec3_Functions
             {
                 for (zyx[2] = 0; zyx[2] < otherArray.shape_.x; ++zyx[2])
                 {
-                    returnArray(zyx[new_shape[0]], zyx[new_shape[1]], zyx[new_shape[2]]) = otherArray(zyx[0], zyx[1], zyx[2]);
+                    returnArray(zyx[out_zyx[0]], zyx[out_zyx[1]], zyx[out_zyx[2]]) = otherArray(zyx[0], zyx[1], zyx[2]);
                 }
             }
         }
     }
     
     template<typename dtype>
-    cppTensor_Vec3<dtype> permute(cppTensor_Vec3<dtype>& rhs, std::vector<int>& new_shape)
+    cppTensor_Vec3<dtype> permute(cppTensor_Vec3<dtype>& rhs, std::vector<int>& out_zyx)
     {
         std::string function_name = "cppTensor_Vec3<dtype> permute(cppTensor_Vec3<dtype>&, std::vector<int>&)";
-        if ((new_shape[0] == new_shape[1] || new_shape[1] == new_shape[2]) || new_shape[2] == new_shape[0])
+        if ((out_zyx[0] == out_zyx[1] || out_zyx[1] == out_zyx[2]) || out_zyx[2] == out_zyx[0])
         {
             cppTensor_Utils::exception_print(function_name, "repeated axis in permute");
             return cppTensor_Vec3<dtype>();
@@ -54,11 +56,11 @@ namespace cppTensor_Vec3_Functions
         {
             cppTensor_Utils::null_check(function_name, "rhs.dev_data_", rhs.dev_data_);
             cppTensor_Vec3<dtype> returnArray(
-                rhs.shape_[new_shape[0]],
-                rhs.shape_[new_shape[1]],
-                rhs.shape_[new_shape[2]], true);
+                rhs.shape_[out_zyx[0]],
+                rhs.shape_[out_zyx[1]],
+                rhs.shape_[out_zyx[2]], true);
 
-            permute_gpu(returnArray, rhs, new_shape);
+            permute_gpu(returnArray, rhs, out_zyx);
 
             return returnArray;
         }
@@ -66,11 +68,11 @@ namespace cppTensor_Vec3_Functions
         {
             cppTensor_Utils::null_check(function_name, "rhs.data_", rhs.data_);
             cppTensor_Vec3<dtype> returnArray(
-                rhs.shape_[new_shape[0]], 
-                rhs.shape_[new_shape[1]],
-                rhs.shape_[new_shape[2]]);
+                rhs.shape_[out_zyx[0]], 
+                rhs.shape_[out_zyx[1]],
+                rhs.shape_[out_zyx[2]]);
 
-            permute_cpu(returnArray, rhs, new_shape);
+            permute_cpu(returnArray, rhs, out_zyx);
 
             return returnArray;
         }
