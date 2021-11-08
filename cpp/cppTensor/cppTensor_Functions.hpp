@@ -14,9 +14,16 @@
 namespace cppTensor_Vec3_Functions
 {
     template<typename dtype>
-    void transpose_cpu(cppTensor_Vec3<dtype>& returnArray, const cppTensor_Vec3<dtype>& otherArray, std::vector<int>& new_shape)
+    void permute_gpu(cppTensor_Vec3<dtype>& returnArray, const cppTensor_Vec3<dtype>& otherArray, std::vector<int>& new_shape)
     {
-        std::string function_name = "void transpose_cpu(cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&, std::vector<int>&)";
+        std::string function_name = "void permute_gpu(cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&, std::vector<int>&)";
+        
+    }
+
+    template<typename dtype>
+    void permute_cpu(cppTensor_Vec3<dtype>& returnArray, const cppTensor_Vec3<dtype>& otherArray, std::vector<int>& new_shape)
+    {
+        std::string function_name = "void permute_cpu(cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&, std::vector<int>&)";
         
         int zyx[3] = {0, 0, 0};
         for (zyx[0] = 0; zyx[0] < otherArray.shape_.z; ++zyx[0])
@@ -32,13 +39,21 @@ namespace cppTensor_Vec3_Functions
     }
     
     template<typename dtype>
-    cppTensor_Vec3<dtype> transpose(cppTensor_Vec3<dtype>& rhs, std::vector<int>& new_shape)
+    cppTensor_Vec3<dtype> permute(cppTensor_Vec3<dtype>& rhs, std::vector<int>& new_shape)
     {
-        std::string function_name = "cppTensor_Vec3<dtype> transpose(cppTensor_Vec3<dtype>&, std::vector<int>&)";
+        std::string function_name = "cppTensor_Vec3<dtype> permute(cppTensor_Vec3<dtype>&, std::vector<int>&)";
 
         if (rhs.is_cuda_)
         {
+            cppTensor_Utils::null_check(function_name, "rhs.dev_data_", rhs.dev_data_);
+            cppTensor_Vec3<dtype> returnArray(
+                rhs.shape_[new_shape[0]],
+                rhs.shape_[new_shape[1]],
+                rhs.shape_[new_shape[2]], true);
 
+            permute_gpu(returnArray, rhs, new_shape);
+
+            return returnArray;
         }
         else
         {
@@ -48,7 +63,7 @@ namespace cppTensor_Vec3_Functions
                 rhs.shape_[new_shape[1]],
                 rhs.shape_[new_shape[2]]);
 
-            transpose_cpu(returnArray, rhs, new_shape);
+            permute_cpu(returnArray, rhs, new_shape);
 
             return returnArray;
         }
