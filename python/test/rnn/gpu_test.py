@@ -64,6 +64,10 @@ class RNN(cppModule):
         out = self.rnn1.forward(x, hprev)
         return self.fc.forward(out)
 
+    def backward(self, x):
+        out = self.fc.backward(x)
+        return self.rnn1.backward(out)
+
 gpu_model = RNN(input_size, hidden_size)
 optimizer = cpp.cppAdagrad(gpu_model.parameters(), learning_rate)
 criterion = cpp.cppCrossEntropyLoss()
