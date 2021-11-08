@@ -49,6 +49,11 @@ private:
             this->cols = cols;
         }
     };
+
+    class Vec3
+    {
+
+    };
 public:
     dtype* data_{nullptr};
     dtype* dev_data_{nullptr};
