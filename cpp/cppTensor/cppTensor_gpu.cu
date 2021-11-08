@@ -1,6 +1,47 @@
 #include "cppTensor_gpu.hpp"
 
 #define TILE_WIDTH 8
+#define VEC3_TILE_SIZE 4
+
+namespace cppTensor_Vec3_gpu
+{
+    __device__ int getIdx(int z, int y, int x, int dim_y, int dim_x)
+    {
+        return x + y * dim_x + z * dim_y * dim_x;
+    }
+    __global__ void permute_(double* out_dev_data, const double* in_dev_data, 
+        int out_dim_z, int out_dim_y, int out_dim_x, int in_dim_z, int in_dim_y, int in_dim_x, int out_z, int out_y, int out_x)
+    {
+        int z = blockIdx.z * blockDim.z + threadIdx.z;
+        int y = blockIdx.y * blockDim.y + threadIdx.y;
+        int x = blockIdx.x * blockDim.x + threadIdx.x;
+        int zyx[3] = {z, y, x};
+
+        if ((z >= in_dim_z || y >= in_dim_y) || x >= in_dim_x)
+        {
+            return;
+        }
+
+        out_dev_data[getIdx(zyx[out_z], zyx[out_y], zyx[out_x], out_dim_y, out_dim_x)] = in_dev_data[getIdx(z, y, x, in_dim_y, in_dim_x)];
+    }
+
+    void permute_gpu(double* out_dev_data, const double* in_dev_data, int* out_shape, int* in_shape, int* out_zyx)
+    {
+        int grid_x = in_shape[2] / VEC3_TILE_SIZE;
+        int grid_y = in_shape[1] / VEC3_TILE_SIZE;
+        int grid_z = in_shape[0] / VEC3_TILE_SIZE;
+        grid_x += in_shape[2] % VEC3_TILE_SIZE ? 1 : 0;
+        grid_y += in_shape[1] % VEC3_TILE_SIZE ? 1 : 0;
+        grid_z += in_shape[0] % VEC3_TILE_SIZE ? 1 : 0;
+
+        dim3 dimGrid(grid_x, grid_y, grid_z);
+        dim3 dimBlock(VEC3_TILE_SIZE, VEC3_TILE_SIZE, VEC3_TILE_SIZE);
+
+        permute_<<<dimGrid, dimBlock>>>(out_dev_data, in_dev_data, 
+            out_shape[0], out_shape[1], out_shape[2], in_shape[0], in_shape[1], in_shape[2], out_zyx[0], out_zyx[1], out_zyx[2]);
+    }
+}
+
 namespace cppTensor_gpu
 {
     __global__ void test_matMul(double *c, const double *a, const double *b, const int WIDTH)

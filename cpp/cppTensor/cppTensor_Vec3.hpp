@@ -8,52 +8,67 @@
 #include <cuda.h>
 #include "cppTensor_gpu.hpp"
 
-// #define CPPTENSOR_DEBUG
-
-#if defined(CPPTENSOR_DEBUG)
-#define PRINT_DEBUG(str, ...) do { \
-    printf((str), ##__VA_ARGS__); \
-} while(0)
-#else
-#define PRINT_DEBUG(str, ...)
-#endif
-
 template<typename dtype>
-class cppTensor
+class cppTensor_Vec3
 {
 public:
     using numpyArray = pybind11::array_t<dtype, pybind11::array::c_style>;
     using numpyArrayGeneric = pybind11::array;
 
-private:
-    class shape
+public:
+    class Vec3
     {
     public:
-        size_t rows{0};
-        size_t cols{0};
-        
-        size_t size() const
+        int z{0};
+        int y{0};
+        int x{0};
+
+        int size() const
         {
-            return rows * cols;
+            return z * y * x;
         }
 
         void print()
         {
-            printf("shape rows %d cols %d\n", rows, cols);
+            printf("shape z %d y %d x %d\n", z, y, x);
         }
-        shape() = default;
-        
-        shape(size_t rows, size_t cols)
+
+        Vec3() = default;
+
+        Vec3(int z, int y, int x)
         {
-            this->rows = rows;
-            this->cols = cols;
+            this->z = z;
+            this->y = y;
+            this->x = x;
+        }
+
+        Vec3(const Vec3& rhs)
+        {
+            this->z = rhs.z;
+            this->y = rhs.y;
+            this->x = rhs.x;
+        }
+
+        int& operator[](int idx)
+        {
+            if (idx == 0)
+            {
+                return z;
+            }
+            else if (idx == 1)
+            {
+                return y;
+            }
+            else if (idx == 2)
+            {
+                return x;
+            }
         }
     };
-
 public:
     dtype* data_{nullptr};
     dtype* dev_data_{nullptr};
-    shape shape_;
+    Vec3 shape_;
     bool is_cuda_{false};
     bool is_owner_{true};
 
@@ -67,9 +82,9 @@ private:
         print_pointer("newArray()");
     }
 
-    void newArray(size_t rows, size_t cols)
+    void newArray(int z, int y, int x)
     {
-        shape_ = shape(rows, cols);
+        shape_ = Vec3(z, y, x);
         newArray();
     }
 
@@ -87,28 +102,28 @@ private:
     }
 
 public:
-    cppTensor() = default;
+    cppTensor_Vec3() = default;
 
-    cppTensor(size_t rows, size_t cols) :
-        shape_(shape(rows, cols))
+    cppTensor_Vec3(int z, int y, int x) :
+        shape_(Vec3(z, y, x))
     {
         newArray();
     }
 
-    cppTensor(size_t rows, size_t cols, bool is_cuda) :
-        shape_(shape(rows, cols))
+    cppTensor_Vec3(int z, int y, int x, bool is_cuda) :
+        shape_(Vec3(z, y, x))
     {
         if (is_cuda)
         {
-            this->shape_ = shape(rows, cols);
+            this->shape_ = Vec3(z, y, x);
             this->is_cuda_ = is_cuda;
             this->dev_data_ = cppTensor_gpu::gpu_malloc(shape_.size() * sizeof(double));
         }
     }
 
-    cppTensor(const cppTensor<dtype>& rhs)
+    cppTensor_Vec3(const cppTensor_Vec3<dtype>& rhs)
     {
-        this->shape_ = shape(rhs.shape_.rows, rhs.shape_.cols);
+        this->shape_ = Vec3(rhs.shape_);
         newArray();
 
         if (rhs.is_cuda_)
@@ -122,9 +137,9 @@ public:
         }
     }
     
-    cppTensor<dtype>& operator=(const cppTensor<dtype>& rhs)
+    cppTensor_Vec3<dtype>& operator=(const cppTensor_Vec3<dtype>& rhs)
     {
-        this->shape_ = shape(rhs.shape_.rows, rhs.shape_.cols);
+        this->shape_ = Vec3(rhs.shape_);
         newArray();
 
         if (rhs.is_cuda_)
@@ -141,26 +156,26 @@ public:
     }
 
 
-    cppTensor(cppTensor<dtype>&& rhs) noexcept
+    cppTensor_Vec3(cppTensor_Vec3<dtype>&& rhs) noexcept
     {
         deleteArray();
         
         this->data_ = rhs.data_;
         this->dev_data_ = rhs.dev_data_;
-        this->shape_ = shape(rhs.shape_.rows, rhs.shape_.cols);
+        this->shape_ = Vec3(rhs.shape_);
         this->is_cuda_= rhs.is_cuda_;
 
         rhs.data_ = nullptr;
         rhs.dev_data_ = nullptr;
     }
 
-    cppTensor<dtype>& operator=(cppTensor<dtype>&& rhs) noexcept
+    cppTensor_Vec3<dtype>& operator=(cppTensor_Vec3<dtype>&& rhs) noexcept
     {
         deleteArray();
 
         this->data_ = rhs.data_;
         this->dev_data_ = rhs.dev_data_;
-        this->shape_ = shape(rhs.shape_);
+        this->shape_ = Vec3(rhs.shape_);
         this->is_cuda_= rhs.is_cuda_;
 
         rhs.data_ = nullptr;
@@ -169,7 +184,7 @@ public:
         return *this;
     }
 
-    cppTensor(const numpyArray& numpyInput)
+    cppTensor_Vec3(const numpyArray& numpyInput)
     {
         const auto dataPtr = numpyInput.data();
 
@@ -181,19 +196,28 @@ public:
             }
             case 1:
             {
-                const size_t size = static_cast<size_t>(numpyInput.size());
-                shape_ = shape(1, size);
+                const int size = static_cast<int>(numpyInput.size());
+                shape_ = Vec3(1, 1, size);
                 newArray();
-                std::copy(dataPtr, dataPtr + shape_.size(), begin());
+                std::copy(dataPtr, dataPtr + shape_.size(), this->data_);
                 break;
             }
             case 2:
             {
-                const size_t rows = static_cast<size_t>(numpyInput.shape(0));
-                const size_t cols = static_cast<size_t>(numpyInput.shape(1));
-                shape_ = shape(rows, cols);
+                const int rows = static_cast<int>(numpyInput.shape(0));
+                const int cols = static_cast<int>(numpyInput.shape(1));
+                shape_ = Vec3(1, rows, cols);
                 newArray();
-                std::copy(dataPtr, dataPtr + shape_.size(), begin());
+                std::copy(dataPtr, dataPtr + shape_.size(), this->data_);
+            }
+            case 3:
+            {
+                const int z = static_cast<int>(numpyInput.shape(0));
+                const int y = static_cast<int>(numpyInput.shape(1));
+                const int x = static_cast<int>(numpyInput.shape(2));
+                shape_ = Vec3(z, y, x);
+                newArray();
+                std::copy(dataPtr, dataPtr + shape_.size(), this->data_);
             }
             default:
             {
@@ -202,46 +226,26 @@ public:
         }
     }
 
-    ~cppTensor()
+    ~cppTensor_Vec3()
     {
         deleteArray();
     }
 
 public:
-    dtype* begin()
+    cppTensor_Vec3<dtype>& fill(dtype value)
     {
-        return data_;
-    }
-    
-    dtype* end()
-    {
-        return begin() + shape_.size();
-    }
-
-    dtype* cbegin(size_t row)
-    {
-        return begin() + (row * shape_.cols);
-    }
-
-    dtype* cend(size_t row)
-    {
-        return cbegin(row) + shape_.cols;
-    }
-
-    cppTensor<dtype>& fill(dtype value)
-    {
-        std::fill(begin(), end(), value);
+        std::fill(this->data_, this->data_ + this->shape_.size(), value);
         return *this;
     }
 
-    dtype& operator()(size_t row, size_t col) noexcept
+    dtype& operator()(int z, int y, int x) noexcept
     {
-        return data_[row * shape_.cols + col];
+        return data_[shape_.x * shape_.y * z + shape_.x * y + x];
     }
 
-    const dtype& operator()(size_t row, size_t col) const noexcept
+    const dtype& operator()(int z, int y, int x) const noexcept
     {
-        return data_[row * shape_.cols + col];
+        return data_[shape_.x * shape_.y * z + shape_.x * y + x];
     }
 
     void zeros()
@@ -263,34 +267,32 @@ public:
 
     numpyArrayGeneric numpy()
     {
-        const std::vector<pybind11::ssize_t> numpy_shape{static_cast<pybind11::ssize_t>(shape_.rows), 
-            static_cast<pybind11::ssize_t>(shape_.cols)};
-        const std::vector<pybind11::ssize_t> numpy_strides{static_cast<pybind11::ssize_t>(shape_.cols * sizeof(dtype)),
+        const std::vector<pybind11::ssize_t> numpy_shape{
+            static_cast<pybind11::ssize_t>(shape_.z),
+            static_cast<pybind11::ssize_t>(shape_.y), 
+            static_cast<pybind11::ssize_t>(shape_.x)};
+        const std::vector<pybind11::ssize_t> numpy_strides{
+            static_cast<pybind11::ssize_t>(shape_.x * shape_.y * sizeof(dtype)),
+            static_cast<pybind11::ssize_t>(shape_.x * sizeof(dtype)),
             static_cast<pybind11::ssize_t>(sizeof(dtype))};
-        return numpyArrayGeneric(numpy_shape, numpy_strides, begin());
+        return numpyArrayGeneric(numpy_shape, numpy_strides, this->data_);
     }
 
     std::string str()
     {
         std::string out;
-        out += "[";
-        for (size_t row = 0; row < shape_.rows; ++row)
+        for (int zz = 0; zz < shape_.z; ++zz)
         {
-            out += "[";
-            for (size_t col = 0; col < shape_.cols; ++col)
+            for (int yy = 0; yy < shape_.y; ++yy)
             {
-                out += std::to_string(operator()(row, col)) + ", ";
+                for (int xx = 0; xx < shape_.x; ++xx)
+                {
+                    out += std::to_string(operator()(zz, yy, xx)) + ", ";
+                }
+                out += "\n";
             }
-            if (row == shape_.rows - 1)
-            {
-                out += "]";
-            }
-            else
-            {
-                out += "]\n";
-            }
+            out += "\n";
         }
-        out += "]\n";
         return out;
     }
 
@@ -346,6 +348,6 @@ public:
 
     void test()
     {
-        printf("cppTensor test\n");
+        printf("cppTensor_Vec3 test\n");
     }
 };
