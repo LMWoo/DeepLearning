@@ -1,11 +1,13 @@
 #include <torch/extension.h>
 #include <cppTensor/cppTensor.hpp>
+#include <cppTensor/cppTensor_Vec3.hpp>
 #include <cppModules/cppRnn.hpp>
 #include <cppModules/cppLSTM.hpp>
 #include <cppModules/cppGRU.hpp>
 #include <cppModules/cppLinear.hpp>
 #include <cppOptimizer/cppAdagrad.hpp>
 #include <cppLoss/cppCrossEntropyLoss.hpp>
+
 
 namespace pb11 = pybind11;
 
@@ -25,6 +27,23 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
         .def("print_pointer", &cppTensorDouble::print_pointer)
         .def("print", &cppTensorDouble::print)
         .def("test", &cppTensorDouble::test);
+
+    using cppTensorVec3Double = cppTensor_Vec3<double>;
+    pb11::class_<cppTensorVec3Double>(m, "cppTensorVec3")
+        .def(pb11::init<>())
+        .def(pb11::init<int, int, int>())
+        .def(pb11::init<int, int, int, bool>())
+        .def(pb11::init<cppTensorVec3Double::numpyArray>())
+        .def("cuda", &cppTensorVec3Double::cuda)
+        .def("cpu", &cppTensorVec3Double::cpu)
+        .def("numpy", &cppTensorVec3Double::numpy)
+        .def("zeros", &cppTensorVec3Double::zeros)
+        .def("ones", &cppTensorVec3Double::ones)
+        .def("print_pointer", &cppTensorVec3Double::print_pointer)
+        .def("print", &cppTensorVec3Double::print)
+        .def("test", &cppTensorVec3Double::test);
+
+    m.def("transpose", &cppTensor_Vec3_Functions::transpose<double>);
     
     m.def("test_matMul_gpu", &cppTensor_Functions::test_matMul_gpu);
     m.def("add_cpu", &cppTensor_Functions::add_cpu<double>);

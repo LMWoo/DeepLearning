@@ -9,6 +9,53 @@
 #include "cppTensor_gpu.hpp"
 #include "cppTensor_Utils.hpp"
 #include "cppTensor.hpp"
+#include "cppTensor_Vec3.hpp"
+
+namespace cppTensor_Vec3_Functions
+{
+    template<typename dtype>
+    void transpose_cpu(cppTensor_Vec3<dtype>& returnArray, const cppTensor_Vec3<dtype>& otherArray, std::vector<int>& new_shape)
+    {
+        std::string function_name = "void transpose_cpu(cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&, std::vector<int>&)";
+        
+        int zyx[3] = {0, 0, 0};
+        for (zyx[0] = 0; zyx[0] < otherArray.shape_.z; ++zyx[0])
+        {
+            for (zyx[1] = 0; zyx[1] < otherArray.shape_.y; ++zyx[1])
+            {
+                for (zyx[2] = 0; zyx[2] < otherArray.shape_.x; ++zyx[2])
+                {
+                    returnArray(zyx[new_shape[0]], zyx[new_shape[1]], zyx[new_shape[2]]) = otherArray(zyx[0], zyx[1], zyx[2]);
+                }
+            }
+        }
+    }
+    
+    template<typename dtype>
+    cppTensor_Vec3<dtype> transpose(cppTensor_Vec3<dtype>& rhs, std::vector<int>& new_shape)
+    {
+        std::string function_name = "cppTensor_Vec3<dtype> transpose(cppTensor_Vec3<dtype>&, std::vector<int>&)";
+
+        if (rhs.is_cuda_)
+        {
+
+        }
+        else
+        {
+            cppTensor_Utils::null_check(function_name, "rhs.data_", rhs.data_);
+            cppTensor_Vec3<dtype> returnArray(
+                rhs.shape_[new_shape[0]], 
+                rhs.shape_[new_shape[1]],
+                rhs.shape_[new_shape[2]]);
+
+            transpose_cpu(returnArray, rhs, new_shape);
+
+            return returnArray;
+        }
+
+        return cppTensor_Vec3<dtype>();
+    }
+}
 
 namespace cppTensor_Functions
 {
