@@ -79,6 +79,10 @@ class RNN(cppModule):
   def forward(...):
     out = self.rnn.forward(...)
     return self.fc.forward(out)
+  
+  def backward(...):
+        out = self.fc.backward(...)
+        return self.rnn1.backward(out)
 
 model = RNN(...)
 
