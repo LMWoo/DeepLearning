@@ -14,6 +14,7 @@ print(x_t)
 
 print("vec3 permute")
 x = cpp.cppTensorVec3(x)
+x.cuda()
 x_t = cpp.permute(x, (0, 1, 2))
-
+x_t.cpu()
 print(x_t.numpy())

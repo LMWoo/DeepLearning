@@ -14,16 +14,18 @@
 namespace cppTensor_Vec3_Functions
 {
     template<typename dtype>
-    void permute_gpu(cppTensor_Vec3<dtype>& returnArray, const cppTensor_Vec3<dtype>& otherArray, std::vector<int>& new_shape)
+    void permute_gpu(cppTensor_Vec3<dtype>& returnArray, cppTensor_Vec3<dtype>& otherArray, std::vector<int>& new_shape)
     {
-        std::string function_name = "void permute_gpu(cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&, std::vector<int>&)";
+        std::string function_name = "void permute_gpu(cppTensor_Vec3<dtype>&, cppTensor_Vec3<dtype>&, std::vector<int>&)";
         
+        int in_shape[3] = {otherArray.shape_[0], otherArray.shape_[1], otherArray.shape_[2]};
+        cppTensor_Vec3_gpu::permute_gpu(returnArray.dev_data_, otherArray.dev_data_, &new_shape[0], in_shape);
     }
 
     template<typename dtype>
-    void permute_cpu(cppTensor_Vec3<dtype>& returnArray, const cppTensor_Vec3<dtype>& otherArray, std::vector<int>& new_shape)
+    void permute_cpu(cppTensor_Vec3<dtype>& returnArray, cppTensor_Vec3<dtype>& otherArray, std::vector<int>& new_shape)
     {
-        std::string function_name = "void permute_cpu(cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&, std::vector<int>&)";
+        std::string function_name = "void permute_cpu(cppTensor_Vec3<dtype>&, cppTensor_Vec3<dtype>&, std::vector<int>&)";
         
         int zyx[3] = {0, 0, 0};
         for (zyx[0] = 0; zyx[0] < otherArray.shape_.z; ++zyx[0])
