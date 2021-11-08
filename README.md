@@ -81,8 +81,8 @@ class RNN(cppModule):
     return self.fc.forward(out)
   
   def backward(...):
-        out = self.fc.backward(...)
-        return self.rnn1.backward(out)
+    out = self.fc.backward(...)
+    return self.rnn1.backward(out)
 
 model = RNN(...)
 
@@ -94,7 +94,7 @@ outputs = model.forward(...)
 loss = criterion(outputs, labels)
 
 optimizer.zero_grad()
-criterion.backward(...)
+model.backward(...)
 optimizer.step()
 
 ```
