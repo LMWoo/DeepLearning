@@ -42,6 +42,11 @@ namespace cppTensor_Vec3_Functions
     cppTensor_Vec3<dtype> permute(cppTensor_Vec3<dtype>& rhs, std::vector<int>& new_shape)
     {
         std::string function_name = "cppTensor_Vec3<dtype> permute(cppTensor_Vec3<dtype>&, std::vector<int>&)";
+        if ((new_shape[0] == new_shape[1] || new_shape[1] == new_shape[2]) || new_shape[2] == new_shape[0])
+        {
+            cppTensor_Utils::exception_print(function_name, "repeated axis in permute");
+            return cppTensor_Vec3<dtype>();
+        }
 
         if (rhs.is_cuda_)
         {
