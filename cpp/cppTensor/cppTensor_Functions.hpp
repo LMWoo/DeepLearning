@@ -14,6 +14,76 @@
 namespace cppTensor_Vec3_Functions
 {
     template<typename dtype>
+    void matMul_gpu(cppTensor_Vec3<dtype>& returnArray, const cppTensor_Vec3<dtype>& lhs, const cppTensor_Vec3<dtype>& rhs)
+    {
+        std::string function_name = "void matMul_gpu(cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&)";
+    }
+
+    template<typename dtype>
+    void matMul_cpu(cppTensor_Vec3<dtype>& returnArray, const cppTensor_Vec3<dtype>& lhs, const cppTensor_Vec3<dtype>& rhs)
+    {
+        std::string function_name = "void matMul_cpu(cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&)";
+        cppTensor_Utils::null_check(function_name, "returnArray.data_", returnArray.data_);
+        cppTensor_Utils::null_check(function_name, "lhs.data_", lhs.data_);
+        cppTensor_Utils::null_check(function_name, "rhs.data_", rhs.data_);
+
+        for (int z = 0; z < lhs.shape_.z; ++z)
+        {
+            for (int i = 0; i < lhs.shape_.y; ++i)
+            {
+                for (int j = 0; j < rhs.shape_.x; ++j)
+                {
+                    dtype sum = dtype{0.0};
+
+                    for (int k = 0; k < lhs.shape_.x; ++k)
+                    {
+                        sum += lhs(z, i, k) * rhs(z, k, j);
+                    }
+
+                    returnArray(z, i, j) = sum;
+                }
+            }
+        }
+    }
+
+    template<typename dtype>
+    cppTensor_Vec3<dtype> matMul(const cppTensor_Vec3<dtype>& lhs, const cppTensor_Vec3<dtype>& rhs)
+    {
+        std::string function_name = "cppTensor_Vec3<dtype> matMul(const cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&)";
+
+        if (lhs.shape_.z != rhs.shape_.z && lhs.shape_.x != rhs.shape_.y)
+        {
+            cppTensor_Utils::exception_print(function_name, "no match lhs, rhs shape");
+            return cppTensor_Vec3<dtype>();
+        }
+
+        if (lhs.is_cuda_ && rhs.is_cuda_)
+        {
+            cppTensor_Vec3<dtype> returnArray(lhs.shape_.z, lhs.shape_.y, rhs.shape_.x, true);
+
+            cppTensor_Utils::null_check(function_name, "lhs.dev_data_", lhs.dev_data_);
+            cppTensor_Utils::null_check(function_name, "rhs.dev_data_", rhs.dev_data_);
+
+            matMul_gpu(returnArray, lhs, rhs);
+
+            return returnArray;
+        }
+        else
+        {
+            cppTensor_Vec3<dtype> returnArray(lhs.shape_.z, lhs.shape_.y, rhs.shape_.x);
+
+            cppTensor_Utils::null_check(function_name, "lhs.data_", lhs.data_);
+            cppTensor_Utils::null_check(function_name, "rhs.data_", rhs.data_);
+
+            matMul_cpu(returnArray, lhs, rhs);
+
+            return returnArray;
+        }
+
+        return cppTensor_Vec3<dtype>();
+    }
+
+    template<typename dtype>
     void permute_gpu(cppTensor_Vec3<dtype>& returnArray, cppTensor_Vec3<dtype>& otherArray, std::vector<int>& out_zyx)
     {
         std::string function_name = "void permute_gpu(cppTensor_Vec3<dtype>&, cppTensor_Vec3<dtype>&, std::vector<int>&)";
