@@ -45,6 +45,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
 
     m.def("permute_vec3", &cppTensor_Vec3_Functions::permute<double>);
     m.def("matMul_vec3", &cppTensor_Vec3_Functions::matMul<double>);
+    m.def("conv_vec3", &cppTensor_Vec3_Functions::conv<double>);
 
     m.def("test_matMul_gpu", &cppTensor_Functions::test_matMul_gpu);
     m.def("add_cpu", &cppTensor_Functions::add_cpu<double>);
