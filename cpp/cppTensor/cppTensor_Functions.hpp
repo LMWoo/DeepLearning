@@ -26,23 +26,23 @@ namespace cppTensor_Vec3_Functions
     {
         std::string function_name = "void matMul_cpu(cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&)";
 
-        // for (int z = 0; z < lhs.shape_.z; ++z)
-        // {
-        //     for (int i = 0; i < lhs.shape_.y; ++i)
-        //     {
-        //         for (int j = 0; j < rhs.shape_.x; ++j)
-        //         {
-        //             dtype sum = dtype{0.0};
+        for (int z = 0; z < lhs.shape_.z; ++z)
+        {
+            for (int i = 0; i < lhs.shape_.y; ++i)
+            {
+                for (int j = 0; j < rhs.shape_.x; ++j)
+                {
+                    dtype sum = dtype{0.0};
 
-        //             for (int k = 0; k < lhs.shape_.x; ++k)
-        //             {
-        //                 sum += lhs(z, i, k) * rhs(z, k, j);
-        //             }
+                    for (int k = 0; k < lhs.shape_.x; ++k)
+                    {
+                        sum += lhs(z, i, k) * rhs(z, k, j);
+                    }
 
-        //             returnArray(z, i, j) = sum;
-        //         }
-        //     }
-        // }
+                    returnArray(z, i, j) = sum;
+                }
+            }
+        }
     }
 
     template<typename dtype>
