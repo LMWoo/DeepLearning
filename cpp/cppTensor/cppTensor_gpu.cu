@@ -13,8 +13,6 @@ namespace cppTensor_Vec3_gpu
     __global__ void matMul_(double* out_dev_data, const double* lhs_dev_data, const double* rhs_dev_data, int lhs_dim_y, int lhs_dim_x, int rhs_dim_y, int rhs_dim_x)
     {
         int z = blockIdx.z * blockDim.z + threadIdx.z;
-        int y = blockIdx.y * blockDim.y + threadIdx.y;
-        int x = blockIdx.x * blockDim.x + threadIdx.x;
 
         for (int i = 0; i < lhs_dim_y; ++i)
         {
