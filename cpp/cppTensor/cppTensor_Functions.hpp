@@ -34,7 +34,7 @@ namespace cppTensor_Vec3_Functions
                     {
                         for (int k = 0; k < kernel.shape_.x; ++k)
                         {
-                            sum += input(i, y + j, x + k) * kernel(i, j, k);
+                            sum += kernel(i, j, k) * input(i, y + j, x + k);
                         }
                     }
                 }

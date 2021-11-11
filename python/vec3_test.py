@@ -6,46 +6,47 @@ import time
 import numpy as np
 import cpp as cpp
 
-print("numpy permute")
-x = np.random.randn(2, 6, 2)
-x_t = x.transpose((1, 2, 0))
+# print("numpy permute")
+# x = np.random.randn(2, 6, 2)
+# x_t = x.transpose((1, 2, 0))
 
-print(x_t)
+# print(x_t)
 
-print("vec3 permute")
-x = cpp.cppTensorVec3(x)
-x.cuda()
-x_t = cpp.permute_vec3(x, (1, 2, 0))
-x_t.cpu()
-print(x_t.numpy())
+# print("vec3 permute")
+# x = cpp.cppTensorVec3(x)
+# x.cuda()
+# x_t = cpp.permute_vec3(x, (1, 2, 0))
+# x_t.cpu()
+# print(x_t.numpy())
 
-print("numpy matmul")
-x = np.random.randn(2, 4, 2)
-y = np.random.randn(2, 2, 4)
-print(x @ y)
+# print("numpy matmul")
+# x = np.random.randn(2, 4, 2)
+# y = np.random.randn(2, 2, 4)
+# print(x @ y)
 
-print("vec3 matmul")
-x = cpp.cppTensorVec3(x)
-x.cuda()
-y = cpp.cppTensorVec3(y)
-y.cuda()
-result = cpp.matMul_vec3(x, y)
-result.cpu()
-print(result.numpy())
+# print("vec3 matmul")
+# x = cpp.cppTensorVec3(x)
+# x.cuda()
+# y = cpp.cppTensorVec3(y)
+# y.cuda()
+# result = cpp.matMul_vec3(x, y)
+# result.cpu()
+# print(result.numpy())
 
 print("conv")
 
 output_z = 6
 input_z = 3
-input_y = 7
-input_x = 8
-kernel_size = 5
+input_y = 8
+input_x = 10
+kernel_size = 3
 
 x = np.random.randn(input_z, input_y, input_x)
 i = torch.Tensor(x).unsqueeze(0)
-c = nn.Conv2d(input_z, output_z, kernel_size=5, stride=1, padding=0)
+c = nn.Conv2d(input_z, output_z, kernel_size, 1)
 o = c(i)
-print(o[0][0])
+
+print(o[0][0] - c.bias[0])
 
 class cppCNN(object):
     def __init__(self, in_num, out_num):
@@ -63,6 +64,17 @@ class cppCNN(object):
 x = cpp.cppTensorVec3(x)
 c = cppCNN(input_z, output_z)
 result = c(x)
+
+print('test')
 print(result[0].numpy())
 
 print('end')
+
+# x = np.array([[[1, 2, 3], [0,1, 5], [1, 0, 2]]])
+# # x = np.array([[[2, 3, 0], [1, 5, 1], [0, 2, 2]]])
+# y = np.array([[[ 1, 0, 1],[0, 1, 0], [1, 0, 1]]])
+# print(np.sum(x * y))
+# x= cpp.cppTensorVec3(x)
+# y = cpp.cppTensorVec3(y)
+# result = cpp.conv_vec3(x, y)
+# print(result.numpy())
