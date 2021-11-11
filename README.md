@@ -144,49 +144,10 @@ optimizer.step()
 
 ## Linux (20.04LTS)
 
-### 소스 다운로드
+# Running the test
 ```
 git clone https://github.com/LMWoo/DeepLearning.git
 cd DeepLearning
-```
-
-### PyTorch 소스 다운로드
-```
-git clone --recursive https://github.com/pytorch/pytorch
-cd pytorch
-```
-
-### PyTorch 빌드하기 전 Caffe2의 CMakeLists.txt파일 수정
-
-#### 수정 전
-```
-...
-894 elseif(USE_CUDA)
-895  set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)
-896  if(CUDA_SEPARABLE_COMPILATION)
-...
-```
-
-#### 수정 후
-```
-...
-894 elseif(USE_CUDA)
-895  list(APPEND Caffe2_GPU_SRCS {ProjectPath}/cpp/cppTensor/cppTensor_gpu.cu)
-896  set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)
-897  if(CUDA_SEPARABLE_COMPILATION)
-...
-```
-
-### PyTorch Build
-```
-git submodule sync
-git submodule update --init --recursive --jobs 0
-export CMAKE_PREFIX_PATH=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}
-python setup.py install
-```
-
-# Running the test
-```
 cd python
 python setup.py install
 ```
