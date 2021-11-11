@@ -14,6 +14,87 @@
 namespace cppTensor_Vec3_Functions
 {
     template<typename dtype>
+    void conv_gpu(cppTensor_Vec3<dtype>& returnArray, const cppTensor_Vec3<dtype>& input, const cppTensor_Vec3<dtype>& kernel)
+    {
+
+    }
+
+    template<typename dtype>
+    void conv_cpu(cppTensor_Vec3<dtype>& returnArray, const cppTensor_Vec3<dtype>& input, const cppTensor_Vec3<dtype>& kernel)
+    {
+        for (int y = 0; y < returnArray.shape_.y; ++y)
+        {
+            for (int x = 0; x < returnArray.shape_.x; ++x)
+            {
+                dtype sum = dtype{0.0};
+
+                for (int i = 0; i < kernel.shape_.z; ++i)
+                {
+                    for (int j = 0; j < kernel.shape_.y; ++j)
+                    {
+                        for (int k = 0; k < kernel.shape_.x; ++k)
+                        {
+                            sum += input(i, y + j, x + k) * kernel(i, j, k);
+                        }
+                    }
+                }
+
+                returnArray(0, y, x) = sum;
+            }
+        }
+    }
+
+    template<typename dtype>
+    cppTensor_Vec3<dtype> conv(const cppTensor_Vec3<dtype>& input, const cppTensor_Vec3<dtype>& kernel)
+    {
+        std::string function_name = "cppTensor_Vec3<dtype> conv(const cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&)";
+
+        if (input.shape_.z != kernel.shape_.z)
+        {
+            cppTensor_Utils::exception_print(function_name, "no match input, kernel shape");
+            return cppTensor_Vec3<dtype>();
+        }
+
+        if (kernel.shape_.x % 2 == 0 || kernel.shape_.y % 2 == 0)
+        {
+            cppTensor_Utils::exception_print(function_name, "kernel size even number");
+            return cppTensor_Vec3<dtype>();
+        }
+        
+        if (input.is_cuda_ && kernel.is_cuda_)
+        {
+            int z = 1;
+            int y = input.shape_.y - (kernel.shape_.y / 2) * 2;
+            int x = input.shape_.x - (kernel.shape_.x / 2) * 2;
+
+            cppTensor_Vec3<dtype> returnArray(z, y, x, true);
+
+            cppTensor_Utils::null_check(function_name, "input.dev_data_", input.dev_data_);
+            cppTensor_Utils::null_check(function_name, "kernel.dev_data_", kernel.dev_data_);
+
+            conv_gpu(returnArray, input, kernel);
+
+            return returnArray;
+        }
+        else
+        {
+            int z = 1;
+            int y = input.shape_.y - (kernel.shape_.y / 2) * 2;
+            int x = input.shape_.x - (kernel.shape_.x / 2) * 2;
+
+            cppTensor_Vec3<dtype> returnArray(z, y, x);
+
+            cppTensor_Utils::null_check(function_name, "input.data_", input.data_);
+            cppTensor_Utils::null_check(function_name, "kernel.data_", kernel.data_);
+
+            conv_cpu(returnArray, input, kernel);
+
+            return returnArray;
+        }
+
+        return cppTensor_Vec3<dtype>();
+    }
+    template<typename dtype>
     void matMul_gpu(cppTensor_Vec3<dtype>& returnArray, const cppTensor_Vec3<dtype>& lhs, const cppTensor_Vec3<dtype>& rhs)
     {
         std::string function_name = "void matMul_gpu(cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&, const cppTensor_Vec3<dtype>&)";
