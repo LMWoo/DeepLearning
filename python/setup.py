@@ -11,6 +11,6 @@ setup(
     include_dirs=['/usr/local/cuda/include', '../cpp'],
     ext_modules=[
     CUDAExtension(
-        'cpp', ['../cpp/cppTensor/cppTensor_gpu.cu', 'setup.cpp']),
+        'cpp', ['setup.cpp', '../cpp/cppTensor/cppTensor_gpu.cu']),
     ],
     cmdclass={'build_ext': BuildExtension})
