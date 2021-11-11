@@ -9,6 +9,44 @@ namespace cppTensor_Vec3_gpu
     {
         return x + y * dim_x + z * dim_y * dim_x;
     }
+
+    __global__ void matMul_(double* out_dev_data, const double* lhs_dev_data, const double* rhs_dev_data, int lhs_dim_y, int lhs_dim_x, int rhs_dim_y, int rhs_dim_x)
+    {
+        int z = blockIdx.z * blockDim.z + threadIdx.z;
+        int y = blockIdx.y * blockDim.y + threadIdx.y;
+        int x = blockIdx.x * blockDim.x + threadIdx.x;
+
+        for (int i = 0; i < lhs_dim_y; ++i)
+        {
+            for (int j = 0; j < rhs_dim_x; ++j)
+            {
+                double sum = 0.0;
+
+                for (int k = 0; k < lhs_dim_x; ++k)
+                {
+                    sum += lhs_dev_data[getIdx(z, i, k, lhs_dim_y, lhs_dim_x)] * rhs_dev_data[getIdx(z, k, j, rhs_dim_y, rhs_dim_x)];
+                }
+
+                out_dev_data[getIdx(z, i, j, lhs_dim_y, rhs_dim_x)] = sum;
+            }
+        }
+    }
+
+    void matMul_gpu(double* out_dev_data, const double* lhs_dev_data, const double* rhs_dev_data, int dim_z, int lhs_dim_y, int lhs_dim_x, int rhs_dim_y, int rhs_dim_x)
+    {
+        int grid_x = rhs_dim_x / VEC3_TILE_SIZE;
+        int grid_y = lhs_dim_y / VEC3_TILE_SIZE;
+        int grid_z = dim_z / VEC3_TILE_SIZE;
+        grid_x += rhs_dim_x % VEC3_TILE_SIZE ? 1 : 0;
+        grid_y += lhs_dim_y % VEC3_TILE_SIZE ? 1 : 0;
+        grid_z += dim_z % VEC3_TILE_SIZE ? 1 : 0;
+
+        dim3 dimGrid(grid_x, grid_y, grid_z);
+        dim3 dimBlock(VEC3_TILE_SIZE, VEC3_TILE_SIZE, VEC3_TILE_SIZE);
+
+        matMul_<<<dimGrid, dimBlock>>>(out_dev_data, lhs_dev_data, rhs_dev_data, lhs_dim_y, lhs_dim_x, rhs_dim_y, rhs_dim_x);
+    }
+
     __global__ void permute_(double* out_dev_data, const double* in_dev_data, 
         int out_dim_z, int out_dim_y, int out_dim_x, int in_dim_z, int in_dim_y, int in_dim_x, int out_z, int out_y, int out_x)
     {
