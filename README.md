@@ -142,15 +142,23 @@ optimizer.step()
 
 # Installation
 
-## Linux (20.04LTS)
-
-# Running the test
+## Linux 20.04LTS
 ```
 git clone https://github.com/LMWoo/DeepLearning.git
 cd DeepLearning
 cd python
 python setup.py install
 ```
+
+## Windows 10
+```
+git clone https://github.com/LMWoo/DeepLearning.git
+cd DeepLearning
+cd python
+python setup_windows.py install
+```
+
+# Running the test
 
 * rnn
 ```

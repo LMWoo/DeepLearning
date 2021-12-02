@@ -98,51 +98,51 @@ namespace cppTensor_gpu
     
     void test_matMul_gpu()
     {
-        int TEST_WIDTH = 512;
-        int TEST_TILE_WIDTH = 16;
-        int TEST_GRID_WIDTH = TEST_WIDTH / TEST_TILE_WIDTH;
-
-        double a[TEST_WIDTH][TEST_WIDTH];
-        double b[TEST_WIDTH][TEST_WIDTH];
-        double c[TEST_WIDTH][TEST_WIDTH] = {0};
-
-        for (int y = 0; y < TEST_WIDTH; ++y)
-        {
-            for (int x = 0; x < TEST_WIDTH; ++x)
-            {
-                a[y][x] = 1.0;
-                b[y][x] = 1.0;
-            }
-        }
-
-        double *dev_a = 0;
-        double *dev_b = 0;
-        double *dev_c = 0;
-        CUDA_CHECK(cudaMalloc((void**)&dev_a, TEST_WIDTH * TEST_WIDTH * sizeof(double)));
-        CUDA_CHECK(cudaMalloc((void**)&dev_b, TEST_WIDTH * TEST_WIDTH * sizeof(double)));
-        CUDA_CHECK(cudaMalloc((void**)&dev_c, TEST_WIDTH * TEST_WIDTH * sizeof(double)));
-
-        CUDA_CHECK(cudaMemcpy(dev_a, a, TEST_WIDTH * TEST_WIDTH * sizeof(double), cudaMemcpyHostToDevice));
-        CUDA_CHECK(cudaMemcpy(dev_b, b, TEST_WIDTH * TEST_WIDTH * sizeof(double), cudaMemcpyHostToDevice));
-
-        dim3 dimGrid(TEST_GRID_WIDTH, TEST_GRID_WIDTH, 1);
-        dim3 dimThread(TEST_TILE_WIDTH, TEST_TILE_WIDTH, 1);
-        for (int i = 0; i < 128; ++i)
-            test_matMul<<<dimGrid, dimThread>>>(dev_c, dev_a, dev_b, TEST_WIDTH);
-
-        CUDA_CHECK(cudaMemcpy(c, dev_c, TEST_WIDTH * TEST_WIDTH * sizeof(double), cudaMemcpyDeviceToHost));
-        cudaFree(dev_c);
-        cudaFree(dev_a);
-        cudaFree(dev_b);
-
-        for (int y = 0; y < TEST_WIDTH; ++y)
-        {
-            for (int x = 0; x < TEST_WIDTH; ++x)
-            {
-                printf("%lf ", c[y][x]);
-            }
-            printf("\n");
-        }
+        // int TEST_WIDTH = 512;
+        // int TEST_TILE_WIDTH = 16;
+        // int TEST_GRID_WIDTH = TEST_WIDTH / TEST_TILE_WIDTH;
+// 
+        // double a[TEST_WIDTH][TEST_WIDTH];
+        // double b[TEST_WIDTH][TEST_WIDTH];
+        // double c[TEST_WIDTH][TEST_WIDTH] = {0};
+// 
+        // for (int y = 0; y < TEST_WIDTH; ++y)
+        // {
+        //     for (int x = 0; x < TEST_WIDTH; ++x)
+        //     {
+        //         a[y][x] = 1.0;
+        //         b[y][x] = 1.0;
+        //     }
+        // }
+// 
+        // double *dev_a = 0;
+        // double *dev_b = 0;
+        // double *dev_c = 0;
+        // CUDA_CHECK(cudaMalloc((void**)&dev_a, TEST_WIDTH * TEST_WIDTH * sizeof(double)));
+        // CUDA_CHECK(cudaMalloc((void**)&dev_b, TEST_WIDTH * TEST_WIDTH * sizeof(double)));
+        // CUDA_CHECK(cudaMalloc((void**)&dev_c, TEST_WIDTH * TEST_WIDTH * sizeof(double)));
+// 
+        // CUDA_CHECK(cudaMemcpy(dev_a, a, TEST_WIDTH * TEST_WIDTH * sizeof(double), cudaMemcpyHostToDevice));
+        // CUDA_CHECK(cudaMemcpy(dev_b, b, TEST_WIDTH * TEST_WIDTH * sizeof(double), cudaMemcpyHostToDevice));
+// 
+        // dim3 dimGrid(TEST_GRID_WIDTH, TEST_GRID_WIDTH, 1);
+        // dim3 dimThread(TEST_TILE_WIDTH, TEST_TILE_WIDTH, 1);
+        // for (int i = 0; i < 128; ++i)
+        //     test_matMul<<<dimGrid, dimThread>>>(dev_c, dev_a, dev_b, TEST_WIDTH);
+// 
+        // CUDA_CHECK(cudaMemcpy(c, dev_c, TEST_WIDTH * TEST_WIDTH * sizeof(double), cudaMemcpyDeviceToHost));
+        // cudaFree(dev_c);
+        // cudaFree(dev_a);
+        // cudaFree(dev_b);
+// 
+        // for (int y = 0; y < TEST_WIDTH; ++y)
+        // {
+        //     for (int x = 0; x < TEST_WIDTH; ++x)
+        //     {
+        //         printf("%lf ", c[y][x]);
+        //     }
+        //     printf("\n");
+        // }
     }
 
     void copy_gpu_to_gpu(size_t size, double* out_dev_data, const double* in_dev_data)
